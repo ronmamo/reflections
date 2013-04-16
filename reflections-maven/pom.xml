@@ -1,0 +1,92 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections-parent</artifactId>
+        <version>0.9.9-RC1</version>
+    </parent>
+
+    <artifactId>reflections-maven</artifactId>
+    <packaging>maven-plugin</packaging>
+    <name>Reflections Maven plugin</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jfrog.maven.annomojo</groupId>
+            <artifactId>maven-plugin-anno</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jfrog.jade.plugins.common</groupId>
+            <artifactId>jade-plugin-common</artifactId>
+            <version>1.3.8</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>javadoc</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>2.6</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jfrog.maven.annomojo</groupId>
+                        <artifactId>maven-plugin-tools-anno</artifactId>
+                        <version>1.4.1</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <id>jfrog-plugins</id>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>jfrog-plugins</id>
+                    <name>jfrog-plugins-dist</name>
+                    <url>http://repo.jfrog.org/artifactory/plugins-releases</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <repositories>
+        <repository>
+            <id>jfrog-plugins</id>
+            <name>jfrog-plugins-dist</name>
+            <url>http://repo.jfrog.org/artifactory/plugins-releases</url>
+        </repository>
+    </repositories>
+
+</project>

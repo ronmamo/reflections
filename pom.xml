@@ -1,0 +1,98 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.reflections</groupId>
+    <artifactId>reflections-parent</artifactId>
+    <version>0.9.9-RC1</version>
+    <packaging>pom</packaging>
+
+    <name>Reflections</name>
+    <description>Reflections - a Java runtime metadata analysis</description>
+    <url>http://code.google.com/p/reflections/</url>
+
+    <modules>
+        <module>reflections</module>
+        <module>reflections-maven</module>
+    </modules>
+
+    <licenses>
+        <license>
+            <name>WTFPL</name>
+            <url>http://www.wtfpl.net/</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>http://reflections.googlecode.com/svn/trunk/</connection>
+        <url>http://reflections.googlecode.com/svn/trunk/</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <email>ronmamo@gmail.com</email>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>googlecode</id>
+            <url>svn:https://reflections.googlecode.com/svn/repo</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <!--<version>2.5</version>-->
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <!--<version>2.1.2</version>-->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <!--<version>2.8</version>-->
+                <configuration>
+                    <reportOutputDirectory>javadoc</reportOutputDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <!--<version>2.3.2</version>-->
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!--<version>2.12</version>-->
+                <configuration>
+                    <!-- fix java.class.path -->
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.build.outputDirectory}/target/test-classes</additionalClasspathElement>
+                    </additionalClasspathElements>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
