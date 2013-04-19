@@ -120,7 +120,7 @@ Then, on runtime:
                 isProduction() ? Reflections.collect() : new Reflections("your.package.here");
 
 
-*Check the [ReflectionsMojo](http://code.google.com/p/reflections/wiki/ReflectionsMojo ReflectionsMojo) wiki page*
+*Check the [ReflectionsMojo](http://code.google.com/p/reflections/wiki/ReflectionsMojo) wiki page*
 
 ReflectionsSpring
 -----------------
@@ -140,7 +140,7 @@ Reflections can also:
   * collect saved metadata on bootstrap time for fastest load time without scanning
   * save your model entities metadata as .java file, so you can reference types/fields/methods/annotation in a static manner
 
-*See the [UseCases](http://code.google.com/p/reflections/wiki/UseCases UseCases) wiki page*
+*See the [UseCases](http://code.google.com/p/reflections/wiki/UseCases) wiki page*
 
 Contribute
 ----------
