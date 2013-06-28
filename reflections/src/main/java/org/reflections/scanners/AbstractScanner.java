@@ -21,7 +21,7 @@ public abstract class AbstractScanner implements Scanner {
 	private Predicate<String> resultFilter = Predicates.alwaysTrue(); //accept all by default
 
     public boolean acceptsInput(String file) {
-        return file.endsWith(".class"); //is a class file
+        return getMetadataAdapter().acceptsInput(file);
     }
 
     public Object scan(Vfs.File file, Object classObject) {

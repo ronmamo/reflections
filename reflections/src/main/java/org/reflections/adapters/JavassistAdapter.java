@@ -142,6 +142,10 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
         return Arrays.asList(cls.getInterfaces());
     }
 
+    public boolean acceptsInput(String file) {
+        return file.endsWith(".class");
+    }
+    
     //
     private List<String> getAnnotationNames(final AnnotationsAttribute... annotationsAttributes) {
         List<String> result = Lists.newArrayList();
