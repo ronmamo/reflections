@@ -125,6 +125,10 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
         return names;
     }
 
+    public boolean acceptsInput(String file) {
+        return file.endsWith(".class");
+    }
+    
     //
     private List<String> getAnnotationNames(Annotation[] annotations) {
         List<String> names = new ArrayList<String>(annotations.length);

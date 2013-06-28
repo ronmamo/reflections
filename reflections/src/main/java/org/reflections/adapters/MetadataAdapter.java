@@ -48,4 +48,7 @@ public interface MetadataAdapter<C,F,M> {
     String getMethodFullKey(C cls, M method);
 
     boolean isPublic(Object o);
+    
+    boolean acceptsInput(String file);
+    
 }
