@@ -51,6 +51,12 @@ import java.util.jar.JarInputStream;
 public abstract class Vfs {
     private static List<UrlType> defaultUrlTypes = Lists.<UrlType>newArrayList(DefaultUrlTypes.values());
 
+    {{
+        for (UrlType urlType : ServiceLoader.load(UrlType.class)) {
+          defaultUrlTypes.add(urlType);
+        }
+    }}
+
     /** an abstract vfs dir */
     public interface Dir {
         String getPath();

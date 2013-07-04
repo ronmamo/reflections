@@ -56,6 +56,13 @@
             <optional>true</optional> <!-- case: when no servlet environment -->
         </dependency>
 
+        <!-- Add support for Java 6 ServiceLoader. To be removed when moving to Java 6 as minimum version. -->
+        <dependency>
+            <groupId>org.99soft.commons</groupId>
+            <artifactId>backport-spi</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
         <!-- use any implementation you like -->
         <dependency>
             <groupId>org.slf4j</groupId>
