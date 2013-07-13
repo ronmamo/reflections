@@ -101,6 +101,18 @@ public class VfsTest {
             String className = mdAdapter.getClassName(stringCF);
             assertTrue(className.equals(getClass().getName()));
         }
+        {
+            // create a file, then delete it so we can treat as a non-existing directory
+            File tempFile = File.createTempFile("nosuch", "dir");
+            tempFile.delete();
+            assertFalse(tempFile.exists());
+            Vfs.Dir dir = Vfs.DefaultUrlTypes.directory.createDir(tempFile.toURL());
+            assertNotNull(dir);
+            assertFalse(dir.getFiles().iterator().hasNext());
+            assertNotNull(dir.getPath());
+            assertNotNull(dir.toString());
+            dir.close();
+        }
 
     }
 
