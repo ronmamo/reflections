@@ -3,20 +3,20 @@ package org.reflections.vfs;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.List;
 import java.io.File;
 
-/** an implementation of {@link org.reflections.vfs.Vfs.Dir} for directory {@link java.io.File} */
+/*
+ * An implementation of {@link org.reflections.vfs.Vfs.Dir} for directory {@link java.io.File}.
+ */
 public class SystemDir implements Vfs.Dir {
     private final File file;
 
     public SystemDir(File file) {
-        if (file == null || !file.exists() || !file.isDirectory() || !file.canRead()) {
+        if (file != null && (!file.isDirectory() || !file.canRead())) {
             throw new RuntimeException("cannot use dir " + file);
         }
 
@@ -24,10 +24,16 @@ public class SystemDir implements Vfs.Dir {
     }
 
     public String getPath() {
+        if (file == null) {
+            return "/NO-SUCH-DIRECTORY/";
+        }
         return file.getPath().replace("\\", "/");
     }
 
     public Iterable<Vfs.File> getFiles() {
+        if (file == null || !file.exists()) {
+            return Collections.emptyList();
+        }
         return new Iterable<Vfs.File>() {
             public Iterator<Vfs.File> iterator() {
                 return new AbstractIterator<Vfs.File>() {
@@ -65,6 +71,6 @@ public class SystemDir implements Vfs.Dir {
 
     @Override
     public String toString() {
-        return file.toString();
+        return getPath();
     }
 }
