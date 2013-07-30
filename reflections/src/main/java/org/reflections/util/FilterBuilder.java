@@ -10,10 +10,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * an include exclude filter builder
- * <p>for example:
+ * Builds include/exclude filters for Reflections.
+ * <p>
+ * For example:
  * <pre>
- * Predicate<String> filter1 = FilterBuilder.parse("+.*, -java.*");
+ * Predicate<String> filter1 = FilterBuilder.parsePackages("-java, "-javax");
  * Predicate<String> filter2 = new FilterBuilder().include(".*").exclude("java.*");
  * </pre>
  */
@@ -84,11 +85,17 @@ public class FilterBuilder implements Predicate<String> {
     }
 
     /**
-     * parses a string representation of include exclude filter
-     * <p>the given includeExcludeString is a comma separated list of patterns, each starts with either + or - to indicate include/exclude resp.
-     * followed by the regular expression pattern
-     * <p>for example parse("-java., -javax., -sun., -com.sun.") or parse("+com.myn,-com.myn.excluded")
-     * */
+     * Parses a string representation of an include/exclude filter.
+     * <p>
+     * The given includeExcludeString is a comma separated list of regexes,
+     * each starting with either + or - to indicate include/exclude.
+     * <p>
+     * For example parsePackages("-java\\..*, -javax\\..*, -sun\\..*, -com\\.sun\\..*")
+     * or parse("+com\\.myn\\..*,-com\\.myn\\.excluded\\..*").
+     * Note that "-java\\..*" will block "java.foo" but not "javax.foo".
+     * <p>
+     * See also the more useful {@link FilterBuilder#parsePackages(String)} method.
+     */
     public static FilterBuilder parse(String includeExcludeString) {
         List<Predicate<String>> filters = new ArrayList<Predicate<String>>();
 
@@ -97,6 +104,51 @@ public class FilterBuilder implements Predicate<String> {
                 String trimmed = string.trim();
                 char prefix = trimmed.charAt(0);
                 String pattern = trimmed.substring(1);
+
+                Predicate<String> filter;
+                switch (prefix) {
+                    case '+':
+                        filter = new Include(pattern);
+                        break;
+                    case '-':
+                        filter = new Exclude(pattern);
+                        break;
+                    default:
+                        throw new ReflectionsException("includeExclude should start with either + or -");
+                }
+
+                filters.add(filter);
+            }
+
+            return new FilterBuilder(filters);
+        } else {
+            return new FilterBuilder();
+        }
+    }
+
+    /**
+     * Parses a string representation of an include/exclude filter.
+     * <p>
+     * The given includeExcludeString is a comma separated list of package name segments,
+     * each starting with either + or - to indicate include/exclude.
+     * <p>
+     * For example parsePackages("-java, -javax, -sun, -com.sun") or parse("+com.myn,-com.myn.excluded").
+     * Note that "-java" will block "java.foo" but not "javax.foo".
+     * <p>
+     * The input strings "-java" and "-java." are equivalent.
+     */
+    public static FilterBuilder parsePackages(String includeExcludeString) {
+        List<Predicate<String>> filters = new ArrayList<Predicate<String>>();
+
+        if (!Utils.isEmpty(includeExcludeString)) {
+            for (String string : includeExcludeString.split(",")) {
+                String trimmed = string.trim();
+                char prefix = trimmed.charAt(0);
+                String pattern = trimmed.substring(1);
+                if (pattern.endsWith(".") == false) {
+                  pattern += ".";
+                }
+                pattern = prefix(pattern);
 
                 Predicate<String> filter;
                 switch (prefix) {
