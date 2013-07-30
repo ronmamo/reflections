@@ -73,7 +73,7 @@ Reflections also contains some convenient java reflection helper methods for get
 
 for example:
 
-     import static org.reflections.ReflectionsUtils.*;
+     import static org.reflections.ReflectionUtils.*;
 
      Set<Method> getters = getAllMethods(someClass,
           withModifier(Modifier.PUBLIC), withPrefix("get"), withParametersCount(0));
