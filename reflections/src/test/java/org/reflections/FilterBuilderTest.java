@@ -105,4 +105,49 @@ public class FilterBuilderTest {
         assertFalse(filter.apply("org.foobar.Reflections"));
     }
 
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_parsePackages_include() {
+        FilterBuilder filter = FilterBuilder.parsePackages("+org.reflections");
+        assertTrue(filter.apply("org.reflections.Reflections"));
+        assertTrue(filter.apply("org.reflections.foo.Reflections"));
+        assertFalse(filter.apply("org.foobar.Reflections"));
+        assertFalse(filter.apply("org.reflectionsplus.Reflections"));
+    }
+
+    @Test
+    public void test_parsePackages_include_trailingDot() {
+        FilterBuilder filter = FilterBuilder.parsePackages("+org.reflections.");
+        assertTrue(filter.apply("org.reflections.Reflections"));
+        assertTrue(filter.apply("org.reflections.foo.Reflections"));
+        assertFalse(filter.apply("org.foobar.Reflections"));
+        assertFalse(filter.apply("org.reflectionsplus.Reflections"));
+    }
+
+    @Test
+    public void test_parsePackages_exclude() {
+        FilterBuilder filter = FilterBuilder.parsePackages("-org.reflections");
+        assertFalse(filter.apply("org.reflections.Reflections"));
+        assertFalse(filter.apply("org.reflections.foo.Reflections"));
+        assertTrue(filter.apply("org.foobar.Reflections"));
+        assertTrue(filter.apply("org.reflectionsplus.Reflections"));
+    }
+
+    @Test
+    public void test_parsePackages_exclude_trailingDot() {
+        FilterBuilder filter = FilterBuilder.parsePackages("-org.reflections.");
+        assertFalse(filter.apply("org.reflections.Reflections"));
+        assertFalse(filter.apply("org.reflections.foo.Reflections"));
+        assertTrue(filter.apply("org.foobar.Reflections"));
+        assertTrue(filter.apply("org.reflectionsplus.Reflections"));
+    }
+
+    @Test
+    public void test_parsePackages_include_exclude() {
+        FilterBuilder filter = FilterBuilder.parsePackages("+org.reflections, -org.reflections.foo");
+        assertTrue(filter.apply("org.reflections.Reflections"));
+        assertFalse(filter.apply("org.reflections.foo.Reflections"));
+        assertFalse(filter.apply("org.foobar.Reflections"));
+    }
+
 }
