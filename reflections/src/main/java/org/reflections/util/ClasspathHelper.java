@@ -18,17 +18,37 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
- * Some classpath convenient methods
+ * Helper methods for working with the classpath.
  */
 public abstract class ClasspathHelper {
 
-    /** returns {@code Thread.currentThread().getContextClassLoader()} */
-    public static ClassLoader contextClassLoader() { return Thread.currentThread().getContextClassLoader(); }
+    /**
+     * Gets the current thread context class loader.
+     * {@code Thread.currentThread().getContextClassLoader()}.
+     * 
+     * @return the context class loader, may be null
+     */
+    public static ClassLoader contextClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
 
-    /** returns {@code Reflections.class.getClassLoader()} */
-    public static ClassLoader staticClassLoader() { return Reflections.class.getClassLoader(); }
+    /**
+     * Gets the class loader of this library.
+     * {@code Reflections.class.getClassLoader()}.
+     * 
+     * @return the static library class loader, may be null
+     */
+    public static ClassLoader staticClassLoader() {
+        return Reflections.class.getClassLoader();
+    }
 
-    /** returns given classLoaders, if not null, otherwise defaults to both {@link #contextClassLoader()} and {@link #staticClassLoader()} */
+    /**
+     * Returns an array of class Loaders initialized from the specified array.
+     * <p>
+     * If the input is null or empty, it defaults to both {@link #contextClassLoader()} and {@link #staticClassLoader()}
+     * 
+     * @return the array of class loaders, not null
+     */
     public static ClassLoader[] classLoaders(ClassLoader... classLoaders) {
         if (classLoaders != null && classLoaders.length != 0) {
             return classLoaders;
@@ -43,17 +63,42 @@ public abstract class ClasspathHelper {
         }
     }
 
-    /** returns urls with resources of package starting with given name, using {@link ClassLoader#getResources(String)}
-     * <p>that is, forPackage("org.reflections") effectively returns urls from classpath with packages starting with {@code org.reflections}
-     * <p>if optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()} and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}
+    /**
+     * Returns a set of URLs based on a package name.
+     * <p>
+     * This searches for the package name as a resource, using {@link ClassLoader#getResources(String)}.
+     * For example, {@code forPackage("org.reflections")} effectively returns URLs from the
+     * classpath containing packages starting with {@code org.reflections}.
+     * <p>
+     * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
+     * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
+     * 
+     * @return the set of URLs, not null
      */
     public static Set<URL> forPackage(String name, ClassLoader... classLoaders) {
         return forResource(resourceName(name), classLoaders);
     }
 
-    /** returns urls with resources of given @{code resourceName}, using {@link ClassLoader#getResources(String)} */
+    /**
+     * Returns a set of URLs based on a resource.
+     * <p>
+     * This searches for the resource name, using {@link ClassLoader#getResources(String)}.
+     * For example, {@code forResource("test.properties")} effectively returns URLs from the
+     * classpath containing files of that name.
+     * <p>
+     * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
+     * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forResource(String resourceName, ClassLoader... classLoaders) {
-        final Set<URL> result = Sets.newHashSet();
+        final Set<URL> result = Sets.newLinkedHashSet();
         final ClassLoader[] loaders = classLoaders(classLoaders);
         for (ClassLoader classLoader : loaders) {
             try {
@@ -76,13 +121,19 @@ public abstract class ClasspathHelper {
         return result;
     }
 
-    /** returns the url that contains the given class, using {@link ClassLoader#getResource(String)}
-     * <p>if optional {@link ClassLoader}s are not specified, then either {@link #contextClassLoader()} or {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}
-     * */
+    /**
+     * Returns the URL that contains a {@code Class}.
+     * <p>
+     * This searches for the class using {@link ClassLoader#getResource(String)}.
+     * <p>
+     * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
+     * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
+     * 
+     * @return the URL containing the class, null if not found
+     */
     public static URL forClass(Class<?> aClass, ClassLoader... classLoaders) {
         final ClassLoader[] loaders = classLoaders(classLoaders);
         final String resourceName = aClass.getName().replace(".", "/") + ".class";
-
         for (ClassLoader classLoader : loaders) {
             try {
                 final URL url = classLoader.getResource(resourceName);
@@ -94,25 +145,41 @@ public abstract class ClasspathHelper {
                 e.printStackTrace();
             }
         }
-
         return null;
     }
     
-    /** returns urls using {@link java.net.URLClassLoader#getURLs()} up the default classloaders parent hierarchy
-     * <p>using {@link #classLoaders(ClassLoader...)} to get default classloaders
-     **/
+    /**
+     * Returns a set of URLs based on URLs derived from class loaders.
+     * <p>
+     * This finds the URLs using {@link URLClassLoader#getURLs()} using both
+     * {@link #contextClassLoader()} and {@link #staticClassLoader()}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forClassLoader() {
         return forClassLoader(classLoaders());
     }
 
-    /** returns urls using {@link java.net.URLClassLoader#getURLs()} up the classloader parent hierarchy
-     * <p>if optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()} and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}
-     * */
+    /**
+     * Returns a set of URLs based on URLs derived from class loaders.
+     * <p>
+     * This finds the URLs using {@link URLClassLoader#getURLs()} using the specified
+     * class loader, searching up the parent hierarchy.
+     * <p>
+     * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
+     * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forClassLoader(ClassLoader... classLoaders) {
-        final Set<URL> result = Sets.newHashSet();
-
+        final Set<URL> result = Sets.newLinkedHashSet();
         final ClassLoader[] loaders = classLoaders(classLoaders);
-
         for (ClassLoader classLoader : loaders) {
             while (classLoader != null) {
                 if (classLoader instanceof URLClassLoader) {
@@ -124,38 +191,60 @@ public abstract class ClasspathHelper {
                 classLoader = classLoader.getParent();
             }
         }
-
         return result;
     }
 
-    /** returns urls using {@code java.class.path} system property */
+    /**
+     * Returns a set of URLs based on the {@code java.class.path} system property.
+     * <p>
+     * This finds the URLs using the {@code java.class.path} system property.
+     * <p>
+     * The returned set retains the classpath order using {@code LinkedHashSet}.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forJavaClassPath() {
-        Set<URL> urls = Sets.newHashSet();
-
+        Set<URL> urls = Sets.newLinkedHashSet();
         String javaClassPath = System.getProperty("java.class.path");
         if (javaClassPath != null) {
             for (String path : javaClassPath.split(File.pathSeparator)) {
-                try { urls.add(new File(path).toURI().toURL()); }
-                catch (Exception e) { e.printStackTrace(); }
+                try {
+                    urls.add(new File(path).toURI().toURL());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
-
         return urls;
     }
 
-    /** returns urls using {@link ServletContext} in resource path WEB-INF/lib */
+    /**
+     * Returns a set of URLs based on the {@code WEB-INF/lib} folder.
+     * <p>
+     * This finds the URLs using the {@link ServletContext}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forWebInfLib(final ServletContext servletContext) {
-        final Set<URL> urls = Sets.newHashSet();
-
+        final Set<URL> urls = Sets.newLinkedHashSet();
         for (Object urlString : servletContext.getResourcePaths("/WEB-INF/lib")) {
-            try { urls.add(servletContext.getResource((String) urlString)); }
-            catch (MalformedURLException e) { /*fuck off*/ }
+            try {
+                urls.add(servletContext.getResource((String) urlString));
+            } catch (MalformedURLException e) { /*fuck off*/ }
         }
-
         return urls;
     }
 
-    /** returns url using {@link ServletContext} in resource path WEB-INF/classes */
+    /**
+     * Returns the URL of the {@code WEB-INF/classes} folder.
+     * <p>
+     * This finds the URLs using the {@link ServletContext}.
+     * 
+     * @return the set of URLs, not null
+     */
     public static URL forWebInfClasses(final ServletContext servletContext) {
         try {
             final String path = servletContext.getRealPath("/WEB-INF/classes");
@@ -166,33 +255,43 @@ public abstract class ClasspathHelper {
             } else {
                 return servletContext.getResource("/WEB-INF/classes");
             }
-        }
-        catch (MalformedURLException e) { /*fuck off*/ }
-
+        } catch (MalformedURLException e) { /*fuck off*/ }
         return null;
     }
 
-    /** return urls that are in the current class path.
-     * attempts to load the jar manifest, if any, and adds to the result any dependencies it finds. */
+    /**
+     * Returns a set of URLs based on URLs derived from class loaders expanded with Manifest information.
+     * <p>
+     * The {@code MANIFEST.MF} file can contain a {@code Class-Path} entry that defines
+     * additional jar files to be included on the classpath. This method finds the jar files
+     * using the {@link #contextClassLoader()} and {@link #staticClassLoader()}, before
+     * searching for any additional manifest classpaths.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forManifest() {
         return forManifest(forClassLoader());
     }
 
-    /** get the urls that are specified in the manifest of the given url for a jar file.
-     * attempts to load the jar manifest, if any, and adds to the result any dependencies it finds. */
+    /**
+     * Returns a set of URLs from a single URL based on the Manifest information.
+     * <p>
+     * The {@code MANIFEST.MF} file can contain a {@code Class-Path} entry that defines additional
+     * jar files to be included on the classpath. This method takes a single URL, tries to
+     * resolve it as a jar file, and if so, adds any additional manifest classpaths.
+     * The returned set will always contain the input URL.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forManifest(final URL url) {
-        final Set<URL> result = Sets.newHashSet();
-
+        final Set<URL> result = Sets.newLinkedHashSet();
         result.add(url);
-
         try {
             final String part = cleanPath(url);
             File jarFile = new File(part);
             JarFile myJar = new JarFile(part);
-
             URL validUrl = tryToGetValidUrl(jarFile.getPath(), new File(part).getParent(), part);
             if (validUrl != null) { result.add(validUrl); }
-
             final Manifest manifest = myJar.getManifest();
             if (manifest != null) {
                 final String classPath = manifest.getMainAttributes().getValue(new Attributes.Name("Class-Path"));
@@ -206,24 +305,30 @@ public abstract class ClasspathHelper {
         } catch (IOException e) {
             // don't do anything, we're going on the assumption it is a jar, which could be wrong
         }
-
         return result;
     }
 
-    /** get the urls that are specified in the manifest of the given urls.
-     * attempts to load the jar manifest, if any, and adds to the result any dependencies it finds. */
+    /**
+     * Returns a set of URLs by expanding the specified URLs with Manifest information.
+     * <p>
+     * The {@code MANIFEST.MF} file can contain a {@code Class-Path} entry that defines additional
+     * jar files to be included on the classpath. This method takes each URL in turn, tries to
+     * resolve it as a jar file, and if so, adds any additional manifest classpaths.
+     * The returned set will always contain all the input URLs.
+     * <p>
+     * The returned set retains the input order using {@code LinkedHashSet}.
+     * 
+     * @return the set of URLs, not null
+     */
     public static Set<URL> forManifest(final Iterable<URL> urls) {
-        Set<URL> result = Sets.newHashSet();
-
+        Set<URL> result = Sets.newLinkedHashSet();
         // determine if any of the URLs are JARs, and get any dependencies
         for (URL url : urls) {
             result.addAll(forManifest(url));
         }
-
         return result;
     }
 
-    //
     //a little bit cryptic...
     static URL tryToGetValidUrl(String workingDir, String path, String filename) {
         try {
@@ -241,6 +346,12 @@ public abstract class ClasspathHelper {
         return null;
     }
 
+    /**
+     * Cleans the URL.
+     * 
+     * @param url  the URL to clean, not null
+     * @return the path, not null
+     */
     public static String cleanPath(final URL url) {
         String path = url.getPath();
         try {
