@@ -72,6 +72,9 @@ public abstract class ClasspathHelper {
      * <p>
      * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
      * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
      * 
      * @return the set of URLs, not null
      */
@@ -88,11 +91,14 @@ public abstract class ClasspathHelper {
      * <p>
      * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
      * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
      * 
      * @return the set of URLs, not null
      */
     public static Set<URL> forResource(String resourceName, ClassLoader... classLoaders) {
-        final Set<URL> result = Sets.newHashSet();
+        final Set<URL> result = Sets.newLinkedHashSet();
         final ClassLoader[] loaders = classLoaders(classLoaders);
         for (ClassLoader classLoader : loaders) {
             try {
@@ -147,6 +153,9 @@ public abstract class ClasspathHelper {
      * <p>
      * This finds the URLs using {@link URLClassLoader#getURLs()} using both
      * {@link #contextClassLoader()} and {@link #staticClassLoader()}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
      * 
      * @return the set of URLs, not null
      */
@@ -162,11 +171,14 @@ public abstract class ClasspathHelper {
      * <p>
      * If the optional {@link ClassLoader}s are not specified, then both {@link #contextClassLoader()}
      * and {@link #staticClassLoader()} are used for {@link ClassLoader#getResources(String)}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
      * 
      * @return the set of URLs, not null
      */
     public static Set<URL> forClassLoader(ClassLoader... classLoaders) {
-        final Set<URL> result = Sets.newHashSet();
+        final Set<URL> result = Sets.newLinkedHashSet();
         final ClassLoader[] loaders = classLoaders(classLoaders);
         for (ClassLoader classLoader : loaders) {
             while (classLoader != null) {
@@ -186,11 +198,13 @@ public abstract class ClasspathHelper {
      * Returns a set of URLs based on the {@code java.class.path} system property.
      * <p>
      * This finds the URLs using the {@code java.class.path} system property.
+     * <p>
+     * The returned set retains the classpath order using {@code LinkedHashSet}.
      * 
      * @return the set of URLs, not null
      */
     public static Set<URL> forJavaClassPath() {
-        Set<URL> urls = Sets.newHashSet();
+        Set<URL> urls = Sets.newLinkedHashSet();
         String javaClassPath = System.getProperty("java.class.path");
         if (javaClassPath != null) {
             for (String path : javaClassPath.split(File.pathSeparator)) {
@@ -208,11 +222,14 @@ public abstract class ClasspathHelper {
      * Returns a set of URLs based on the {@code WEB-INF/lib} folder.
      * <p>
      * This finds the URLs using the {@link ServletContext}.
+     * <p>
+     * The returned set retains order using {@code LinkedHashSet}, however that order
+     * may not be the same as the classpath order.
      * 
      * @return the set of URLs, not null
      */
     public static Set<URL> forWebInfLib(final ServletContext servletContext) {
-        final Set<URL> urls = Sets.newHashSet();
+        final Set<URL> urls = Sets.newLinkedHashSet();
         for (Object urlString : servletContext.getResourcePaths("/WEB-INF/lib")) {
             try {
                 urls.add(servletContext.getResource((String) urlString));
@@ -267,7 +284,7 @@ public abstract class ClasspathHelper {
      * @return the set of URLs, not null
      */
     public static Set<URL> forManifest(final URL url) {
-        final Set<URL> result = Sets.newHashSet();
+        final Set<URL> result = Sets.newLinkedHashSet();
         result.add(url);
         try {
             final String part = cleanPath(url);
@@ -298,11 +315,13 @@ public abstract class ClasspathHelper {
      * jar files to be included on the classpath. This method takes each URL in turn, tries to
      * resolve it as a jar file, and if so, adds any additional manifest classpaths.
      * The returned set will always contain all the input URLs.
+     * <p>
+     * The returned set retains the input order using {@code LinkedHashSet}.
      * 
      * @return the set of URLs, not null
      */
     public static Set<URL> forManifest(final Iterable<URL> urls) {
-        Set<URL> result = Sets.newHashSet();
+        Set<URL> result = Sets.newLinkedHashSet();
         // determine if any of the URLs are JARs, and get any dependencies
         for (URL url : urls) {
             result.addAll(forManifest(url));
