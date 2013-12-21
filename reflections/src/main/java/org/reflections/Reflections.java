@@ -3,7 +3,6 @@ package org.reflections;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -121,7 +120,7 @@ public class Reflections {
      */
     public Reflections(final Configuration configuration) {
         this.configuration = configuration;
-        store = new Store(configuration.getExecutorService() != null); //concurrent?
+        store = new Store(configuration);
 
         if (configuration.getScanners() != null && !configuration.getScanners().isEmpty()) {
             //inject to scanners
@@ -176,7 +175,7 @@ public class Reflections {
 
     protected Reflections() {
         configuration = new ConfigurationBuilder();
-        store = new Store(false);
+        store = new Store(configuration);
     }
 
     //
@@ -269,7 +268,7 @@ public class Reflections {
     public static Reflections collect(final String packagePrefix, final Predicate<String> resourceNameFilter, @Nullable Serializer... optionalSerializer) {
         Serializer serializer = optionalSerializer != null && optionalSerializer.length == 1 ? optionalSerializer[0] : new XmlSerializer();
 
-        Set<URL> urls = ClasspathHelper.forPackage(packagePrefix);
+        Collection<URL> urls = ClasspathHelper.forPackage(packagePrefix);
         if (urls.isEmpty()) return null;
         long start = System.currentTimeMillis();
         final Reflections reflections = new Reflections();

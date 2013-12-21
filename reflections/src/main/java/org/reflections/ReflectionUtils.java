@@ -366,13 +366,25 @@ public abstract class ReflectionUtils {
                 type = typeName;
             }
 
+            List<ReflectionsException> reflectionsExceptions = Lists.newArrayList();
             for (ClassLoader classLoader : ClasspathHelper.classLoaders(classLoaders)) {
                 if (type.contains("[")) {
                     try { return Class.forName(type, false, classLoader); }
-                    catch (Throwable ex) { /*continue*/ }
+                    catch (Throwable e) {
+                        reflectionsExceptions.add(new ReflectionsException("could not get type for name " + typeName, e));
+                    }
                 }
                 try { return classLoader.loadClass(type); }
-                catch (Throwable e) { /*continue*/ }
+                catch (Throwable e) {
+                    reflectionsExceptions.add(new ReflectionsException("could not get type for name " + typeName, e));
+                }
+            }
+
+            if (Reflections.log != null) {
+                for (ReflectionsException reflectionsException : reflectionsExceptions) {
+                    Reflections.log.debug("could not get type for name " + typeName + " from any class loader",
+                            reflectionsException);
+                }
             }
 
             throw new ReflectionsException("could not get type for name " + typeName);

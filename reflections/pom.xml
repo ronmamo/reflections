@@ -15,16 +15,22 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <!--<version>12.0</version>  &lt;!&ndash;jdk1.6+&ndash;&gt;-->
-            <version>11.0.2</version> <!-- case: when only jdk1.5 is acceptable -->
+            <!--<version>10.0</version>--> <!-- binary compatible with 10.0+ -->
+            <version>15.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.16.1-GA</version> <!-- case: jdk1.5-->
-            <!--<version>3.17.1-GA</version>--> <!-- case: > jdk1.6 -->
+            <version>3.18.1-GA</version>
             <optional>false</optional> <!-- case: when not actually scanning with javassist or if using {@link Reflections.collect()} -->
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>2.0.1</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

@@ -90,12 +90,16 @@ public class ConfigurationBuilder implements Configuration {
         List<Scanner> scanners = Lists.newArrayList();
 
         for (Object param : parameters) {
-            if (param instanceof String) { builder.addUrls(ClasspathHelper.forPackage((String) param, classLoaders)); filter.include(prefix((String) param)); }
+            if (param instanceof String) {
+                builder.addUrls(ClasspathHelper.forPackage((String) param, classLoaders));
+                filter.include(prefix((String) param));
+            }
             else if (param instanceof Class) {
                 if (Scanner.class.isAssignableFrom((Class) param)) {
                     try { builder.addScanners(((Scanner) ((Class) param).newInstance())); } catch (Exception e) { /*fallback*/ }
                 }
-                builder.addUrls(ClasspathHelper.forClass((Class) param, classLoaders)); filter.includePackage(((Class) param));
+                builder.addUrls(ClasspathHelper.forClass((Class) param, classLoaders));
+                filter.includePackage(((Class) param));
             }
             else if (param instanceof Scanner) { scanners.add((Scanner) param); }
             else if (param instanceof URL) { builder.addUrls((URL) param); }
@@ -116,17 +120,13 @@ public class ConfigurationBuilder implements Configuration {
         return builder;
     }
 
-    /** instantiates a Reflections object using this Configuration */
-    public Reflections build() {
-        return new Reflections(this);
-    }
-
+    @Nonnull
     public Set<Scanner> getScanners() {
 		return scanners;
 	}
 
     /** set the scanners instances for scanning different metadata */
-    public ConfigurationBuilder setScanners(final Scanner... scanners) {
+    public ConfigurationBuilder setScanners(@Nonnull final Scanner... scanners) {
         this.scanners.clear();
         return addScanners(scanners);
     }
@@ -137,6 +137,7 @@ public class ConfigurationBuilder implements Configuration {
         return this;
     }
 
+    @Nonnull
     public Set<URL> getUrls() {
         return urls;
     }
@@ -144,7 +145,7 @@ public class ConfigurationBuilder implements Configuration {
     /** set the urls to be scanned
      * <p>use {@link org.reflections.util.ClasspathHelper} convenient methods to get the relevant urls
      * */
-    public ConfigurationBuilder setUrls(final Collection<URL> urls) {
+    public ConfigurationBuilder setUrls(@Nonnull final Collection<URL> urls) {
 		this.urls = Sets.newHashSet(urls);
         return this;
 	}
@@ -182,7 +183,8 @@ public class ConfigurationBuilder implements Configuration {
             try {
                 return (metadataAdapter = new JavassistAdapter());
             } catch (Throwable e) {
-                if (Reflections.log != null) Reflections.log.warn("could not create JavassistAdapter, using JavaReflectionAdapter", e);
+                if (Reflections.log != null)
+                    Reflections.log.warn("could not create JavassistAdapter, using JavaReflectionAdapter", e);
                 return (metadataAdapter = new JavaReflectionAdapter());
             }
         }
@@ -205,12 +207,13 @@ public class ConfigurationBuilder implements Configuration {
         return this;
     }
 
+    @Nullable
     public ExecutorService getExecutorService() {
         return executorService;
     }
 
     /** sets the executor service used for scanning. */
-    public ConfigurationBuilder setExecutorService(ExecutorService executorService) {
+    public ConfigurationBuilder setExecutorService(@Nullable ExecutorService executorService) {
         this.executorService = executorService;
         return this;
     }
@@ -239,6 +242,7 @@ public class ConfigurationBuilder implements Configuration {
     }
 
     /** get class loader, might be used for scanning or resolving methods/fields */
+    @Nullable
     public ClassLoader[] getClassLoaders() {
         return classLoaders;
     }

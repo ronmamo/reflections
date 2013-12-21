@@ -5,6 +5,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 import org.reflections.scanners.*;
 import org.reflections.scanners.Scanner;
+import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.Utils;
 
 import javax.annotation.Nullable;
@@ -25,11 +26,17 @@ public class Store {
 
 	private final Map<String/*indexName*/, Multimap<String, String>> storeMap;
     private final transient boolean concurrent;
+    private final transient Configuration configuration;
 
-    protected Store() { this(false); } //used via reflection
+    //used via reflection
+    @SuppressWarnings("UnusedDeclaration")
+    protected Store() {
+        this(new ConfigurationBuilder());
+    }
 
-    protected Store(boolean concurrent) {
-        this.concurrent = concurrent;
+    public Store(Configuration configuration) {
+        this.configuration = configuration;
+        concurrent = configuration.getExecutorService() != null;
         storeMap = new HashMap<String, Multimap<String, String>>();
     }
 
@@ -237,7 +244,7 @@ public class Store {
     //support
     /** is the given type name a class. <p>causes class loading */
     public boolean isClass(String type) {
-        return !ReflectionUtils.forName(type).isInterface();
+        return !ReflectionUtils.forName(type, configuration.getClassLoaders()).isInterface();
     }
 
     /** is the given type is an annotation, based on the metadata stored by TypeAnnotationsScanner */

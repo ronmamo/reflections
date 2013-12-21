@@ -245,19 +245,7 @@ public class JavaCodeSerializer implements Serializer {
     }
 
     private String normalize(String candidate) {
-//        String normalized = omitPrefixes(candidate);
-        String normalized = candidate;
-        return normalized.replace(dotSeparator, pathSeparator);
-    }
-
-    private String omitPrefixes(String candidate) {
-        String prefixes[] = {"java.lang.annotation.", "org.reflections."};
-        for (String prefix : prefixes) {
-            if (candidate.startsWith(prefix)) {
-                return candidate.substring(prefix.length());
-            }
-        }
-        return candidate;
+        return candidate.replace(dotSeparator, pathSeparator);
     }
 
     private String getNonDuplicateName(String candidate, List<String> prev) {
@@ -334,5 +322,4 @@ public class JavaCodeSerializer implements Serializer {
             throw new ReflectionsException("could not resolve to method " + aMethod.getName(), e);
         }
     }
-
 }

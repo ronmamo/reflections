@@ -21,7 +21,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Set;
 import java.util.jar.JarFile;
 
 import static org.junit.Assert.assertFalse;
@@ -117,7 +116,7 @@ public class VfsTest {
     }
 
     @Test public void dirWithSpaces() {
-        Set<URL> urls = ClasspathHelper.forPackage("dir+with spaces");
+        Collection<URL> urls = ClasspathHelper.forPackage("dir+with spaces");
         assertFalse(urls.isEmpty());
         for (URL url : urls) {
             testVfsDir(url);

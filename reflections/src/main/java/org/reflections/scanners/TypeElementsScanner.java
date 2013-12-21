@@ -44,6 +44,8 @@ public class TypeElementsScanner extends AbstractScanner {
     public TypeElementsScanner includeFields(boolean include) { includeFields = include; return this; }
     public TypeElementsScanner includeMethods() { return includeMethods(true); }
     public TypeElementsScanner includeMethods(boolean include) { includeMethods = include; return this; }
+    public TypeElementsScanner includeAnnotations() { return includeAnnotations(true); }
+    public TypeElementsScanner includeAnnotations(boolean include) { includeAnnotations = include; return this; }
     public TypeElementsScanner publicOnly(boolean only) { publicOnly = only; return this; }
     public TypeElementsScanner publicOnly() { return publicOnly(true); }
 }

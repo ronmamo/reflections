@@ -70,7 +70,7 @@ public abstract class Utils {
             String[] parameterNames = methodParameters.split(",");
             List<Class<?>> result = new ArrayList<Class<?>>(parameterNames.length);
             for (String name : parameterNames) {
-                result.add(forName(name.trim()));
+                result.add(forName(name.trim(), classLoaders));
             }
             parameterTypes = result.toArray(new Class<?>[result.size()]);
         }
@@ -78,7 +78,7 @@ public abstract class Utils {
         Class<?> aClass = forName(className, classLoaders);
         try {
             if (isConstructor(descriptor)) {
-                return aClass.getConstructor(parameterTypes);
+                return aClass.getDeclaredConstructor(parameterTypes);
             } else {
                 return aClass.getDeclaredMethod(methodName, parameterTypes);
             }
