@@ -13,50 +13,56 @@ Intro
 -----
 Add Reflections to your project. for maven projects just add this dependency:
 
-     <dependency>
-         <groupId>org.reflections</groupId>
-         <artifactId>reflections</artifactId>
-         <version>0.9.9-RC1</version>
-     </dependency>
+```xml
+<dependency>
+    <groupId>org.reflections</groupId>
+    <artifactId>reflections</artifactId>
+    <version>0.9.9-RC1</version>
+</dependency>
+```
 
 A typical use of Reflections would be:
 
-     Reflections reflections = new Reflections("my.project");
+```java
+Reflections reflections = new Reflections("my.project");
 
-     Set<Class<? extends SomeType>> subTypes = reflections.getSubTypesOf(SomeType.class);
+Set<Class<? extends SomeType>> subTypes = reflections.getSubTypesOf(SomeType.class);
 
-     Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(SomeAnnotation.class);
+Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(SomeAnnotation.class);
+```
 
 Usage
 -----
 Basically, to use Reflections first instantiate it with Urls and Scanners
 
-     //scan Urls that contain 'my.package', include inputs starting with 'my.package', use the default scanners
-     Reflections reflections = new Reflections("my.package");
+```java
+//scan Urls that contain 'my.package', include inputs starting with 'my.package', use the default scanners
+Reflections reflections = new Reflections("my.package");
 
-     //or using ConfigurationBuilder
-     new Reflections(new ConfigurationBuilder()
-          .setUrls(ClasspathHelper.forPackage("my.project.prefix"))
-          .setScanners(new SubTypesScanner(), 
-                       new TypeAnnotationsScanner().filterResultsBy(optionalFilter), ...),
-          .filterInputsBy(new FilterBuilder().includePackage("my.project.prefix"))
-          ...);
-     
+//or using ConfigurationBuilder
+new Reflections(new ConfigurationBuilder()
+     .setUrls(ClasspathHelper.forPackage("my.project.prefix"))
+     .setScanners(new SubTypesScanner(), 
+                  new TypeAnnotationsScanner().filterResultsBy(optionalFilter), ...),
+     .filterInputsBy(new FilterBuilder().includePackage("my.project.prefix"))
+     ...);
+```
 Then use the convenient query methods: (depending on the scanners configured)
 
-     Set<Class<? extends Module>> modules = reflections.getSubTypesOf(com.google.inject.Module.class);
-     Set<Class<?>> singletons =             reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
-     
-     Set<String> properties =       reflections.getResources(Pattern.compile(".*\\.properties"));
-     Set<Constructor> injectables = reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
-     Set<Method> deprecateds =      reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
-     Set<Field> ids =               reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
+```java
+Set<Class<? extends Module>> modules = reflections.getSubTypesOf(com.google.inject.Module.class);
+Set<Class<?>> singletons =             reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
 
-     Set<Method> someMethods =      reflections.getMethodsMatchParams(long.class, int.class);
-     Set<Method> voidMethods =      reflections.getMethodsReturn(void.class);
-     Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
-     Set<Method> floatToString =    reflections.getConverters(Float.class, String.class);
+Set<String> properties =       reflections.getResources(Pattern.compile(".*\\.properties"));
+Set<Constructor> injectables = reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
+Set<Method> deprecateds =      reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
+Set<Field> ids =               reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
 
+Set<Method> someMethods =      reflections.getMethodsMatchParams(long.class, int.class);
+Set<Method> voidMethods =      reflections.getMethodsReturn(void.class);
+Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
+Set<Method> floatToString =    reflections.getConverters(Float.class, String.class);
+```
 
 There are some convenient methods in ClasspathHelper to get URLs for package, for class, for classloader and so.
 If no scanners are configured, the default one will be used - SubTypesScanner and TypeAnnotationsScanner.
@@ -73,17 +79,18 @@ Reflections also contains some convenient java reflection helper methods for get
 
 for example:
 
-     import static org.reflections.ReflectionUtils.*;
+```java
+import static org.reflections.ReflectionUtils.*;
 
-     Set<Method> getters = getAllMethods(someClass,
-          withModifier(Modifier.PUBLIC), withPrefix("get"), withParametersCount(0));
+Set<Method> getters = getAllMethods(someClass,
+  withModifier(Modifier.PUBLIC), withPrefix("get"), withParametersCount(0));
 
-     //or
-     Set<Method> listMethods = getAllMethods(List.class,
-          withParametersAssignableTo(Collection.class), withReturnType(boolean.class));
+//or
+Set<Method> listMethods = getAllMethods(List.class,
+  withParametersAssignableTo(Collection.class), withReturnType(boolean.class));
 
-     Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), withTypeAssignableTo(type));
-
+Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), withTypeAssignableTo(type));
+```
 
 *See more in the [ReflectionUtils javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/ReflectionUtils.html)*
 
@@ -95,30 +102,32 @@ making it available at runtime without re-scanning the classpath - thus reducing
 
 Use this maven configuration in your pom file:
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.reflections</groupId>
-                <artifactId>reflections-maven</artifactId>
-                <version>the latest version...</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>reflections</goal>
-                        </goals>
-                        <phase>process-classes</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections-maven</artifactId>
+            <version>the latest version...</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>reflections</goal>
+                    </goals>
+                    <phase>process-classes</phase>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
 
 Then, on runtime:
 
-        Reflections reflections =
-                isProduction() ? Reflections.collect() : new Reflections("your.package.here");
-
+```java
+Reflections reflections =
+        isProduction() ? Reflections.collect() : new Reflections("your.package.here");
+```
 
 *Check the [ReflectionsMojo](http://code.google.com/p/reflections/wiki/ReflectionsMojo) wiki page*
 
@@ -126,9 +135,11 @@ ReflectionsSpring
 -----------------
 Give a try to the new Reflections spring component-scan integration.
 
-          <reflections:component-scan base-package="my.package.prefix"
-              collect="false" save="false" parallel="true">
-          </reflections:component-scan>
+```xml
+<reflections:component-scan base-package="my.package.prefix"
+    collect="false" save="false" parallel="true">
+</reflections:component-scan>
+```
 
 *More info [here](https://code.google.com/p/reflections/wiki/ReflectionsSpring)
 
