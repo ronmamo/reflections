@@ -144,11 +144,10 @@ Reflections can also:
 
 Contribute
 ----------
-You can easily extend Reflections by creating your specialized Scanner class and provide a query method on the Store object
-
 Patches and extension are welcomed!
 
-The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. this library is given as an act of giving and generosity, [Dāna](http://en.wikipedia.org/wiki/D%C4%81na)
+The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. 
+This library is given as an act of giving and generosity, [Dāna](http://en.wikipedia.org/wiki/D%C4%81na)
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WLN75KYSR6HAY)
 
 _Cheers_
