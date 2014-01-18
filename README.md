@@ -144,7 +144,7 @@ Reflections can also:
 
 Contribute
 ----------
-Patches and extension are welcomed!
+Patches and extensions are welcomed!
 
 The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. 
 This library is given as an act of giving and generosity, [Dāna](http://en.wikipedia.org/wiki/D%C4%81na)
