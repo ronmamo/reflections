@@ -131,18 +131,6 @@ Reflections reflections =
 
 *Check the [ReflectionsMojo](http://code.google.com/p/reflections/wiki/ReflectionsMojo) wiki page*
 
-ReflectionsSpring
------------------
-Give a try to the new Reflections spring component-scan integration.
-
-```xml
-<reflections:component-scan base-package="my.package.prefix"
-    collect="false" save="false" parallel="true">
-</reflections:component-scan>
-```
-
-*More info [here](https://code.google.com/p/reflections/wiki/ReflectionsSpring)
-
 Other use cases
 ---------------
 Reflections can also:
@@ -150,6 +138,7 @@ Reflections can also:
   * serialize scanned metadata to xml/json
   * collect saved metadata on bootstrap time for fastest load time without scanning
   * save your model entities metadata as .java file, so you can reference types/fields/methods/annotation in a static manner
+  * initial [Spring component scan](https://code.google.com/p/reflections/wiki/ReflectionsSpring)
 
 *See the [UseCases](http://code.google.com/p/reflections/wiki/UseCases) wiki page*
 
