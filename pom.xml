@@ -14,6 +14,7 @@
     <modules>
         <module>reflections</module>
         <module>reflections-maven</module>
+        <module>reflections-jboss</module>
     </modules>
 
     <licenses>

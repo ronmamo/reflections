@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections-parent</artifactId>
+        <version>0.9.9-RC1</version>
+    </parent>
+
+    <artifactId>reflections-jboss</artifactId>
+    <name>Reflections JBoss VFS support</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-vfs</artifactId>
+            <version>3.0.1.GA</version> <!-- jdk1.6+ -->
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
