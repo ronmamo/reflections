@@ -213,8 +213,15 @@ public abstract class Vfs {
                 return "jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol());
             }
 
+            private final String JAR_SUFFIX = ".jar!/";
+            private final String CUT_SUFFIX = "!/";
+
             public Dir createDir(URL url) throws Exception {
                 try {
+                    String externalForm = url.toExternalForm();
+                    if (externalForm.endsWith(JAR_SUFFIX)) {
+                        url = new URL(externalForm.substring(0, externalForm.length() - CUT_SUFFIX.length()));
+                    }
                     URLConnection urlConnection = url.openConnection();
                     if (urlConnection instanceof JarURLConnection) {
                             return new ZipDir(((JarURLConnection) urlConnection).getJarFile());

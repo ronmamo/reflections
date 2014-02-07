@@ -8,20 +8,20 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.reflections.adapters.JavassistAdapter;
 import org.reflections.util.ClasspathHelper;
+import org.reflections.util.Utils;
 import org.reflections.vfs.JarInputDir;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
 
 import javax.annotation.Nullable;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -213,8 +213,46 @@ public class VfsTest {
     }
 
     @Test
-    public void vfsFromJarWithInnerJars() {
-        //todo?
+    public void vfsFromJarWithInnerJars() throws IOException {
+        File tmp = File.createTempFile("vfsFromJarWithInnerJars", "tmp");
+        tmp.deleteOnExit();
+
+        JarOutputStream jarOutputStream = new JarOutputStream(new BufferedOutputStream(new FileOutputStream(tmp)));
+        try {
+            final URL jarUrl = getSomeJar();
+            jarOutputStream.putNextEntry(new ZipEntry("embedded.jar"));
+
+            byte[] buf = new byte[8192];
+            int len;
+            InputStream in = jarUrl.openStream();
+            try {
+                while ((len=in.read(buf, 0, buf.length)) > 0) {
+                    jarOutputStream.write(buf, 0, len);
+                }
+            } finally {
+                in.close();
+            }
+        } finally {
+            jarOutputStream.close();
+        }
+
+        JavassistAdapter javassistAdapter = new JavassistAdapter();
+
+        Iterable<Vfs.File> files = Vfs.fromURL(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar")).getFiles();
+        for (Vfs.File file : files) {
+            if (file.getName().endsWith(".class")) {
+                ClassFile classFile = javassistAdapter.getOfCreateClassObject(file);
+                System.out.println(classFile.getName() + " [" + file.getName() + " - " + file.getRelativePath() + "]");
+            }
+        }
+
+        files = Vfs.fromURL(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar!/")).getFiles();
+        for (Vfs.File file : files) {
+            if (file.getName().endsWith(".class")) {
+                ClassFile classFile = javassistAdapter.getOfCreateClassObject(file);
+                System.out.println(classFile.getName() + " [" + file.getName() + " - " + file.getRelativePath() + "]");
+            }
+        }
     }
 
     @Test
