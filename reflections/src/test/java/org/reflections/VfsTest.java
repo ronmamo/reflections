@@ -236,23 +236,8 @@ public class VfsTest {
             jarOutputStream.close();
         }
 
-        JavassistAdapter javassistAdapter = new JavassistAdapter();
-
-        Iterable<Vfs.File> files = Vfs.fromURL(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar")).getFiles();
-        for (Vfs.File file : files) {
-            if (file.getName().endsWith(".class")) {
-                ClassFile classFile = javassistAdapter.getOfCreateClassObject(file);
-                System.out.println(classFile.getName() + " [" + file.getName() + " - " + file.getRelativePath() + "]");
-            }
-        }
-
-        files = Vfs.fromURL(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar!/")).getFiles();
-        for (Vfs.File file : files) {
-            if (file.getName().endsWith(".class")) {
-                ClassFile classFile = javassistAdapter.getOfCreateClassObject(file);
-                System.out.println(classFile.getName() + " [" + file.getName() + " - " + file.getRelativePath() + "]");
-            }
-        }
+        testVfsDir(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar"));
+        testVfsDir(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar!/"));
     }
 
     @Test

@@ -222,10 +222,7 @@ public abstract class Vfs {
                     if (externalForm.endsWith(JAR_SUFFIX)) {
                         url = new URL(externalForm.substring(0, externalForm.length() - CUT_SUFFIX.length()));
                     }
-                    URLConnection urlConnection = url.openConnection();
-                    if (urlConnection instanceof JarURLConnection) {
-                            return new ZipDir(((JarURLConnection) urlConnection).getJarFile());
-                    }
+                    return new JarInputDir(url);
                 } catch (Throwable e) { /*fallback*/ }
                 java.io.File file = getFile(url);
                 if (file != null) {
