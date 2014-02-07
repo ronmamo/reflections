@@ -1,7 +1,6 @@
 package org.reflections.vfs;
 
-import org.reflections.ReflectionsException;
-
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
@@ -10,39 +9,25 @@ import java.util.zip.ZipEntry;
 *
 */
 public class JarInputFile implements Vfs.File {
-    private final ZipEntry entry;
-    private final JarInputDir jarInputDir;
-    private final long fromIndex;
-    private final long endIndex;
+    private final String name;
+    private final String path;
+    private final byte[] data;
 
-    public JarInputFile(ZipEntry entry, JarInputDir jarInputDir, long cursor, long nextCursor) {
-        this.entry = entry;
-        this.jarInputDir = jarInputDir;
-        fromIndex = cursor;
-        endIndex = nextCursor;
+    public JarInputFile(ZipEntry entry, byte[] data) {
+        this.path = entry.getName();
+        this.name = this.path.substring(path.lastIndexOf("/") + 1);
+        this.data = data;
     }
 
     public String getName() {
-        String name = entry.getName();
-        return name.substring(name.lastIndexOf("/") + 1);
+        return name;
     }
 
     public String getRelativePath() {
-        return entry.getName();
+        return path;
     }
 
     public InputStream openInputStream() throws IOException {
-        return new InputStream() {
-            @Override
-            public int read() throws IOException {
-                if (jarInputDir.cursor >= fromIndex && jarInputDir.cursor <= endIndex) {
-                    int read = jarInputDir.jarInputStream.read();
-                    jarInputDir.cursor++;
-                    return read;
-                } else {
-                    throw new ReflectionsException("could not read input stream, cursor beyond endInputStream");
-                }
-            }
-        };
+        return new ByteArrayInputStream(data);
     }
 }
