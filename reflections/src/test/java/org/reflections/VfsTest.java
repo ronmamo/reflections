@@ -1,9 +1,21 @@
 package org.reflections;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
-import javassist.bytecode.ClassFile;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
+
+import javax.annotation.Nullable;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reflections.adapters.JavassistAdapter;
@@ -12,16 +24,11 @@ import org.reflections.vfs.JarInputDir;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
 
-import javax.annotation.Nullable;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.jar.JarFile;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
+
+import javassist.bytecode.ClassFile;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -213,8 +220,31 @@ public class VfsTest {
     }
 
     @Test
-    public void vfsFromJarWithInnerJars() {
-        //todo?
+    public void vfsFromJarWithInnerJars() throws IOException {
+        File tmp = File.createTempFile("vfsFromJarWithInnerJars", ".jar");
+        tmp.deleteOnExit();
+
+        JarOutputStream jarOutputStream = new JarOutputStream(new BufferedOutputStream(new FileOutputStream(tmp)));
+        try {
+            final URL jarUrl = getSomeJar();
+            jarOutputStream.putNextEntry(new ZipEntry("embedded.jar"));
+
+            byte[] buf = new byte[8192];
+            int len;
+            InputStream in = jarUrl.openStream();
+            try {
+                while ((len=in.read(buf, 0, buf.length)) > 0) {
+                    jarOutputStream.write(buf, 0, len);
+                }
+            } finally {
+                in.close();
+            }
+        } finally {
+            jarOutputStream.close();
+        }
+
+        testVfsDir(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar"));
+        testVfsDir(new URL("jar:file:" + tmp.getAbsolutePath() + "!/embedded.jar!/"));
     }
 
     @Test

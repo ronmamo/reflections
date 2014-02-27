@@ -1,21 +1,30 @@
 package org.reflections.vfs;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import org.apache.commons.vfs2.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.jar.JarFile;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.VFS;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.Utils;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.*;
-import java.util.*;
-import java.util.jar.JarFile;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * a simple virtual file system bridge
@@ -213,12 +222,12 @@ public abstract class Vfs {
                 return "jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol());
             }
 
+            private final String JAR_SUFFIX = ".jar!/";
+            private final String CUT_SUFFIX = "!/";
+
             public Dir createDir(URL url) throws Exception {
                 try {
-                    URLConnection urlConnection = url.openConnection();
-                    if (urlConnection instanceof JarURLConnection) {
-                            return new ZipDir(((JarURLConnection) urlConnection).getJarFile());
-                    }
+                    return new JarInputDir(url);
                 } catch (Throwable e) { /*fallback*/ }
                 java.io.File file = getFile(url);
                 if (file != null) {
