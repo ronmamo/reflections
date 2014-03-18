@@ -79,8 +79,11 @@ public interface CommonsVfs2UrlType {
 
             protected List<FileObject> listFiles(final FileObject file) {
                 try {
-                    FileObject[] files = file.getChildren();
-                    return files != null ? Lists.newArrayList(files) : new ArrayList<FileObject>();
+					FileObject[] files = null;
+					if (file.getType().hasChildren()) {
+						files = file.getChildren();
+					}
+					return files != null ? Lists.newArrayList(files) : new ArrayList<FileObject>(); 
                 } catch (FileSystemException e) {
                     throw new RuntimeException(e);
                 }
