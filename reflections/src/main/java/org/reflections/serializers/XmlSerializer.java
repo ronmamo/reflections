@@ -1,6 +1,5 @@
 package org.reflections.serializers;
 
-import com.google.common.collect.Multimap;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentFactory;
@@ -10,12 +9,12 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
+import org.reflections.Store;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.Utils;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
-import java.util.Map;
 
 /** serialization of Reflections to xml
  *
@@ -59,7 +58,7 @@ public class XmlSerializer implements Serializer {
                 Element values = entry.element("values");
                 for (Object o3 : values.elements()) {
                     Element value = (Element) o3;
-                    reflections.getStore().getOrCreate(index.getName()).put(key.getText(), value.getText());
+                    reflections.getStore().get(index.getName()).put(key.getText(), value.getText());
                 }
             }
         }
@@ -98,7 +97,7 @@ public class XmlSerializer implements Serializer {
     }
 
     private Document createDocument(final Reflections reflections) {
-        final Map<String, Multimap<String, String>> map = reflections.getStore().getStoreMap();
+        Store map = reflections.getStore();
 
         Document document = DocumentFactory.getInstance().createDocument();
         Element root = document.addElement("Reflections");
