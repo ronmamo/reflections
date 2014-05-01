@@ -2,6 +2,7 @@ package org.reflections;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -22,6 +23,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
@@ -51,6 +53,8 @@ import static org.reflections.util.Utils.*;
  *     <li>get all types/constructors/methods/fields annotated with some annotation, optionally with annotation parameters matching
  *     <li>get all resources matching matching a regular expression
  *     <li>get all methods with specific signature including parameters, parameter annotations and return type
+ *     <li>get all methods parameter names
+ *     <li>get all fields/methods/constructors usages in code
  * </ul>
  * <p>A typical use of Reflections would be:
  * <pre>
@@ -87,9 +91,15 @@ import static org.reflections.util.Utils.*;
  *       Set&#60Method> voidMethods =      reflections.getMethodsReturn(void.class);
  *       Set&#60Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
  *       Set&#60Method> floatToString =    reflections.getConverters(Float.class, String.class);
+ *       List&#60String> parameterNames =  reflections.getMethodsParamNames(Method.class);
+ *
+ *       Set&#60Member> fieldUsage =       reflections.getFieldUsage(Field.class);
+ *       Set&#60Member> methodUsage =      reflections.getMethodUsage(Method.class);
+ *       Set&#60Member> constructorUsage = reflections.getConstructorUsage(Constructor.class);
  * </pre>
  * <p>You can use other scanners defined in Reflections as well, such as: SubTypesScanner, TypeAnnotationsScanner (both default), 
- * ResourcrsScanner, MethodAnnotationsScanner, ConstructorAnnotationsScanner, FieldAnnotationsScanner, MethodParameterScanner or any custom scanner.
+ * ResourcesScanner, MethodAnnotationsScanner, ConstructorAnnotationsScanner, FieldAnnotationsScanner,
+ * MethodParameterScanner, MethodParameterNamesScanner, MemberUsageScanner or any custom scanner.
  * <p>use {@link #getStore()} to access and query the store directly
  * <p>in order to save a metadata use {@link #save(String)} or {@link #save(String, org.reflections.serializers.Serializer)}
  * for example with {@link org.reflections.serializers.XmlSerializer} or {@link org.reflections.serializers.JavaCodeSerializer}
@@ -106,7 +116,7 @@ public class Reflections {
     protected Store store;
 
     /**
-     * constructs a Reflections instance and scan according to given {@link Configuration}
+     * constructs a Reflections instance and scan according to given {@link org.reflections.Configuration}
      * <p>it is preferred to use {@link org.reflections.util.ConfigurationBuilder}
      */
     public Reflections(final Configuration configuration) {
@@ -126,12 +136,12 @@ public class Reflections {
 
     /**
      * a convenient constructor for scanning within a package prefix.
-     * <p>this actually create a {@link Configuration} with:
+     * <p>this actually create a {@link org.reflections.Configuration} with:
      * <br> - urls that contain resources with name {@code prefix}
      * <br> - filterInputsBy where name starts with the given {@code prefix}
-     * <br> - scanners set to the given {@code scanners}, otherwise defaults to {@link TypeAnnotationsScanner} and {@link SubTypesScanner}.
-     * @param prefix package prefix, to be used with {@link ClasspathHelper#forPackage(String, ClassLoader...)} )}
-     * @param scanners optionally supply scanners, otherwise defaults to {@link TypeAnnotationsScanner} and {@link SubTypesScanner}
+     * <br> - scanners set to the given {@code scanners}, otherwise defaults to {@link org.reflections.scanners.TypeAnnotationsScanner} and {@link org.reflections.scanners.SubTypesScanner}.
+     * @param prefix package prefix, to be used with {@link org.reflections.util.ClasspathHelper#forPackage(String, ClassLoader...)} )}
+     * @param scanners optionally supply scanners, otherwise defaults to {@link org.reflections.scanners.TypeAnnotationsScanner} and {@link org.reflections.scanners.SubTypesScanner}
      */
     public Reflections(final String prefix, @Nullable final Scanner... scanners) {
         this((Object) prefix, scanners);
@@ -140,15 +150,15 @@ public class Reflections {
     /**
      * a convenient constructor for Reflections, where given {@code Object...} parameter types can be either:
      * <ul>
-     *     <li>{@link String} - would add urls using {@link ClasspathHelper#forPackage(String, ClassLoader...)} ()}</li>
-     *     <li>{@link Class} - would add urls using {@link ClasspathHelper#forClass(Class, ClassLoader...)} </li>
-     *     <li>{@link ClassLoader} - would use this classloaders in order to find urls in {@link ClasspathHelper#forPackage(String, ClassLoader...)} and {@link ClasspathHelper#forClass(Class, ClassLoader...)}</li>
-     *     <li>{@link Scanner} - would use given scanner, overriding the default scanners</li>
-     *     <li>{@link URL} - would add the given url for scanning</li>
+     *     <li>{@link String} - would add urls using {@link org.reflections.util.ClasspathHelper#forPackage(String, ClassLoader...)} ()}</li>
+     *     <li>{@link Class} - would add urls using {@link org.reflections.util.ClasspathHelper#forClass(Class, ClassLoader...)} </li>
+     *     <li>{@link ClassLoader} - would use this classloaders in order to find urls in {@link org.reflections.util.ClasspathHelper#forPackage(String, ClassLoader...)} and {@link org.reflections.util.ClasspathHelper#forClass(Class, ClassLoader...)}</li>
+     *     <li>{@link org.reflections.scanners.Scanner} - would use given scanner, overriding the default scanners</li>
+     *     <li>{@link java.net.URL} - would add the given url for scanning</li>
      *     <li>{@link Object[]} - would use each element as above</li>
      * </ul>
      *
-     * use any parameter type in any order. this constructor uses instanceof on each param and instantiate a {@link ConfigurationBuilder} appropriately.
+     * use any parameter type in any order. this constructor uses instanceof on each param and instantiate a {@link org.reflections.util.ConfigurationBuilder} appropriately.
      * if you prefer the usual statically typed constructor, don't use this, although it can be very useful.
      *
      * <br><br>for example:
@@ -260,7 +270,7 @@ public class Reflections {
      * <p>
      * it is preferred to use a designated resource prefix (for example META-INF/reflections but not just META-INF),
      * so that relevant urls could be found much faster
-     * @param optionalSerializer - optionally supply one serializer instance. if not specified or null, {@link XmlSerializer} will be used
+     * @param optionalSerializer - optionally supply one serializer instance. if not specified or null, {@link org.reflections.serializers.XmlSerializer} will be used
      */
     public static Reflections collect(final String packagePrefix, final Predicate<String> resourceNameFilter, @Nullable Serializer... optionalSerializer) {
         Serializer serializer = optionalSerializer != null && optionalSerializer.length == 1 ? optionalSerializer[0] : new XmlSerializer();
@@ -424,7 +434,8 @@ public class Reflections {
      * <p/>depends on MethodAnnotationsScanner configured
      */
     public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation) {
-        return getMethodsFromDescriptors(store.get(index(MethodAnnotationsScanner.class), annotation.getName()), loaders());
+        Iterable<String> methods = store.get(index(MethodAnnotationsScanner.class), annotation.getName());
+        return getMethodsFromDescriptors(methods, loaders());
     }
 
     /**
@@ -528,17 +539,58 @@ public class Reflections {
         });
     }
 
-    /** returns the {@link Store} used for storing and querying the metadata */
+    /** get parameter names of given {@code method}
+     * <p>depends on MethodParameterNamesScanner configured
+     */
+    public List<String> getMethodParamNames(Method method) {
+        String key = method.getDeclaringClass().getName() + "." + method.getName() + "(" + Joiner.on(", ").join(names(method.getParameterTypes())) + ")";
+        Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), key);
+        return !Iterables.isEmpty(names) ? Splitter.on(", ").splitToList(Iterables.getOnlyElement(names)) : Arrays.<String>asList();
+    }
+
+    /** get parameter names of given {@code constructor}
+     * <p>depends on MethodParameterNamesScanner configured
+     */
+    public List<String> getConstructorParamNames(Constructor constructor) {
+        String key = constructor.getName() + "." + "<init>" + "(" + Joiner.on(",").join(names(constructor.getParameterTypes())) + ")";
+        Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), key);
+        return !Iterables.isEmpty(names) ? Splitter.on(", ").splitToList(Iterables.getOnlyElement(names)) : Arrays.<String>asList();
+    }
+
+    /** get all given {@code field} usages in methods and constructors
+     * <p>depends on MemberUsageScanner configured
+     */
+    public Set<Member> getFieldUsage(Field field) {
+        String key = field.getDeclaringClass().getName() + "." + field.getName();
+        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), key));
+    }
+
+    /** get all given {@code method} usages in methods and constructors
+     * <p>depends on MemberUsageScanner configured
+     */
+    public Set<Member> getMethodUsage(Method method) {
+        String key = method.getDeclaringClass().getName() + "." + method.getName() + "(" + Joiner.on(", ").join(names(method.getParameterTypes())) + ")";
+        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), key));
+    }
+
+    /** get all given {@code constructors} usages in methods and constructors
+     * <p>depends on MemberUsageScanner configured
+     */
+    public Set<Member> getConstructorUsage(Constructor constructor) {
+        String key = constructor.getName() + "(" + Joiner.on(",").join(names(constructor.getParameterTypes())) + ")";
+        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), key));
+    }
+
+    /** returns the {@link org.reflections.Store} used for storing and querying the metadata */
     public Store getStore() {
         return store;
     }
 
-    /** returns the {@link Configuration} object of this instance */
+    /** returns the {@link org.reflections.Configuration} object of this instance */
     public Configuration getConfiguration() {
         return configuration;
     }
 
-    //
     /**
      * serialize to a given directory and filename
      * <p>* it is preferred to specify a designated directory (for example META-INF/reflections),

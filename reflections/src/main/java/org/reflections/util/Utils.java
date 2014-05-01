@@ -1,5 +1,6 @@
 package org.reflections.util;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import org.reflections.ReflectionsException;
 import org.slf4j.Logger;
@@ -14,7 +15,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -57,13 +57,13 @@ public abstract class Utils {
     }
 
     public static Member getMemberFromDescriptor(String descriptor, ClassLoader... classLoaders) throws ReflectionsException {
-        int p0 = descriptor.indexOf('(');
-        String methodKey = descriptor.substring(0, p0);
-        String methodParameters = descriptor.substring(p0 + 1, descriptor.length() - 1);
+        int p0 = descriptor.lastIndexOf('(');
+        String memberKey = p0 != -1 ? descriptor.substring(0, p0) : descriptor;
+        String methodParameters = p0 != -1 ? descriptor.substring(p0 + 1, descriptor.lastIndexOf(')')) : "";
 
-        int p1 = methodKey.lastIndexOf('.');
-        String className = methodKey.substring(methodKey.lastIndexOf(' ') + 1, p1);
-        String methodName = methodKey.substring(p1 + 1);
+        int p1 = Math.max(memberKey.lastIndexOf('.'), memberKey.lastIndexOf("$"));
+        String className = memberKey.substring(memberKey.lastIndexOf(' ') + 1, p1);
+        String memberName = memberKey.substring(p1 + 1);
 
         Class<?>[] parameterTypes = null;
         if (!isEmpty(methodParameters)) {
@@ -76,18 +76,23 @@ public abstract class Utils {
         }
 
         Class<?> aClass = forName(className, classLoaders);
-        try {
-            if (isConstructor(descriptor)) {
-                return aClass.getDeclaredConstructor(parameterTypes);
-            } else {
-                return aClass.getDeclaredMethod(methodName, parameterTypes);
+        while (aClass != null) {
+            try {
+                if (!descriptor.contains("(")) {
+                    return aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName);
+                } else if (isConstructor(descriptor)) {
+                    return aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes);
+                } else {
+                    return aClass.isInterface() ? aClass.getMethod(memberName, parameterTypes) : aClass.getDeclaredMethod(memberName, parameterTypes);
+                }
+            } catch (Exception e) {
+                aClass = aClass.getSuperclass();
             }
-        } catch (NoSuchMethodException e) {
-            throw new ReflectionsException("Can't resolve method named " + methodName, e);
         }
+        throw new ReflectionsException("Can't resolve member named " + memberName + " for class " + className);
     }
 
-    public static Set<Method> getMethodsFromDescriptors(Collection<String> annotatedWith, ClassLoader... classLoaders) {
+    public static Set<Method> getMethodsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
         Set<Method> result = Sets.newHashSet();
         for (String annotated : annotatedWith) {
             if (!isConstructor(annotated)) {
@@ -98,7 +103,7 @@ public abstract class Utils {
         return result;
     }
 
-    public static Set<Constructor> getConstructorsFromDescriptors(Collection<String> annotatedWith, ClassLoader... classLoaders) {
+    public static Set<Constructor> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
         Set<Constructor> result = Sets.newHashSet();
         for (String annotated : annotatedWith) {
             if (isConstructor(annotated)) {
@@ -109,12 +114,19 @@ public abstract class Utils {
         return result;
     }
 
-    public static boolean isConstructor(String fqn) {
-        return fqn.contains("init>");
+    public static Set<Member> getMembersFromDescriptors(Iterable<String> values, ClassLoader... classLoaders) {
+        Set<Member> result = Sets.newHashSet();
+        for (String value : values) {
+            try {
+                result.add(Utils.getMemberFromDescriptor(value, classLoaders));
+            } catch (ReflectionsException e) {
+                throw new ReflectionsException("Can't resolve member named " + value, e);
+            }
+        }
+        return result;
     }
 
     public static Field getFieldFromString(String field, ClassLoader... classLoaders) {
-        //todo create field md
         String className = field.substring(0, field.lastIndexOf('.'));
         String fieldName = field.substring(field.lastIndexOf('.') + 1);
 
@@ -130,7 +142,8 @@ public abstract class Utils {
         catch (IOException e) { e.printStackTrace(); }
     }
 
-    public static @Nullable Logger findLogger(Class<?> aClass) {
+    @Nullable
+    public static Logger findLogger(Class<?> aClass) {
         try {
             Class.forName("org.slf4j.impl.StaticLoggerBinder");
             return LoggerFactory.getLogger(aClass);
@@ -139,9 +152,13 @@ public abstract class Utils {
         }
     }
 
-    public static <T> Set<T> intersect(Collection<T> ts1, Collection<T> ts2) {
-        Set<T> result = Sets.newHashSet();
-        for (T t : ts1) if (ts2.contains(t)) result.add(t);
-        return result;
+    public static boolean isConstructor(String fqn) {
+        return fqn.contains("init>");
     }
+
+    public static final Predicate<String> isConstructor = new Predicate<String>() {
+        public boolean apply(@Nullable String input) {
+            return Utils.isConstructor(input);
+        }
+    };
 }
