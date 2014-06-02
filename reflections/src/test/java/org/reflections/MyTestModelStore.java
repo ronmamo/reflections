@@ -1,4 +1,4 @@
-//generated using Reflections JavaCodeSerializer [Sat Mar 23 15:54:36 GMT+02:00 2013]
+//generated using Reflections JavaCodeSerializer [Mon Jun 02 20:05:23 IDT 2014]
 package org.reflections;
 
 public interface MyTestModelStore {
@@ -22,6 +22,12 @@ public interface MyTestModelStore {
 				}
 				public interface annotations {
 					public interface java_lang_annotation_Retention {}
+				}
+			}
+			public interface TestModel$AC3 {
+				public interface annotations {
+					public interface java_lang_annotation_Retention {}
+					public interface org_reflections_TestModel$AC2 {}
 				}
 			}
 			public interface TestModel$AF1 {
@@ -88,6 +94,11 @@ public interface MyTestModelStore {
 			}
 			public interface TestModel$C6 {
 			}
+			public interface TestModel$C7 {
+				public interface annotations {
+					public interface org_reflections_TestModel$AC3 {}
+				}
+			}
 			public interface TestModel$I1 {
 				public interface annotations {
 					public interface org_reflections_TestModel$AI1 {}
@@ -107,6 +118,25 @@ public interface MyTestModelStore {
 				public interface annotations {
 					public interface java_lang_annotation_Retention {}
 					public interface java_lang_annotation_Inherited {}
+				}
+			}
+			public interface TestModel$Usage {
+			}
+			public interface TestModel$Usage$C1 {
+				public interface fields {
+					public interface c2 {}
+				}
+				public interface methods {
+					public interface method_java_lang_String {}
+					public interface method {}
+				}
+			}
+			public interface TestModel$Usage$C2 {
+				public interface fields {
+					public interface c1 {}
+				}
+				public interface methods {
+					public interface method {}
 				}
 			}
 		}

@@ -11,6 +11,7 @@ import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.scanners.TypeElementsScanner;
+import org.reflections.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,7 +118,7 @@ public class JavaCodeSerializer implements Serializer {
     }
 
     public String toString(Reflections reflections) {
-        if (reflections.getStore().get(TypeElementsScanner.class).isEmpty()) {
+        if (reflections.getStore().get(TypeElementsScanner.class.getSimpleName()).isEmpty()) {
             if (log != null) log.warn("JavaCodeSerializer needs TypeElementsScanner configured");
         }
 
@@ -126,7 +127,7 @@ public class JavaCodeSerializer implements Serializer {
         List<String> prevPaths = Lists.newArrayList();
         int indent = 1;
 
-        List<String> keys = Lists.newArrayList(reflections.getStore().get(TypeElementsScanner.class).keySet());
+        List<String> keys = Lists.newArrayList(reflections.getStore().get(TypeElementsScanner.class.getSimpleName()).keySet());
         Collections.sort(keys);
         for (String fqn : keys) {
             List<String> typePaths = Lists.newArrayList(fqn.split("\\."));
@@ -159,7 +160,7 @@ public class JavaCodeSerializer implements Serializer {
                 }
             });
 
-            for (String element : reflections.getStore().get(TypeElementsScanner.class, fqn)) {
+            for (String element : reflections.getStore().get(TypeElementsScanner.class.getSimpleName(), fqn)) {
                 if (element.startsWith("@")) {
                     annotations.add(element.substring(1));
                 } else if (element.contains("(")) {
@@ -176,7 +177,7 @@ public class JavaCodeSerializer implements Serializer {
                         String normalized = name + paramsDescriptor;
                         methods.put(name, normalized);
                     }
-                } else if (!element.contains(".")) {
+                } else if (!Utils.isEmpty(element)) {
                     //field
                     fields.add(element);
                 }

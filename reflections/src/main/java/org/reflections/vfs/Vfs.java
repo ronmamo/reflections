@@ -230,7 +230,8 @@ public abstract class Vfs {
 
         directory {
             public boolean matches(URL url) {
-                return url.getProtocol().equals("file") && !url.toExternalForm().contains(".jar");
+                return url.getProtocol().equals("file") && !url.toExternalForm().contains(".jar") &&
+                        getFile(url).isDirectory();
             }
 
             public Dir createDir(final URL url) throws Exception {

@@ -1,8 +1,7 @@
 package org.reflections;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import javassist.bytecode.ClassFile;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import org.reflections.vfs.JarInputDir;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
 
-import javax.annotation.Nullable;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,10 +21,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.jar.JarFile;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /** */
 public class VfsTest {
@@ -36,13 +31,7 @@ public class VfsTest {
         JavassistAdapter mdAdapter = new JavassistAdapter();
 
         {
-            URL jar1 = Collections2.filter(ClasspathHelper.forClassLoader(),
-                    new Predicate<URL>() {
-                        public boolean apply(@Nullable URL input) {
-                            return input.getPath().endsWith(".jar") && input.toString().startsWith("file:");
-                        }
-                    }).iterator().next();
-
+            URL jar1 = getSomeJar();
             assertTrue(jar1.toString().startsWith("file:"));
             assertTrue(jar1.toString().contains(".jar"));
 
@@ -221,13 +210,15 @@ public class VfsTest {
     public void jarInputStream() {
         JavassistAdapter javassistAdapter = new JavassistAdapter();
 
-        final URL jar = getSomeJar();
-        JarInputDir jarInputDir = new JarInputDir(jar);
-        Iterable<Vfs.File> files = jarInputDir.getFiles();
-        for (Vfs.File file : files) {
-            if (file.getName().endsWith(".class")) {
-                ClassFile classFile = javassistAdapter.getOfCreateClassObject(file);
-                System.out.println(classFile.getName() + " [" + file.getName() + " - " + file.getRelativePath() + "]");
+        for (URL jar : ClasspathHelper.forClassLoader()) {
+            try {
+                for (Vfs.File file : Iterables.limit(new JarInputDir(jar).getFiles(), 5)) {
+                    if (file.getName().endsWith(".class")) {
+                        String className = javassistAdapter.getClassName(javassistAdapter.getOfCreateClassObject(file));
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -235,14 +226,8 @@ public class VfsTest {
     //
     private URL getSomeJar() {
         Collection<URL> urls = ClasspathHelper.forClassLoader();
-        for (URL url : urls) {
-            if (url.getFile().endsWith(".jar") && !url.getFile().contains("/lib")) {
-                return url;
-            }
-        }
 
-        fail("could not find jar url");
-        return null;
+        return urls.iterator().next();
     }
 
     private URL getSomeDirectory() {
@@ -252,5 +237,4 @@ public class VfsTest {
             throw new RuntimeException(e);
         }
     }
-
 }

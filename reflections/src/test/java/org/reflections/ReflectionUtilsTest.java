@@ -95,7 +95,7 @@ public class ReflectionUtilsTest {
         Reflections reflections = new Reflections(TestModel.class, new FieldAnnotationsScanner());
 
         Set<Field> af1 = reflections.getFieldsAnnotatedWith(TestModel.AF1.class);
-        Set<? extends Field> allFields = Sets.filter(af1, withModifier(Modifier.PROTECTED));
+        Set<? extends Field> allFields = ReflectionUtils.getAll(af1, withModifier(Modifier.PROTECTED));
         assertTrue(allFields.size() == 1);
         assertThat(allFields, names("f2"));
     }

@@ -3,8 +3,8 @@ package org.reflections;
 import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 
-import java.lang.String;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * stores metadata information in multimaps
@@ -42,7 +42,7 @@ public class Store {
                     Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(),
                             new Supplier<Set<String>>() {
                                 public Set<String> get() {
-                                    return Sets.newConcurrentHashSet();
+                                    return Sets.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
                                 }
                             });
             mmap = concurrent ? Multimaps.synchronizedSetMultimap(multimap) : multimap;

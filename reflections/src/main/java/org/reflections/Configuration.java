@@ -1,9 +1,11 @@
 package org.reflections;
 
+import com.google.common.base.Predicate;
 import org.reflections.adapters.MetadataAdapter;
 import org.reflections.scanners.Scanner;
 import org.reflections.serializers.Serializer;
 
+import javax.annotation.Nullable;
 import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -23,16 +25,17 @@ public interface Configuration {
     @SuppressWarnings({"RawUseOfParameterizedType"})
     MetadataAdapter getMetadataAdapter();
 
-    /** the fully qualified name filter used to filter types to be scanned */
-    boolean acceptsInput(String inputFqn);
+    /** get the fully qualified name filter used to filter types to be scanned */
+    @Nullable
+    Predicate<String> getInputsFilter();
 
-    /** executor service used to scan files
-     * if null, scanning is done in a simple for loop */
+    /** executor service used to scan files. if null, scanning is done in a simple for loop */
     ExecutorService getExecutorService();
 
     /** the default serializer to use when saving Reflection */
     Serializer getSerializer();
 
     /** get class loaders, might be used for resolving methods/fields */
-    /*@Nullable*/ ClassLoader[] getClassLoaders();
+    @Nullable
+    ClassLoader[] getClassLoaders();
 }

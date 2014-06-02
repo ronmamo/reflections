@@ -2,27 +2,55 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.reflections</groupId>
-        <artifactId>reflections-parent</artifactId>
-        <version>0.9.9-RC1</version>
-    </parent>
-
+    <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
+    <version>0.9.9-SNAPSHOT</version>
+
     <name>Reflections</name>
+    <description>Reflections - a Java runtime metadata analysis</description>
+    <url>http://github.com/ronmamo/reflections</url>
+
+    <licenses>
+        <license>
+            <name>WTFPL</name>
+            <url>http://www.wtfpl.net/</url>
+        </license>
+        <license>
+            <name>The New BSD License</name>
+            <url>http://www.opensource.org/licenses/bsd-license.html</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>http://reflections.googlecode.com/svn/trunk/</connection>
+        <url>http://reflections.googlecode.com/svn/trunk/</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <email>ronmamo@gmail.com</email>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>github</id>
+            <url>scm:git:ssh://git@github.com/ronmamo/reflections.git</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <!--<version>10.0</version>--> <!-- binary compatible with 10.0+ -->
-            <version>15.0</version>
+            <version>${guava.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.18.1-GA</version>
+            <version>${javassist.version}</version>
             <optional>false</optional> <!-- case: when not actually scanning with javassist or if using {@link Reflections.collect()} -->
         </dependency>
 
@@ -86,9 +114,68 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>latest</id>
+            <properties>
+                <guava.version>15.0</guava.version>
+                <javassist.version>3.18.1-GA</javassist.version>
+            </properties>
+            <activation>
+                <jdk>!1.5</jdk>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>jdk1.5</id>
+            <properties>
+                <guava.version>10.0</guava.version>
+                <javassist.version>3.16.1-GA</javassist.version>
+            </properties>
+            <activation>
+                <jdk>1.5</jdk>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>build</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>javadoc</goal>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <reportOutputDirectory>javadoc</reportOutputDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
@@ -98,7 +185,6 @@
                     </filesets>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 

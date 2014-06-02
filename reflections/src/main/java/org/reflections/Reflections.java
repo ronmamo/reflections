@@ -2,12 +2,12 @@ package org.reflections;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import org.reflections.scanners.*;
+import org.reflections.scanners.Scanner;
 import org.reflections.serializers.Serializer;
 import org.reflections.serializers.XmlSerializer;
 import org.reflections.util.ClasspathHelper;
@@ -26,10 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -38,8 +35,6 @@ import java.util.regex.Pattern;
 import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Sets.filter;
 import static java.lang.String.format;
 import static org.reflections.ReflectionUtils.*;
 import static org.reflections.util.Utils.*;
@@ -230,7 +225,7 @@ public class Reflections {
                 values += store.get(index).size();
             }
 
-            if (log != null) log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
+            log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
                     time, scannedUrls, keys, values,
                     executorService != null && executorService instanceof ThreadPoolExecutor ?
                             format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
@@ -240,7 +235,7 @@ public class Reflections {
     public void scan(URL url) {
         for (final Vfs.File file : Vfs.fromURL(url).getFiles()) {
             String input = file.getRelativePath().replace('/', '.');
-            if (configuration.acceptsInput(input)) {
+            if (configuration.getInputsFilter() == null || configuration.getInputsFilter().apply(input)) {
                 Object classObject = null;
                 for (Scanner scanner : configuration.getScanners()) {
                     try {
@@ -424,8 +419,8 @@ public class Reflections {
                 return annotated;
             }
         } else {
-            Iterable<String> allAnnotated = store.getAll(index(TypeAnnotationsScanner.class), annotated);
-            return concat(annotated, allAnnotated, store.getAll(index(SubTypesScanner.class), allAnnotated));
+            Iterable<String> subTypes = concat(annotated, store.getAll(index(TypeAnnotationsScanner.class), annotated));
+            return concat(subTypes, store.getAll(index(SubTypesScanner.class), subTypes));
         }
     }
 
@@ -543,42 +538,50 @@ public class Reflections {
      * <p>depends on MethodParameterNamesScanner configured
      */
     public List<String> getMethodParamNames(Method method) {
-        String key = method.getDeclaringClass().getName() + "." + method.getName() + "(" + Joiner.on(", ").join(names(method.getParameterTypes())) + ")";
-        Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), key);
-        return !Iterables.isEmpty(names) ? Splitter.on(", ").splitToList(Iterables.getOnlyElement(names)) : Arrays.<String>asList();
+        Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), name(method));
+        return !Iterables.isEmpty(names) ? Arrays.asList(Iterables.getOnlyElement(names).split(", ")) : Arrays.<String>asList();
     }
 
     /** get parameter names of given {@code constructor}
      * <p>depends on MethodParameterNamesScanner configured
      */
     public List<String> getConstructorParamNames(Constructor constructor) {
-        String key = constructor.getName() + "." + "<init>" + "(" + Joiner.on(",").join(names(constructor.getParameterTypes())) + ")";
-        Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), key);
-        return !Iterables.isEmpty(names) ? Splitter.on(", ").splitToList(Iterables.getOnlyElement(names)) : Arrays.<String>asList();
+        Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), Utils.name(constructor));
+        return !Iterables.isEmpty(names) ? Arrays.asList(Iterables.getOnlyElement(names).split(", ")) : Arrays.<String>asList();
     }
 
     /** get all given {@code field} usages in methods and constructors
      * <p>depends on MemberUsageScanner configured
      */
     public Set<Member> getFieldUsage(Field field) {
-        String key = field.getDeclaringClass().getName() + "." + field.getName();
-        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), key));
+        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), name(field)));
     }
 
     /** get all given {@code method} usages in methods and constructors
      * <p>depends on MemberUsageScanner configured
      */
     public Set<Member> getMethodUsage(Method method) {
-        String key = method.getDeclaringClass().getName() + "." + method.getName() + "(" + Joiner.on(", ").join(names(method.getParameterTypes())) + ")";
-        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), key));
+        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), name(method)));
     }
 
     /** get all given {@code constructors} usages in methods and constructors
      * <p>depends on MemberUsageScanner configured
      */
     public Set<Member> getConstructorUsage(Constructor constructor) {
-        String key = constructor.getName() + "(" + Joiner.on(",").join(names(constructor.getParameterTypes())) + ")";
-        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), key));
+        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), name(constructor)));
+    }
+
+    /** get all types scanned. this is effectively similar to getting all subtypes of Object.
+     * <p>depends on SubTypesScanner configured with {@code SubTypesScanner(false)}, otherwise {@code ReflectionsException} is thrown
+     * @return Set of String, and not of Class, in order to avoid definition of all types in PermGen
+     */
+    public Set<String> getAllTypes() {
+        Set<String> allTypes = Sets.newHashSet(store.getAll(index(SubTypesScanner.class), Object.class.getName()));
+        if (allTypes.isEmpty()) {
+            throw new ReflectionsException("Couldn't find subtypes of Object. " +
+                    "Make sure SubTypesScanner initialized to include Object class - new SubTypesScanner(false)");
+        }
+        return allTypes;
     }
 
     /** returns the {@link org.reflections.Store} used for storing and querying the metadata */

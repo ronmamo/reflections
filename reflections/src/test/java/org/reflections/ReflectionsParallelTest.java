@@ -15,22 +15,17 @@ public class ReflectionsParallelTest extends ReflectionsTest {
 
     @BeforeClass
     public static void init() {
-        Predicate<String> filter = new FilterBuilder().include("org.reflections.TestModel\\$.*");
-
         reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(asList(ClasspathHelper.forClass(TestModel.class)))
-                .filterInputsBy(filter)
+                .filterInputsBy(TestModelFilter)
                 .setScanners(
-                        new SubTypesScanner().filterResultsBy(filter),
-                        new TypeAnnotationsScanner().filterResultsBy(filter),
-                        new FieldAnnotationsScanner().filterResultsBy(filter),
-                        new MethodAnnotationsScanner().filterResultsBy(filter),
-                        new MethodParameterScanner())
-                                .useParallelExecutor());
-    }
-
-    @Test
-    public void testAll() {
-        super.testAll();
+                        new SubTypesScanner(false),
+                        new TypeAnnotationsScanner(),
+                        new FieldAnnotationsScanner(),
+                        new MethodAnnotationsScanner(),
+                        new MethodParameterScanner(),
+                        new MethodParameterNamesScanner(),
+                        new MemberUsageScanner())
+                .useParallelExecutor());
     }
 }

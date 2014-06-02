@@ -2,6 +2,7 @@ package org.reflections.vfs;
 
 import com.google.common.collect.AbstractIterator;
 import org.reflections.ReflectionsException;
+import org.reflections.util.Utils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -39,12 +40,14 @@ public class JarInputDir implements Vfs.Dir {
                     protected Vfs.File computeNext() {
                         while (true) {
                             try {
-                                ZipEntry entry = jarInputStream.getNextEntry();
+                                ZipEntry entry = jarInputStream.getNextJarEntry();
                                 if (entry == null) {
                                     return endOfData();
                                 }
 
-                                nextCursor += entry.getSize();
+                                long size = entry.getSize();
+                                if (size < 0) size = 0xffffffffl + size; //JDK-6916399
+                                nextCursor += size;
                                 if (!entry.isDirectory()) {
                                     return new JarInputFile(entry, JarInputDir.this, cursor, nextCursor);
                                 }
@@ -59,6 +62,6 @@ public class JarInputDir implements Vfs.Dir {
     }
 
     public void close() {
+        Utils.close(jarInputStream);
     }
-
 }

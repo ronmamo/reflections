@@ -44,7 +44,7 @@ public class ConfigurationBuilder implements Configuration {
     @Nonnull private Set<Scanner> scanners;
     @Nonnull private Set<URL> urls;
     /*lazy*/ protected MetadataAdapter metadataAdapter;
-    @Nullable private Predicate<? super String> inputsFilter;
+    @Nullable private Predicate<String> inputsFilter;
     /*lazy*/ private Serializer serializer;
     @Nullable private ExecutorService executorService;
     @Nullable private ClassLoader[] classLoaders;
@@ -196,13 +196,20 @@ public class ConfigurationBuilder implements Configuration {
         return this;
     }
 
-    public boolean acceptsInput(String inputFqn) {
-        return inputsFilter == null || inputsFilter.apply(inputFqn);
+    @Nullable
+    public Predicate<String> getInputsFilter() {
+        return inputsFilter;
     }
 
-    /** sets the input filter for all resources to be scanned
+    /** sets the input filter for all resources to be scanned.
      * <p> supply a {@link com.google.common.base.Predicate} or use the {@link FilterBuilder}*/
-    public ConfigurationBuilder filterInputsBy(Predicate<? super String> inputsFilter) {
+    public void setInputsFilter(@Nullable Predicate<String> inputsFilter) {
+        this.inputsFilter = inputsFilter;
+    }
+
+    /** sets the input filter for all resources to be scanned.
+     * <p> supply a {@link com.google.common.base.Predicate} or use the {@link FilterBuilder}*/
+    public ConfigurationBuilder filterInputsBy(Predicate<String> inputsFilter) {
         this.inputsFilter = inputsFilter;
         return this;
     }
@@ -245,6 +252,11 @@ public class ConfigurationBuilder implements Configuration {
     @Nullable
     public ClassLoader[] getClassLoaders() {
         return classLoaders;
+    }
+
+    /** set class loader, might be used for resolving methods/fields */
+    public void setClassLoaders(@Nullable ClassLoader[] classLoaders) {
+        this.classLoaders = classLoaders;
     }
 
     /** add class loader, might be used for resolving methods/fields */

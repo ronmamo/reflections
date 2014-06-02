@@ -1,6 +1,6 @@
 package org.reflections.util;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.reflections.ReflectionsException;
 import org.slf4j.Logger;
@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -156,9 +157,39 @@ public abstract class Utils {
         return fqn.contains("init>");
     }
 
-    public static final Predicate<String> isConstructor = new Predicate<String>() {
-        public boolean apply(@Nullable String input) {
-            return Utils.isConstructor(input);
+    public static String name(Class type) {
+        if (!type.isArray()) {
+            return type.getName();
+        } else {
+            int dim = 0;
+            while (type.isArray()) {
+                dim++;
+                type = type.getComponentType();
+            }
+            return type.getName() + repeat("[]", dim);
         }
-    };
+    }
+
+
+    public static List<String> names(Iterable<Class<?>> types) {
+        List<String> result = new ArrayList<String>();
+        for (Class<?> type : types) result.add(name(type));
+        return result;
+    }
+
+    public static List<String> names(Class<?>... types) {
+        return names(Arrays.asList(types));
+    }
+
+    public static String name(Constructor constructor) {
+        return constructor.getName() + "." + "<init>" + "(" + Joiner.on(",").join(names(constructor.getParameterTypes())) + ")";
+    }
+
+    public static String name(Method method) {
+        return method.getDeclaringClass().getName() + "." + method.getName() + "(" + Joiner.on(", ").join(names(method.getParameterTypes())) + ")";
+    }
+
+    public static String name(Field field) {
+        return field.getDeclaringClass().getName() + "." + field.getName();
+    }
 }

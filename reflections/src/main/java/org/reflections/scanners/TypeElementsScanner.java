@@ -12,8 +12,9 @@ public class TypeElementsScanner extends AbstractScanner {
 
     public void scan(Object cls) {
         String className = getMetadataAdapter().getClassName(cls);
+        if (!acceptResult(className)) return;
 
-        getStore().put(className, className);
+        getStore().put(className, "");
 
         if (includeFields) {
             for (Object field : getMetadataAdapter().getFields(cls)) {

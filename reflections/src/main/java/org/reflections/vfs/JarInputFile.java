@@ -1,7 +1,5 @@
 package org.reflections.vfs;
 
-import org.reflections.ReflectionsException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
@@ -40,7 +38,7 @@ public class JarInputFile implements Vfs.File {
                     jarInputDir.cursor++;
                     return read;
                 } else {
-                    throw new ReflectionsException("could not read input stream, cursor beyond endInputStream");
+                    return -1;
                 }
             }
         };
