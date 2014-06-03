@@ -68,7 +68,7 @@ public class Store {
     /** get the values stored for the given {@code index} and {@code keys} */
     public Iterable<String> get(String index, Iterable<String> keys) {
         Multimap<String, String> mmap = get(index);
-        Set<String> result = Sets.newHashSet();
+        IterableChain<String> result = new IterableChain<String>();
         for (String key : keys) {
             result.addAll(mmap.get(key));
         }
@@ -76,21 +76,32 @@ public class Store {
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, including keys */
-    protected Iterable<String> getAllIncluding(String index, Iterable<String> keys) {
-        Iterable<String> result = keys;
+    private Iterable<String> getAllIncluding(String index, Iterable<String> keys, IterableChain<String> result) {
+        result.addAll(keys);
         for (String key : keys) {
-            result = Iterables.concat(result, getAllIncluding(index, get(index, key)));
+            Iterable<String> values = get(index, key);
+            if (values.iterator().hasNext()) {
+                getAllIncluding(index, values, result);
+            }
         }
         return result;
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
     public Iterable<String> getAll(String index, String key) {
-        return getAllIncluding(index, get(index, key));
+        return getAllIncluding(index, get(index, key), new IterableChain<String>());
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
     public Iterable<String> getAll(String index, Iterable<String> keys) {
-        return getAllIncluding(index, get(index, keys));
+        return getAllIncluding(index, get(index, keys), new IterableChain<String>());
+    }
+
+    private static class IterableChain<T> implements Iterable<T> {
+        private final List<Iterable<T>> chain = Lists.newArrayList();
+
+        private void addAll(Iterable<T> iterable) { chain.add(iterable); }
+
+        public Iterator<T> iterator() { return Iterables.concat(chain).iterator(); }
     }
 }
