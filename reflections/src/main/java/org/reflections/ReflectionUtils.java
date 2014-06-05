@@ -179,7 +179,7 @@ public abstract class ReflectionUtils {
     public static <T extends AnnotatedElement> Predicate<T> withAnnotations(final Class<? extends Annotation>... annotations) {
         return new Predicate<T>() {
             public boolean apply(@Nullable T input) {
-                return input != null && Arrays.equals(annotations, input.getAnnotations());
+                return input != null && Arrays.equals(annotations, annotationTypes(input.getAnnotations()));
             }
         };
     }
@@ -254,7 +254,7 @@ public abstract class ReflectionUtils {
     public static Predicate<Member> withAnyParameterAnnotation(final Class<? extends Annotation> annotationClass) {
         return new Predicate<Member>() {
             public boolean apply(@Nullable Member input) {
-                return input != null && Iterables.any(parameterAnnotationTypes(input), new Predicate<Class<? extends Annotation>>() {
+                return input != null && Iterables.any(annotationTypes(parameterAnnotations(input)), new Predicate<Class<? extends Annotation>>() {
                     public boolean apply(@Nullable Class<? extends Annotation> input) {
                         return input.equals(annotationClass);
                     }
@@ -391,7 +391,7 @@ public abstract class ReflectionUtils {
     }
 
     /** try to resolve all given string representation of types to a list of java types */
-    public static <T> List<Class<? extends T>> forNames(final Iterable<String> classes, ClassLoader... classLoaders) {
+    public static <T> List<Class<? extends T>> forNames(final Iterable<String> classes, ClassLoader[] classLoaders) {
         List<Class<? extends T>> result = new ArrayList<Class<? extends T>>();
         for (String className : classes) {
             //noinspection unchecked
@@ -415,9 +415,15 @@ public abstract class ReflectionUtils {
         return result;
     }
 
-    private static Set<Class<? extends Annotation>> parameterAnnotationTypes(Member member) {
+    private static Set<Class<? extends Annotation>> annotationTypes(Iterable<Annotation> annotations) {
         Set<Class<? extends Annotation>> result = Sets.newHashSet();
-        for (Annotation annotation : parameterAnnotations(member)) result.add(annotation.annotationType());
+        for (Annotation annotation : annotations) result.add(annotation.annotationType());
+        return result;
+    }
+
+    private static Class<? extends Annotation>[] annotationTypes(Annotation[] annotations) {
+        Class<? extends Annotation>[] result = new Class[annotations.length];
+        for (int i = 0; i < annotations.length; i++) result[i] = annotations[i].annotationType();
         return result;
     }
 

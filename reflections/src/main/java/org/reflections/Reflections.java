@@ -256,7 +256,7 @@ public class Reflections {
      * and includes files matching the pattern .*-reflections.xml
      * */
     public static Reflections collect() {
-        return collect("META-INF/reflections", new FilterBuilder().include(".*-reflections.xml"));
+        return collect("META-INF/reflections/", new FilterBuilder().include(".*-reflections.xml"));
     }
 
     /**
@@ -403,7 +403,7 @@ public class Reflections {
         Iterable<String> annotated = store.get(index(TypeAnnotationsScanner.class), annotation.annotationType().getName());
         Iterable<Class<?>> filter = filter(forNames(annotated, loaders()), withAnnotation(annotation));
         Iterable<String> classes = getAllAnnotated(names(filter), annotation.annotationType().isAnnotationPresent(Inherited.class), honorInherited);
-        return Sets.newHashSet(concat(filter, forNames(filter(classes, not(in(Sets.newHashSet(annotated)))))));
+        return Sets.newHashSet(concat(filter, forNames(filter(classes, not(in(Sets.newHashSet(annotated)))), loaders())));
     }
 
     protected Iterable<String> getAllAnnotated(Iterable<String> annotated, boolean inherited, boolean honorInherited) {

@@ -278,12 +278,9 @@ public abstract class Vfs {
 
         commons_vfs2 {
             public boolean matches(URL url) throws Exception {
-                try {
-                    final FileSystemManager manager = VFS.getManager();
-                    final FileObject fileObject = manager.resolveFile(url.toExternalForm());
-                    return fileObject.exists() && fileObject.isReadable();
-                } catch (Throwable e) { }
-                return false;
+                final FileSystemManager manager = VFS.getManager();
+                final FileObject fileObject = manager.resolveFile(url.toExternalForm());
+                return fileObject.exists() && fileObject.getType() == FileType.FOLDER;
             }
 
             public Vfs.Dir createDir(URL url) throws Exception {

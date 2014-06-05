@@ -226,8 +226,10 @@ public class VfsTest {
     //
     private URL getSomeJar() {
         Collection<URL> urls = ClasspathHelper.forClassLoader();
-
-        return urls.iterator().next();
+        for (URL url : urls) {
+            if (!url.toExternalForm().contains("surefire")) return url; //damn
+        }
+        throw new RuntimeException();
     }
 
     private URL getSomeDirectory() {
