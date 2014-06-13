@@ -573,6 +573,8 @@ public class Reflections {
 
     /** get all types scanned. this is effectively similar to getting all subtypes of Object.
      * <p>depends on SubTypesScanner configured with {@code SubTypesScanner(false)}, otherwise {@code ReflectionsException} is thrown
+     * <p><i>note using this might be a bad practice. it is better to get types matching some criteria,
+     * such as {@link #getSubTypesOf(Class)} or {@link #getTypesAnnotatedWith(Class)}</i>
      * @return Set of String, and not of Class, in order to avoid definition of all types in PermGen
      */
     public Set<String> getAllTypes() {
