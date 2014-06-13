@@ -99,8 +99,7 @@ Set<Member> usages =
 *Also, browse the [tests directory](https://github.com/ronmamo/reflections/src/test/java/org/reflections) to see some more examples.*
 
 ###ReflectionUtils
-Java reflections made easy.
-ReflectionsUtils contains some convenient java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
+ReflectionsUtils contains some convenient Java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
 
 for example:
 
