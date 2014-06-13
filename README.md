@@ -1,5 +1,4 @@
-#Java runtime metadata analysis
-##In the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
+##Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
 
 Reflections scans your classpath, indexes the metadata, allows you to query it on runtime and may save and collect that information for many modules within your project.
 
@@ -47,45 +46,56 @@ Then use the convenient query methods: (depending on the scanners configured)
 
 **SubTypesScanner**
 ```java
-Set<Class<? extends Module>> modules = reflections.getSubTypesOf(com.google.inject.Module.class);
+Set<Class<? extends Module>> modules = 
+    reflections.getSubTypesOf(com.google.inject.Module.class);
 ```
 
 **TypeAnnotationsScanner**
 ```java
-Set<Class<?>> singletons = reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
+Set<Class<?>> singletons = 
+    reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
 ```
 
 **ResourcesScanner**
 ```java
-Set<String> properties = reflections.getResources(Pattern.compile(".*\\.properties"));
+Set<String> properties = 
+    reflections.getResources(Pattern.compile(".*\\.properties"));
 ```
 
 **MethodAnnotationsScanner**
 ```java
-Set<Method> resources =        reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
-Set<Constructor> injectables = reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
+Set<Method> resources =
+    reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
+Set<Constructor> injectables = 
+    reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
 ```
 
 **FieldAnnotationsScanner**
 ```java
-Set<Field> ids = reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
+Set<Field> ids = 
+    reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
 ```
 
 **MethodParameterScanner**
 ```java
-Set<Method> someMethods =      reflections.getMethodsMatchParams(long.class, int.class);
-Set<Method> voidMethods =      reflections.getMethodsReturn(void.class);
-Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
+Set<Method> someMethods =
+    reflections.getMethodsMatchParams(long.class, int.class);
+Set<Method> voidMethods =
+    reflections.getMethodsReturn(void.class);
+Set<Method> pathParamMethods =
+    reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
 ```
 
 **MethodParameterNamesScanner**
 ```java
-List<String> parameterNames = reflections.getMethodParamNames(Method.class)
+List<String> parameterNames = 
+    reflections.getMethodParamNames(Method.class)
 ```
 
 **MemberUsageScanner**
 ```java
-Set<Member> usages = reflections.getMethodUsages(Method.class)
+Set<Member> usages = 
+    reflections.getMethodUsages(Method.class)
 ```
 
   * If no scanners are configured, the default will be used - SubTypesScanner and TypeAnnotationsScanner. 
