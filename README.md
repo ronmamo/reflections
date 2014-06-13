@@ -1,4 +1,5 @@
-##Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
+#Java runtime metadata analysis
+##In the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
 
 Reflections scans your classpath, indexes the metadata, allows you to query it on runtime and may save and collect that information for many modules within your project.
 
@@ -28,10 +29,10 @@ Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(SomeAnnotation.class
 ```
 
 ###Usage
-Basically, to use Reflections first instantiate it with Urls and Scanners
+Basically, to use Reflections first instantiate it with urls and scanners
 
 ```java
-//scan Urls that contain 'my.package', include inputs starting with 'my.package', use the default scanners
+//scan urls that contain 'my.package', include inputs starting with 'my.package', use the default scanners
 Reflections reflections = new Reflections("my.package");
 
 //or using ConfigurationBuilder
@@ -44,29 +45,59 @@ new Reflections(new ConfigurationBuilder()
 ```
 Then use the convenient query methods: (depending on the scanners configured)
 
+######SubTypesScanner
 ```java
 Set<Class<? extends Module>> modules = reflections.getSubTypesOf(com.google.inject.Module.class);
-Set<Class<?>> singletons =             reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
+```
 
-Set<String> properties =       reflections.getResources(Pattern.compile(".*\\.properties"));
+######TypeAnnotationsScanner
+```java
+Set<Class<?>> singletons = reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
+```
+
+######ResourcesScanner
+```java
+Set<String> properties = reflections.getResources(Pattern.compile(".*\\.properties"));
+```
+
+######MethodAnnotationsScanner
+```java
+Set<Method> resources =        reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
 Set<Constructor> injectables = reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
-Set<Method> deprecateds =      reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
-Set<Field> ids =               reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
+```
 
+######FieldAnnotationsScanner
+```java
+Set<Field> ids = reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
+```
+
+######MethodParameterScanner
+```java
 Set<Method> someMethods =      reflections.getMethodsMatchParams(long.class, int.class);
 Set<Method> voidMethods =      reflections.getMethodsReturn(void.class);
 Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
-Set<Method> floatToString =    reflections.getConverters(Float.class, String.class);
+```
+
+######MethodParameterNamesScanner
+```java
+List<String> parameterNames = reflections.getMethodParamNames(Method.class)
+```
+
+######MemberUsageScanner
+```java
+Set<Member> usages = reflections.getMethodUsages(Method.class)
 ```
 
   * If no scanners are configured, the default will be used - SubTypesScanner and TypeAnnotationsScanner. 
   * Classloader can also be configured, which will be used for resolving runtime classes from names.
   * Make sure to scan all the transitive relevant urls (your packages and relevant 3rd party).
 
-*Browse the [javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/index.html?org/reflections/Reflections.html) for more info. Also, browse the [tests directory](http://code.google.com/p/reflections/source/browse/#svn/trunk/reflections/src/test/java/org/reflections) to see some more examples.*
+*Browse the [javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/index.html?org/reflections/Reflections.html) for more info.* 
+*Also, browse the [tests directory](https://github.com/ronmamo/reflections/src/test/java/org/reflections) to see some more examples.*
 
 ###ReflectionUtils
-Reflections also contains some convenient java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
+Java reflections made easy.
+ReflectionsUtils contains some convenient java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
 
 for example:
 
@@ -87,7 +118,7 @@ Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), w
 *See more in the [ReflectionUtils javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/ReflectionUtils.html)*
 
 ###ClasspathHelper
-ClasspathHelper contains some convenient methods to get URLs for package, for class, for classloader and so.
+ClasspathHelper contains some convenient methods to get urls for package, for class, for classloader and so.
 
 *See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/utils/ClasspathHelper.html)*
 
@@ -109,7 +140,7 @@ Reflections can also:
 *See the [UseCases](http://code.google.com/p/reflections/wiki/UseCases) wiki page*
 
 ###Contribute
-Patches and extensions are welcomed!
+Pull requests are welcomed!!
 
 The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. 
 This library is given as an act of giving and generosity, [Dāna](http://en.wikipedia.org/wiki/D%C4%81na)
