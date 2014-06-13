@@ -3,34 +3,44 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.reflections</groupId>
-    <artifactId>reflections-parent</artifactId>
+    <artifactId>reflections</artifactId>
     <version>0.9.9-SNAPSHOT</version>
-    <packaging>pom</packaging>
 
-    <name>Reflections Parent</name>
+    <name>Reflections</name>
     <description>Reflections - a Java runtime metadata analysis</description>
-    <url>http://code.google.com/p/reflections/</url>
-
-    <modules>
-        <module>reflections</module>
-        <module>reflections-maven</module>
-    </modules>
+    <url>http://github.com/ronmamo/reflections</url>
 
     <licenses>
         <license>
             <name>WTFPL</name>
             <url>http://www.wtfpl.net/</url>
         </license>
+        <license>
+            <name>The New BSD License</name>
+            <url>http://www.opensource.org/licenses/bsd-license.html</url>
+        </license>
     </licenses>
 
     <scm>
-        <connection>http://reflections.googlecode.com/svn/trunk/</connection>
-        <url>http://reflections.googlecode.com/svn/trunk/</url>
+        <url>https://github.com/ronmamo/reflections/issues</url>
+        <connection>scm:git:git://github.com/ronmamo/reflections.git</connection>
     </scm>
+
+    <issueManagement>
+        <url>https://github.com/ronmamo/reflections/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
+    <mailingLists>
+        <mailingList>
+            <name>google-code-reflections</name>
+            <archive>http://groups.google.com/group/google-code-reflections</archive>
+        </mailingList>
+    </mailingLists>
 
     <developers>
         <developer>
-            <email>ronmamo@gmail.com</email>
+            <email>ronmamo at gmail</email>
         </developer>
     </developers>
 
@@ -42,29 +52,151 @@
         </repository>
     </distributionManagement>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist.version}</version>
+            <optional>false</optional> <!-- case: when not actually scanning with javassist or if using {@link Reflections.collect()} -->
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>2.0.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+            <optional>true</optional> <!-- case: when logging is not needed -->
+        </dependency>
+
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.6.1</version>
+            <optional>false</optional> <!-- case: when no xml de/serialization -->
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>1.4</version>
+            <optional>true</optional> <!-- case: when no json de/serialization -->
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+            <optional>true</optional> <!-- case: when no servlet environment -->
+        </dependency>
+
+        <!-- use any implementation you like -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.6.1</version>
+            <optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.5</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+            <version>2.0</version>
+            <scope>provided</scope>
+            <optional>true</optional> <!-- case: -->
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>latest</id>
+            <properties>
+                <guava.version>15.0</guava.version>
+                <javassist.version>3.18.2-GA</javassist.version>
+            </properties>
+            <activation>
+                <jdk>!1.5</jdk>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>jdk1.5</id>
+            <properties>
+                <guava.version>10.0</guava.version>
+                <javassist.version>3.16.1-GA</javassist.version>
+            </properties>
+            <activation>
+                <jdk>1.5</jdk>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>build</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>javadoc</goal>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <reportOutputDirectory>javadoc</reportOutputDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
-
-<!--            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
-                    <encoding>UTF-8</encoding>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <filesets>
+                        <fileset>
+                            <directory>javadoc</directory>
+                        </fileset>
+                    </filesets>
                 </configuration>
             </plugin>
-	    -->
-            <!--<plugin>-->
-                <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                <!--<configuration>-->
-                    <!--&lt;!&ndash; fix java.class.path &ndash;&gt;-->
-                    <!--<useSystemClassLoader>false</useSystemClassLoader>-->
-                    <!--<additionalClasspathElements>-->
-                        <!--<additionalClasspathElement>${project.build.outputDirectory}/target/test-classes</additionalClasspathElement>-->
-                    <!--</additionalClasspathElements>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
-
         </plugins>
     </build>
 

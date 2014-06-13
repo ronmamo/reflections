@@ -6,7 +6,6 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.Utils;
 
 import java.io.IOException;
-import java.net.*;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.jar.JarFile;

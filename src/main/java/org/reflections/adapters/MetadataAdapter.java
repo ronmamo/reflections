@@ -2,8 +2,6 @@ package org.reflections.adapters;
 
 import org.reflections.vfs.Vfs;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
