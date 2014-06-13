@@ -1,5 +1,4 @@
-Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
-==============================================================================================================================================
+##Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
 
 Reflections scans your classpath, indexes the metadata, allows you to query it on runtime and may save and collect that information for many modules within your project.
 
@@ -9,10 +8,8 @@ Using Reflections you can query your metadata such as:
   * get all resources matching a regular expression
   * get all methods with specific signature including parameters, parameter annotations and return type
 
-Intro
------
+###Intro
 Add Reflections to your project. for maven projects just add this dependency:
-
 ```xml
 <dependency>
     <groupId>org.reflections</groupId>
@@ -22,7 +19,6 @@ Add Reflections to your project. for maven projects just add this dependency:
 ```
 
 A typical use of Reflections would be:
-
 ```java
 Reflections reflections = new Reflections("my.project");
 
@@ -31,8 +27,7 @@ Set<Class<? extends SomeType>> subTypes = reflections.getSubTypesOf(SomeType.cla
 Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(SomeAnnotation.class);
 ```
 
-Usage
------
+###Usage
 Basically, to use Reflections first instantiate it with Urls and Scanners
 
 ```java
@@ -64,24 +59,13 @@ Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathP
 Set<Method> floatToString =    reflections.getConverters(Float.class, String.class);
 ```
 
-If no scanners are configured, the default will be used - SubTypesScanner and TypeAnnotationsScanner. 
-
-Classloader can also be configured, which will be used for resolving runtime classes from names.
+  * If no scanners are configured, the default will be used - SubTypesScanner and TypeAnnotationsScanner. 
+  * Classloader can also be configured, which will be used for resolving runtime classes from names.
+  * Make sure to scan all the transitive relevant urls (your packages and relevant 3rd party).
 
 *Browse the [javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/index.html?org/reflections/Reflections.html) for more info. Also, browse the [tests directory](http://code.google.com/p/reflections/source/browse/#svn/trunk/reflections/src/test/java/org/reflections) to see some more examples.*
-----
 
-ClasspathHelper
----------------
-ClasspathHelper contains some convenient methods to get URLs for package, for class, for classloader and so.
-
-*Make sure to scan all the transitive relevant urls (your packages and relevant 3rd party).
-
-*See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/utils/ClasspathHelper.html)*
-----
-
-ReflectionUtils
----------------
+###ReflectionUtils
 Reflections also contains some convenient java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
 
 for example:
@@ -102,16 +86,19 @@ Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), w
 
 *See more in the [ReflectionUtils javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/ReflectionUtils.html)*
 
-Reflections Maven plugin
-------------------------
+###ClasspathHelper
+ClasspathHelper contains some convenient methods to get URLs for package, for class, for classloader and so.
+
+*See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/utils/ClasspathHelper.html)*
+
+###Reflections Maven plugin
 With simple Maven configuration you can save all scanned metadata into xml files on compile time. 
 Later on, when your project is bootstrapping you can let Reflections collect all those resources and re-create that metadata for you, 
 making it available at runtime without re-scanning the classpath - thus reducing the bootstrapping time.
 
 *See the [reflections-maven repository](https://github.com/ronmamo/reflections-maven/)*
 
-Other use cases
----------------
+###Other use cases
 Reflections can also:
   * scan urls in parallel
   * serialize scanned metadata to xml/json
@@ -121,8 +108,7 @@ Reflections can also:
 
 *See the [UseCases](http://code.google.com/p/reflections/wiki/UseCases) wiki page*
 
-Contribute
-----------
+###Contribute
 Patches and extensions are welcomed!
 
 The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. 
