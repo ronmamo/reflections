@@ -5,8 +5,8 @@ Reflections scans your classpath, indexes the metadata, allows you to query it o
 
 Using Reflections you can query your metadata such as:
   * get all subtypes of some type
-  * get all types/constructos/methods/fields annotated with some annotation, optionally with annotation parameters matching
-  * get all resources matching matching a regular expression
+  * get all types/members annotated with some annotation, optionally with annotation parameters matching
+  * get all resources matching a regular expression
   * get all methods with specific signature including parameters, parameter annotations and return type
 
 Intro
@@ -17,7 +17,7 @@ Add Reflections to your project. for maven projects just add this dependency:
 <dependency>
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.9-RC1</version>
+    <version>0.9.9-RC2</version>
 </dependency>
 ```
 
@@ -64,13 +64,20 @@ Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathP
 Set<Method> floatToString =    reflections.getConverters(Float.class, String.class);
 ```
 
-There are some convenient methods in ClasspathHelper to get URLs for package, for class, for classloader and so.
-If no scanners are configured, the default one will be used - SubTypesScanner and TypeAnnotationsScanner.
-Other scanners can be configured as well, such as ResourcrsScanner, MethodAnnotationsScanner, ConstructorAnnotationsScanner, FieldAnnotationsScanner, MethodParameterScanner or any custom scanner.
-A classloader also can be configured, which will be used for resolving runtime classes from names.
+If no scanners are configured, the default will be used - SubTypesScanner and TypeAnnotationsScanner. 
+
+Classloader can also be configured, which will be used for resolving runtime classes from names.
 
 *Browse the [javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/index.html?org/reflections/Reflections.html) for more info. Also, browse the [tests directory](http://code.google.com/p/reflections/source/browse/#svn/trunk/reflections/src/test/java/org/reflections) to see some more examples.*
+----
 
+ClasspathHelper
+---------------
+ClasspathHelper contains some convenient methods to get URLs for package, for class, for classloader and so.
+
+*Make sure to scan all the transitive relevant urls (your packages and relevant 3rd party).
+
+*See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/utils/ClasspathHelper.html)*
 ----
 
 ReflectionUtils
@@ -86,8 +93,9 @@ Set<Method> getters = getAllMethods(someClass,
   withModifier(Modifier.PUBLIC), withPrefix("get"), withParametersCount(0));
 
 //or
-Set<Method> listMethods = getAllMethods(List.class,
-  withParametersAssignableTo(Collection.class), withReturnType(boolean.class));
+Set<Method> listMethodsFromCollectionToBoolean = 
+  getAllMethods(List.class,
+    withParametersAssignableTo(Collection.class), withReturnType(boolean.class));
 
 Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), withTypeAssignableTo(type));
 ```
@@ -96,40 +104,11 @@ Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), w
 
 Reflections Maven plugin
 ------------------------
-With simple configuration you can save all scanned metadata into xml files on compile time. 
+With simple Maven configuration you can save all scanned metadata into xml files on compile time. 
 Later on, when your project is bootstrapping you can let Reflections collect all those resources and re-create that metadata for you, 
 making it available at runtime without re-scanning the classpath - thus reducing the bootstrapping time.
 
-Use this maven configuration in your pom file:
-
-```xml
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections-maven</artifactId>
-            <version>the latest version...</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>reflections</goal>
-                    </goals>
-                    <phase>process-classes</phase>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
-```
-
-Then, on runtime:
-
-```java
-Reflections reflections =
-        isProduction() ? Reflections.collect() : new Reflections("your.package.here");
-```
-
-*Check the [ReflectionsMojo](http://code.google.com/p/reflections/wiki/ReflectionsMojo) wiki page*
+*See the [reflections-maven repository](https://github.com/ronmamo/reflections-maven/)*
 
 Other use cases
 ---------------
