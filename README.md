@@ -45,45 +45,45 @@ new Reflections(new ConfigurationBuilder()
 ```
 Then use the convenient query methods: (depending on the scanners configured)
 
-######SubTypesScanner
+**SubTypesScanner**
 ```java
 Set<Class<? extends Module>> modules = reflections.getSubTypesOf(com.google.inject.Module.class);
 ```
 
-######TypeAnnotationsScanner
+**TypeAnnotationsScanner**
 ```java
 Set<Class<?>> singletons = reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
 ```
 
-######ResourcesScanner
+**ResourcesScanner**
 ```java
 Set<String> properties = reflections.getResources(Pattern.compile(".*\\.properties"));
 ```
 
-######MethodAnnotationsScanner
+**MethodAnnotationsScanner**
 ```java
 Set<Method> resources =        reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
 Set<Constructor> injectables = reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
 ```
 
-######FieldAnnotationsScanner
+**FieldAnnotationsScanner**
 ```java
 Set<Field> ids = reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
 ```
 
-######MethodParameterScanner
+**MethodParameterScanner**
 ```java
 Set<Method> someMethods =      reflections.getMethodsMatchParams(long.class, int.class);
 Set<Method> voidMethods =      reflections.getMethodsReturn(void.class);
 Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
 ```
 
-######MethodParameterNamesScanner
+**MethodParameterNamesScanner**
 ```java
 List<String> parameterNames = reflections.getMethodParamNames(Method.class)
 ```
 
-######MemberUsageScanner
+**MemberUsageScanner**
 ```java
 Set<Member> usages = reflections.getMethodUsages(Method.class)
 ```
