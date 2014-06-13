@@ -49,19 +49,16 @@ Then use the convenient query methods: (depending on the scanners configured)
 Set<Class<? extends Module>> modules = 
     reflections.getSubTypesOf(com.google.inject.Module.class);
 ```
-
 ```java
 //TypeAnnotationsScanner 
 Set<Class<?>> singletons = 
     reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
 ```
-
 ```java
 //ResourcesScanner
 Set<String> properties = 
     reflections.getResources(Pattern.compile(".*\\.properties"));
 ```
-
 ```java
 //MethodAnnotationsScanner
 Set<Method> resources =
@@ -69,13 +66,11 @@ Set<Method> resources =
 Set<Constructor> injectables = 
     reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
 ```
-
 ```java
 //FieldAnnotationsScanner
 Set<Field> ids = 
     reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
 ```
-
 ```java
 //MethodParameterScanner
 Set<Method> someMethods =
@@ -85,13 +80,11 @@ Set<Method> voidMethods =
 Set<Method> pathParamMethods =
     reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
 ```
-
 ```java
 //MethodParameterNamesScanner
 List<String> parameterNames = 
     reflections.getMethodParamNames(Method.class)
 ```
-
 ```java
 //MemberUsageScanner
 Set<Member> usages = 
