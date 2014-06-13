@@ -4,7 +4,7 @@
 
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.9-SNAPSHOT</version>
+    <version>0.9.9-RC2</version>
 
     <name>Reflections</name>
     <description>Reflections - a Java runtime metadata analysis</description>
@@ -22,13 +22,25 @@
     </licenses>
 
     <scm>
-        <connection>http://reflections.googlecode.com/svn/trunk/</connection>
-        <url>http://reflections.googlecode.com/svn/trunk/</url>
+        <url>https://github.com/ronmamo/reflections/issues</url>
+        <connection>scm:git:git://github.com/ronmamo/reflections.git</connection>
     </scm>
+
+    <issueManagement>
+        <url>https://github.com/ronmamo/reflections/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
+    <mailingLists>
+        <mailingList>
+            <name>google-code-reflections</name>
+            <archive>http://groups.google.com/group/google-code-reflections</archive>
+        </mailingList>
+    </mailingLists>
 
     <developers>
         <developer>
-            <email>ronmamo@gmail.com</email>
+            <email>ronmamo at gmail</email>
         </developer>
     </developers>
 
