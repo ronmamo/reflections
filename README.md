@@ -96,7 +96,7 @@ Set<Member> usages =
   * Make sure to scan all the transitive relevant urls (your packages and relevant 3rd party).
 
 *Browse the [javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/index.html?org/reflections/Reflections.html) for more info.* 
-*Also, browse the [tests directory](https://github.com/ronmamo/reflections/src/test/java/org/reflections) to see some more examples.*
+*Also, browse the [tests directory](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections) to see some more examples.*
 
 ###ReflectionUtils
 ReflectionsUtils contains some convenient Java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
