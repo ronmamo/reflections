@@ -1,13 +1,19 @@
 package org.reflections;
 
+import com.google.common.base.Predicate;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.reflections.scanners.*;
 import org.reflections.serializers.JsonSerializer;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertThat;
 
 /** */
 public class ReflectionsCollectTest extends ReflectionsTest {
@@ -40,5 +46,21 @@ public class ReflectionsCollectTest extends ReflectionsTest {
                 .merge(Reflections.collect("META-INF/reflections",
                         new FilterBuilder().include(".*-reflections.json"),
                         serializer));
+    }
+
+    @Test
+    public void testResourcesScanner() {
+        Predicate<String> filter = new FilterBuilder().include(".*\\.xml").include(".*\\.json");
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .filterInputsBy(filter)
+                .setScanners(new ResourcesScanner())
+                .setUrls(asList(ClasspathHelper.forClass(TestModel.class))));
+
+        Set<String> resolved = reflections.getResources(Pattern.compile(".*resource1-reflections\\.xml"));
+        assertThat(resolved, are("META-INF/reflections/resource1-reflections.xml"));
+
+        Set<String> resources = reflections.getStore().get(ResourcesScanner.class.getSimpleName()).keySet();
+        assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml",
+                "testModel-reflections.xml", "testModel-reflections.json"));
     }
 }
