@@ -110,7 +110,11 @@ public class ConfigurationBuilder implements Configuration {
         }
 
         if (builder.getUrls().isEmpty()) {
-            builder.addUrls(ClasspathHelper.forClassLoader()); //default urls getResources("")
+            if (classLoaders != null) {
+                builder.addUrls(ClasspathHelper.forClassLoader(classLoaders)); //default urls getResources("")
+            } else {
+                builder.addUrls(ClasspathHelper.forClassLoader()); //default urls getResources("")
+            }
         }
 
         builder.filterInputsBy(filter);
