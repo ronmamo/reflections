@@ -122,7 +122,7 @@ Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), w
 ###ClasspathHelper
 ClasspathHelper contains some convenient methods to get urls for package, for class, for classloader and so.
 
-*See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/utils/ClasspathHelper.html)*
+*See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/util/ClasspathHelper.html)*
 
 ###Reflections Maven plugin
 With simple Maven configuration you can save all scanned metadata into xml files on compile time. 
