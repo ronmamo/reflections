@@ -8,6 +8,7 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.vfs.Vfs.Dir;
 import org.reflections.vfs.Vfs.UrlType;
@@ -37,11 +38,15 @@ public class UrlTypeVFS implements UrlType {
             URL adaptedUrl = adaptURL(url);
             return new ZipDir(new JarFile(adaptedUrl.getFile()));
         } catch (Exception e) {
-            e.printStackTrace();
+            if (Reflections.log != null) {
+                Reflections.log.warn("Could not get URL", e);
+            }
             try {
                 return new ZipDir(new JarFile(url.getFile()));
             } catch (IOException e1) {
-                e.printStackTrace();
+                if (Reflections.log != null) {
+                    Reflections.log.warn("Could not get URL", e1);
+                }
             }
         }
         return null;

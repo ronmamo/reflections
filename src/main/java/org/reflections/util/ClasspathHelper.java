@@ -145,7 +145,9 @@ public abstract class ClasspathHelper {
                     return new URL(normalizedUrl);
                 }
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                if (Reflections.log != null) {
+                    Reflections.log.warn("Could not get URL", e);
+                }
             }
         }
         return null;
@@ -212,7 +214,9 @@ public abstract class ClasspathHelper {
                 try {
                     urls.add(new File(path).toURI().toURL());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if (Reflections.log != null) {
+                        Reflections.log.warn("Could not get URL", e);
+                    }
                 }
             }
         }

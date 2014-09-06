@@ -2,6 +2,7 @@ package org.reflections.util;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
+import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,7 +141,11 @@ public abstract class Utils {
 
     public static void close(InputStream closeable) {
         try { if (closeable != null) closeable.close(); }
-        catch (IOException e) { e.printStackTrace(); }
+        catch (IOException e) {
+            if (Reflections.log != null) {
+                Reflections.log.warn("Could not close InputStream", e);
+            }
+        }
     }
 
     @Nullable

@@ -1,10 +1,7 @@
 package org.reflections.vfs;
 
 import com.google.common.collect.AbstractIterator;
-import org.reflections.ReflectionsException;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.Utils;
-
+import org.reflections.Reflections;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -45,7 +42,11 @@ public class ZipDir implements Vfs.Dir {
     }
 
     public void close() {
-        try { jarFile.close(); } catch (IOException e) { e.printStackTrace(); }
+        try { jarFile.close(); } catch (IOException e) {
+            if (Reflections.log != null) {
+                Reflections.log.warn("Could not close JarFile", e);
+            }
+        }
     }
 
     @Override
