@@ -1,15 +1,11 @@
 package org.reflections.vfs;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Lists;
 import org.apache.commons.vfs2.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 /**
  */
@@ -79,8 +75,8 @@ public interface CommonsVfs2UrlType {
 
             protected List<FileObject> listFiles(final FileObject file) {
                 try {
-                    FileObject[] files = file.getChildren();
-                    return files != null ? Lists.newArrayList(files) : new ArrayList<FileObject>();
+                    FileObject[] files = file.getType().hasChildren() ? file.getChildren() : null;
+                    return files != null ? Arrays.asList(files) : new ArrayList<FileObject>();
                 } catch (FileSystemException e) {
                     throw new RuntimeException(e);
                 }
@@ -114,6 +110,4 @@ public interface CommonsVfs2UrlType {
             return file.getContent().getInputStream();
         }
     }
-
-
 }
