@@ -84,7 +84,7 @@
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
             <version>1.6.1</version>
-            <optional>false</optional> <!-- case: when no xml de/serialization -->
+            <optional>true</optional> <!-- case: when no xml de/serialization -->
         </dependency>
 
         <dependency>

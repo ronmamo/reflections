@@ -23,12 +23,12 @@ import java.lang.reflect.Constructor;
  * &#60?xml version="1.0" encoding="UTF-8"?>
  *
  * &#60Reflections>
- *  &#60org.reflections.scanners.MethodAnnotationsScanner>
+ *  &#60SubTypesScanner>
  *      &#60entry>
- *          &#60key>org.reflections.TestModel$AM1&#60/key>
+ *          &#60key>com.google.inject.Module&#60/key>
  *          &#60values>
- *              &#60value>org.reflections.TestModel$C4.m3()&#60/value>
- *              &#60value>org.reflections.TestModel$C4.m1(int[][], java.lang.String[][])&#60/value>
+ *              &#60value>fully.qualified.name.1&#60/value>
+ *              &#60value>fully.qualified.name.2&#60/value>
  * ...
  * </pre>
  * */
@@ -44,23 +44,24 @@ public class XmlSerializer implements Serializer {
             reflections = new Reflections(new ConfigurationBuilder());
         }
 
-        Document document;
         try {
-            document = new SAXReader().read(inputStream);
-        } catch (DocumentException e) {
-            throw new RuntimeException(e);
-        }
-        for (Object e1 : document.getRootElement().elements()) {
-            Element index = (Element) e1;
-            for (Object e2 : index.elements()) {
-                Element entry = (Element) e2;
-                Element key = entry.element("key");
-                Element values = entry.element("values");
-                for (Object o3 : values.elements()) {
-                    Element value = (Element) o3;
-                    reflections.getStore().getOrCreate(index.getName()).put(key.getText(), value.getText());
+            Document document = new SAXReader().read(inputStream);
+            for (Object e1 : document.getRootElement().elements()) {
+                Element index = (Element) e1;
+                for (Object e2 : index.elements()) {
+                    Element entry = (Element) e2;
+                    Element key = entry.element("key");
+                    Element values = entry.element("values");
+                    for (Object o3 : values.elements()) {
+                        Element value = (Element) o3;
+                        reflections.getStore().getOrCreate(index.getName()).put(key.getText(), value.getText());
+                    }
                 }
             }
+        } catch (DocumentException e) {
+            throw new ReflectionsException("could not read.", e);
+        } catch (Throwable e) {
+            throw new RuntimeException("Could not read. Make sure relevant dependencies exist on classpath.", e);
         }
 
         return reflections;
@@ -69,14 +70,16 @@ public class XmlSerializer implements Serializer {
     public File save(final Reflections reflections, final String filename) {
         File file = Utils.prepareFile(filename);
 
-        Document document = createDocument(reflections);
 
         try {
+            Document document = createDocument(reflections);
             XMLWriter xmlWriter = new XMLWriter(new FileOutputStream(file), OutputFormat.createPrettyPrint());
             xmlWriter.write(document);
             xmlWriter.close();
         } catch (IOException e) {
             throw new ReflectionsException("could not save to file " + filename, e);
+        } catch (Throwable e) {
+            throw new RuntimeException("Could not save to file " + filename + ". Make sure relevant dependencies exist on classpath.", e);
         }
 
         return file;
