@@ -8,6 +8,8 @@ Using Reflections you can query your metadata such as:
   * get all resources matching a regular expression
   * get all methods with specific signature including parameters, parameter annotations and return type
 
+[![Build Status](https://travis-ci.org/ronmamo/reflections.svg?branch=master)](https://travis-ci.org/ronmamo/reflections)
+
 ###Intro
 Add Reflections to your project. for maven projects just add this dependency:
 ```xml
