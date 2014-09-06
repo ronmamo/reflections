@@ -177,8 +177,8 @@ public abstract class Vfs {
         try {
             path = url.toExternalForm();
             if (path.startsWith("jar:")) path = path.substring("jar:".length());
-            if (path.startsWith("file:")) path = path.substring("file:".length());
             if (path.startsWith("wsjar:")) path = path.substring("wsjar:".length());
+            if (path.startsWith("file:")) path = path.substring("file:".length());
             if (path.contains(".jar!")) path = path.substring(0, path.indexOf(".jar!") + ".jar".length());
             if ((file = new java.io.File(path)).exists()) return file;
 
