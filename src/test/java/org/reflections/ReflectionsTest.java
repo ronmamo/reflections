@@ -214,7 +214,7 @@ public class ReflectionsTest {
 
     @Test
     public void testResourcesScanner() {
-        Predicate<String> filter = new FilterBuilder().include(".*\\.xml");
+        Predicate<String> filter = new FilterBuilder().include(".*\\.xml").exclude(".*testModel-reflections\\.xml");
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .filterInputsBy(filter)
                 .setScanners(new ResourcesScanner())
@@ -224,8 +224,7 @@ public class ReflectionsTest {
         assertThat(resolved, are("META-INF/reflections/resource1-reflections.xml"));
 
         Set<String> resources = reflections.getStore().get(ResourcesScanner.class.getSimpleName()).keySet();
-        assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml",
-                "testModel-reflections.xml"));
+        assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml"));
     }
 
     @Test
