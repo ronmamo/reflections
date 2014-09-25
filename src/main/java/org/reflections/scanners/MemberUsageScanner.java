@@ -5,39 +5,25 @@ import javassist.*;
 import javassist.bytecode.MethodInfo;
 import javassist.expr.*;
 import org.reflections.ReflectionsException;
-
-import javax.annotation.Nullable;
-import java.lang.reflect.Method;
+import org.reflections.util.ClasspathHelper;
 
 /** scans methods/constructors/fields usage
  * <p><i> depends on {@link org.reflections.adapters.JavassistAdapter} configured </i>*/
 @SuppressWarnings("unchecked")
 public class MemberUsageScanner extends AbstractScanner {
-    private static final ClassPool CLASS_POOL;
-    /** unless null, will be used for clearing the {@link javassist.ClassPool} cache */
-    @Nullable public static Method removeCached;
-
-    static {
-        try {
-            CLASS_POOL = ClassPool.getDefault(); //fail if javassist library absent from class path
-            (removeCached = ClassPool.class.getDeclaredMethod("removeCached", String.class)).setAccessible(true);
-        } catch (Throwable e) {
-            throw new ReflectionsException("Can't use MemberUsageScanner", e);
-        }
-    }
-
+    private ClassPool classPool;
 
     @Override
     public void scan(Object cls) {
         try {
-            CtClass ctClass = CLASS_POOL.get(getMetadataAdapter().getClassName(cls));
+            CtClass ctClass = getClassPool().get(getMetadataAdapter().getClassName(cls));
             for (CtBehavior member : ctClass.getDeclaredConstructors()) {
                 scanMember(member);
             }
             for (CtBehavior member : ctClass.getDeclaredMethods()) {
                 scanMember(member);
             }
-            if (removeCached != null) removeCached.invoke(ClassPool.getDefault(), ctClass.getName());
+            ctClass.detach();
         } catch (Exception e) {
             throw new ReflectionsException("Could not scan method usage for " + getMetadataAdapter().getClassName(cls), e);
         }
@@ -97,5 +83,21 @@ public class MemberUsageScanner extends AbstractScanner {
 
     String parameterNames(MethodInfo info) {
         return Joiner.on(", ").join(getMetadataAdapter().getParameterNames(info));
+    }
+
+    private ClassPool getClassPool() {
+        if (classPool == null) {
+            synchronized (this) {
+                classPool = new ClassPool();
+                ClassLoader[] classLoaders = getConfiguration().getClassLoaders();
+                if (classLoaders == null) {
+                    classLoaders = ClasspathHelper.classLoaders();
+                }
+                for (ClassLoader classLoader : classLoaders) {
+                    classPool.appendClassPath(new LoaderClassPath(classLoader));
+                }
+            }
+        }
+        return classPool;
     }
 }
