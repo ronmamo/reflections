@@ -4,7 +4,7 @@
 
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.9-SNAPSHOT</version>
+    <version>0.9.9</version>
 
     <name>Reflections</name>
     <description>Reflections - a Java runtime metadata analysis</description>
@@ -51,6 +51,12 @@
             <url>scm:git:ssh://git@github.com/ronmamo/reflections.git</url>
         </repository>
     </distributionManagement>
+
+    <properties>
+        <guava.version>15.0</guava.version>
+        <javassist.version>3.18.2-GA</javassist.version>
+        <jdk.version>1.7</jdk.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -143,6 +149,7 @@
             <properties>
                 <guava.version>10.0</guava.version>
                 <javassist.version>3.16.1-GA</javassist.version>
+                <jdk.version>1.5</jdk.version>
             </properties>
             <activation>
                 <jdk>1.5</jdk>
@@ -151,10 +158,14 @@
 
         <profile>
             <id>build</id>
+            <properties>
+                <jdk.version>1.5</jdk.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
                         <artifactId>maven-source-plugin</artifactId>
+                        <version>2.3</version>
                         <executions>
                             <execution>
                                 <phase>install</phase>
@@ -166,6 +177,7 @@
                     </plugin>
                     <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10</version>
                         <executions>
                             <execution>
                                 <phase>install</phase>
@@ -179,6 +191,38 @@
                             <reportOutputDirectory>javadoc</reportOutputDirectory>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>1.3.1</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireProperty>
+                                            <property>gpg.passphrase</property>
+                                            <message>gpg.passphrase must be supplied using -D</message>
+                                        </requireProperty>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -189,12 +233,21 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
+                <version>2.5</version>
                 <configuration>
                     <filesets>
                         <fileset>
                             <directory>javadoc</directory>
                         </fileset>
                     </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
                 </configuration>
             </plugin>
         </plugins>
