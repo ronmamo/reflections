@@ -19,11 +19,11 @@ import org.reflections.serializers.XmlSerializer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static org.reflections.util.FilterBuilder.prefix;
 
 /**
  * a fluent builder for {@link org.reflections.Configuration}, to be used for constructing a {@link org.reflections.Reflections} instance
@@ -67,6 +67,7 @@ public class ConfigurationBuilder implements Configuration {
      *
      * use any parameter type in any order. this constructor uses instanceof on each param and instantiate a {@link ConfigurationBuilder} appropriately.
      * */
+    @SuppressWarnings("unchecked")
     public static ConfigurationBuilder build(final @Nullable Object... params) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
@@ -92,7 +93,7 @@ public class ConfigurationBuilder implements Configuration {
         for (Object param : parameters) {
             if (param instanceof String) {
                 builder.addUrls(ClasspathHelper.forPackage((String) param, classLoaders));
-                filter.include(prefix((String) param));
+                filter.includePackage((String) param);
             }
             else if (param instanceof Class) {
                 if (Scanner.class.isAssignableFrom((Class) param)) {
@@ -122,6 +123,13 @@ public class ConfigurationBuilder implements Configuration {
         if (!loaders.isEmpty()) { builder.addClassLoaders(loaders); }
 
         return builder;
+    }
+
+    public ConfigurationBuilder forPackages(String... packages) {
+        for (String pkg : packages) {
+            addUrls(ClasspathHelper.forPackage(pkg));
+        }
+        return this;
     }
 
     @Nonnull

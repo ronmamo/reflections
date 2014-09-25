@@ -39,8 +39,13 @@ public class FilterBuilder implements Predicate<String> {
     /** exclude a package of a given class */
     public FilterBuilder excludePackage(final Class<?> aClass) {return add(new Exclude(packageNameRegex(aClass)));}
 
-    /** include a package of a given prefix */
-    public FilterBuilder includePackage(final String prefix) {return add(new Include(prefix(prefix)));}
+    /** include packages of given prefixes */
+    public FilterBuilder includePackage(final String... prefixes) {
+        for (String prefix : prefixes) {
+            return add(new Include(prefix(prefix)));
+        }
+        return this;
+    }
 
     /** exclude a package of a given prefix */
     public FilterBuilder excludePackage(final String prefix) {return add(new Exclude(prefix(prefix)));}
