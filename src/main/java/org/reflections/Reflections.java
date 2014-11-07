@@ -354,8 +354,16 @@ public class Reflections {
      * <p/>depends on SubTypesScanner configured
      */
     public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type) {
-        return Sets.newHashSet(ReflectionUtils.<T>forNames(
-                store.getAll(index(SubTypesScanner.class), Arrays.asList(type.getName())), loaders()));
+        Multimap<String, String> mmap = store.get(index(SubTypesScanner.class));
+        Set<Class<? extends T>> subTypeSet = Sets.newHashSet();
+        for (String classname: mmap.values()) {
+            Class<?> clazz = ReflectionUtils.forName(classname, loaders());
+            if (type.isAssignableFrom(clazz)) {
+                subTypeSet.add((Class<? extends T>)clazz);
+            }
+        }
+
+        return subTypeSet;
     }
 
     /**
