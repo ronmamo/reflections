@@ -112,7 +112,9 @@ public abstract class ClasspathHelper {
                     if (index != -1) {
                         result.add(new URL(url.toExternalForm().substring(0, index)));
                     } else {
-                        result.add(url); //whatever
+						result.add(new URL(
+								url.getProtocol().replaceFirst("^wsjar", "jar"), url.getHost(), url.getFile())
+						); //whatever
                     }
                 }
             } catch (IOException e) {
