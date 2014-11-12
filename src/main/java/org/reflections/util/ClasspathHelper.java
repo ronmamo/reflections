@@ -85,6 +85,16 @@ public abstract class ClasspathHelper {
     public static Collection<URL> forPackage(String name, ClassLoader... classLoaders) {
         return forResource(resourceName(name), classLoaders);
     }
+	
+	/**
+     * Is the classloader from IBM and thus the WebSphere platform?
+     *
+     * @param loader  the classloader
+     * @return  <tt>true</tt> if IBM classloader, <tt>false</tt> otherwise.
+     */
+    public static boolean isWebSphereClassLoader(ClassLoader loader) {
+        return loader != null ? loader.getClass().getName().startsWith("com.ibm") : false;
+    }
 
     /**
      * Returns a distinct collection of URLs based on a resource.
@@ -105,17 +115,30 @@ public abstract class ClasspathHelper {
         final ClassLoader[] loaders = classLoaders(classLoaders);
         for (ClassLoader classLoader : loaders) {
             try {
-                final Enumeration<URL> urls = classLoader.getResources(resourceName);
+                Enumeration<URL> urls = classLoader.getResources(resourceName);
+				if (!urls.hasMoreElements() && isWebSphereClassLoader(classLoader)) {
+					// WebSphere can not load resources if the resource to load is a folder name, such as a
+					// packagename, you have to explicit name a resource that is a file.
+					// as we don't know what exactly is searched for at this point we more or less 
+					// remove the filter by replacing it with META-INF/
+					urls = classLoader.getResources("META-INF/");
+				}else if(isWebSphereClassLoader(classLoader)){
+					// if we did find resources it doesn't mean we found them all
+					// inexplicable why WAS returns only half of the jars when not adding / to a directory
+					// but that's what happening, so it might be a good idea to at least log some warning about that WAS "bug/feature"
+					Reflections.log.warn("Reflections is running on Websphere, worst server ever please ensure that you append a / if you want to restrict the search to a directory (via forRecource())");
+				}
                 while (urls.hasMoreElements()) {
                     final URL url = urls.nextElement();
+					if (Reflections.log != null && Reflections.log.isDebugEnabled()) {
+						Reflections.log.debug(classLoader.getClass().getSimpleName() + " returned " + url + " for " + resourceName);
+					}
                     int index = url.toExternalForm().lastIndexOf(resourceName);
                     if (index != -1) {
                         result.add(new URL(url.toExternalForm().substring(0, index)));
-                    } else {
-						result.add(new URL(
-								url.getProtocol().replaceFirst("^wsjar", "jar"), url.getHost(), url.getFile())
-						); //whatever
-                    }
+                    } else{
+						result.add(url); //whatever
+					}
                 }
             } catch (IOException e) {
                 if (Reflections.log != null) {
@@ -377,7 +400,7 @@ public abstract class ClasspathHelper {
 
     private static String resourceName(String name) {
         if (name != null) {
-            String resourceName = name.replace(".", "/");
+            String resourceName = name;//.replace(".", "/");
             resourceName = resourceName.replace("\\", "/");
             if (resourceName.startsWith("/")) {
                 resourceName = resourceName.substring(1);
