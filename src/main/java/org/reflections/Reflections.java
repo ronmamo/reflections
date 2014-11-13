@@ -105,6 +105,14 @@ import static org.reflections.util.Utils.*;
  * <p><p><p>For Javadoc, source code, and more information about Reflections Library, see http://code.google.com/p/reflections/
  */
 public class Reflections {
+	
+	private class intHolder{
+		public intHolder(int v){
+			value = v;
+		}
+		private int value;
+	}
+	
     @Nullable public static Logger log = findLogger(Reflections.class);
 
     protected final transient Configuration configuration;
@@ -191,21 +199,30 @@ public class Reflections {
         List<Future<?>> futures = Lists.newArrayList();
 
         for (final URL url : configuration.getUrls()) {
+			final intHolder scannedFiles = new intHolder(0);
             try {
                 if (executorService != null) {
                     futures.add(executorService.submit(new Runnable() {
                         public void run() {
                             if (log != null && log.isDebugEnabled()) log.debug("[" + Thread.currentThread().toString() + "] scanning " + url);
-                            scan(url);
+                            scannedFiles.value = scan(url);
                         }
                     }));
                 } else {
-                    scan(url);
+					if (log != null && log.isDebugEnabled()) log.debug("[" + Thread.currentThread().toString() + "] scanning " + url);
+                    scannedFiles.value = scan(url);
                 }
                 scannedUrls++;
+				if (log != null && log.isDebugEnabled()) {
+					
+					log.debug(format("Reflections scanned  %d file(s) from %s",
+							scannedFiles.value
+							,url));
+				}
+				
             } catch (ReflectionsException e) {
                 if (log != null && log.isWarnEnabled()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
-            }
+            }	
         }
 
         //todo use CompletionService
@@ -232,11 +249,13 @@ public class Reflections {
         }
     }
 
-    public void scan(URL url) {
+    public int scan(URL url) {
+		int scannedFiles = 0;
         for (final Vfs.File file : Vfs.fromURL(url).getFiles()) {
             String input = file.getRelativePath().replace('/', '.');
             if (configuration.getInputsFilter() == null || configuration.getInputsFilter().apply(input)) {
                 Object classObject = null;
+				scannedFiles ++;
                 for (Scanner scanner : configuration.getScanners()) {
                     try {
                         if (scanner.acceptsInput(input)) {
@@ -249,6 +268,7 @@ public class Reflections {
                 }
             }
         }
+		return scannedFiles;
     }
 
     /** collect saved Reflection xml resources and merge it into a Reflections instance
