@@ -213,11 +213,11 @@ public class Reflections {
                     scannedFiles.value = scan(url);
                 }
                 scannedUrls++;
-				if (log != null && log.isWarnEnabled()) {
+				if (log != null && log.isDebugEnabled()) {
 					
-					log.debug(format("Reflections scanned %s, containing %d file(s)",
-							url,
-							scannedFiles.value));
+					log.debug(format("Reflections scanned  %d file(s) from %s",
+							scannedFiles.value
+							,url));
 				}
 				
             } catch (ReflectionsException e) {

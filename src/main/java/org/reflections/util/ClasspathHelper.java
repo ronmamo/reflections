@@ -83,6 +83,14 @@ public abstract class ClasspathHelper {
      * @return the collection of URLs, not null
      */
     public static Collection<URL> forPackage(String name, ClassLoader... classLoaders) {
+		
+		if(isWebSphereClassLoader(classLoaders(classLoaders)[0])){
+			// inexplicable WAS returns only half of the jars when not adding / to a directory (package)
+			Reflections.log.warn("Reflections is running on Websphere, appending a / in forPackage() filter");
+			String filteredResourceName = resourceName(name);
+			return forResource(filteredResourceName.endsWith("/") ? filteredResourceName : filteredResourceName +"/", classLoaders);
+		}
+		
         return forResource(resourceName(name), classLoaders);
     }
 	
@@ -116,17 +124,16 @@ public abstract class ClasspathHelper {
         for (ClassLoader classLoader : loaders) {
             try {
                 Enumeration<URL> urls = classLoader.getResources(resourceName);
-				if (!urls.hasMoreElements() && isWebSphereClassLoader(classLoader)) {
+				if (!urls.hasMoreElements() && isWebSphereClassLoader(classLoader) && !resourceName.endsWith("/")) {
 					// WebSphere can not load resources if the resource to load is a folder name, such as a
-					// packagename, you have to explicit name a resource that is a file.
-					// as we don't know what exactly is searched for at this point we more or less 
-					// remove the filter by replacing it with META-INF/
-					urls = classLoader.getResources("META-INF/");
+					// packagename. It seems it is only able to find resources if they end with / in this case
+					Reflections.log.warn("Reflections did not find any resources on Websphere, appending a / to resource filter and trying again");
+					urls = classLoader.getResources(resourceName + "/");
 				}else if(isWebSphereClassLoader(classLoader)){
 					// if we did find resources it doesn't mean we found them all
 					// inexplicable why WAS returns only half of the jars when not adding / to a directory
 					// but that's what happening, so it might be a good idea to at least log some warning about that WAS "bug/feature"
-					Reflections.log.warn("Reflections is running on Websphere, worst server ever please ensure that you append a / if you want to restrict the search to a directory (via forRecource())");
+					Reflections.log.warn("Reflections is running on Websphere, please ensure that you append a / if you want to restrict the search to a directory or package (via forRecource())");
 				}
                 while (urls.hasMoreElements()) {
                     final URL url = urls.nextElement();
@@ -400,7 +407,7 @@ public abstract class ClasspathHelper {
 
     private static String resourceName(String name) {
         if (name != null) {
-            String resourceName = name;//.replace(".", "/");
+            String resourceName = name.replace(".", "/");
             resourceName = resourceName.replace("\\", "/");
             if (resourceName.startsWith("/")) {
                 resourceName = resourceName.substring(1);
