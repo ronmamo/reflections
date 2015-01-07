@@ -58,7 +58,7 @@ public class FilterBuilder implements Predicate<String> {
             for (Predicate<String> filter : chain) {
                 if (accept && filter instanceof Include) {continue;} //skip if this filter won't change
                 if (!accept && filter instanceof Exclude) {continue;}
-                accept = filter.apply(regex);
+                accept = filter.apply(regex.replace('/', '.'));
                 if (!accept && filter instanceof Exclude) {break;} //break on first exclusion
             }
         }

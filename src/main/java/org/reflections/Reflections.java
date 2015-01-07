@@ -234,8 +234,9 @@ public class Reflections {
 
     public void scan(URL url) {
         for (final Vfs.File file : Vfs.fromURL(url).getFiles()) {
-            String input = file.getRelativePath().replace('/', '.');
-            if (configuration.getInputsFilter() == null || configuration.getInputsFilter().apply(input)) {
+            String relativePath = file.getRelativePath();
+            String input = relativePath.replace('/', '.');
+            if (configuration.getInputsFilter() == null || configuration.getInputsFilter().apply(relativePath)) {
                 Object classObject = null;
                 for (Scanner scanner : configuration.getScanners()) {
                     try {
