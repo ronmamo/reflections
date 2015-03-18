@@ -42,7 +42,7 @@ public class FilterBuilder implements Predicate<String> {
     /** include packages of given prefixes */
     public FilterBuilder includePackage(final String... prefixes) {
         for (String prefix : prefixes) {
-            return add(new Include(prefix(prefix)));
+            add(new Include(prefix(prefix)));
         }
         return this;
     }

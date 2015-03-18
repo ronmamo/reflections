@@ -28,6 +28,16 @@ public class FilterBuilderTest {
     }
 
     @Test
+    public void test_includePackageMultiple() {
+        FilterBuilder filter = new FilterBuilder().includePackage("org.reflections", "org.foo");
+        assertTrue(filter.apply("org.reflections.Reflections"));
+        assertTrue(filter.apply("org.reflections.foo.Reflections"));
+        assertTrue(filter.apply("org.foo.Reflections"));
+        assertTrue(filter.apply("org.foo.bar.Reflections"));
+        assertFalse(filter.apply("org.bar.Reflections"));
+    }
+
+    @Test
     public void test_includePackagebyClass() {
         FilterBuilder filter = new FilterBuilder().includePackage(Reflections.class);
         assertTrue(filter.apply("org.reflections.Reflections"));
