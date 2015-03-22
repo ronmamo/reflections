@@ -233,21 +233,27 @@ public class Reflections {
     }
 
     public void scan(URL url) {
-        for (final Vfs.File file : Vfs.fromURL(url).getFiles()) {
-            String input = file.getRelativePath().replace('/', '.');
-            if (configuration.getInputsFilter() == null || configuration.getInputsFilter().apply(input)) {
-                Object classObject = null;
-                for (Scanner scanner : configuration.getScanners()) {
-                    try {
-                        if (scanner.acceptsInput(input)) {
-                            classObject = scanner.scan(file, classObject);
+        Vfs.Dir dir = Vfs.fromURL(url);
+
+        try {
+            for (final Vfs.File file : dir.getFiles()) {
+                String input = file.getRelativePath().replace('/', '.');
+                if (configuration.getInputsFilter() == null || configuration.getInputsFilter().apply(input)) {
+                    Object classObject = null;
+                    for (Scanner scanner : configuration.getScanners()) {
+                        try {
+                            if (scanner.acceptsInput(input)) {
+                                classObject = scanner.scan(file, classObject);
+                            }
+                        } catch (Exception e) {
+                            if (log != null && log.isDebugEnabled())
+                                log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e.getMessage());
                         }
-                    } catch (Exception e) {
-                        if (log != null && log.isDebugEnabled())
-                            log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e.getMessage());
                     }
                 }
             }
+        } finally {
+            dir.close();
         }
     }
 
