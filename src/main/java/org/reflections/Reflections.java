@@ -232,17 +232,20 @@ public class Reflections {
         }
     }
 
-    public void scan(URL url) {
+    protected void scan(URL url) {
         Vfs.Dir dir = Vfs.fromURL(url);
 
         try {
             for (final Vfs.File file : dir.getFiles()) {
-                String input = file.getRelativePath().replace('/', '.');
-                if (configuration.getInputsFilter() == null || configuration.getInputsFilter().apply(input)) {
+                // scan if inputs filter accepts file relative path or fqn
+                Predicate<String> inputsFilter = configuration.getInputsFilter();
+                String path = file.getRelativePath();
+                String fqn = path.replace('/', '.');
+                if (inputsFilter == null || inputsFilter.apply(path) || inputsFilter.apply(fqn)) {
                     Object classObject = null;
                     for (Scanner scanner : configuration.getScanners()) {
                         try {
-                            if (scanner.acceptsInput(input)) {
+                            if (scanner.acceptsInput(path) || scanner.acceptResult(fqn)) {
                                 classObject = scanner.scan(file, classObject);
                             }
                         } catch (Exception e) {
