@@ -2,14 +2,37 @@ package org.reflections.vfs;
 
 import com.google.common.collect.AbstractIterator;
 import org.apache.commons.vfs2.*;
+import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 
 /**
+ * A {@link org.reflections.vfs.Vfs.UrlType} using the commons vfs 2 library, for creating {@link org.reflections.vfs.Vfs.Dir}.
+ * <p>It can be plugged into using {@link Vfs#addDefaultURLTypes(Vfs.UrlType)}, and requires the library provided in classpath
  */
-public interface CommonsVfs2UrlType {
+public class CommonsVfs2UrlType implements Vfs.UrlType {
+
+    @Override
+    public boolean matches(URL url) throws Exception {
+        try {
+            final FileSystemManager manager = VFS.getManager();
+            final FileObject fileObject = manager.resolveFile(url.toExternalForm());
+            return fileObject.exists() && fileObject.getType() == FileType.FOLDER;
+        } catch (FileSystemException e) {
+            Reflections.log.warn("Could not create CommonsVfs2UrlType from url " + url.toExternalForm(), e);
+            return false;
+        }
+    }
+
+    @Override
+    public Vfs.Dir createDir(URL url) throws Exception {
+        final FileSystemManager manager = VFS.getManager();
+        final FileObject fileObject = manager.resolveFile(url.toExternalForm());
+        return new CommonsVfs2UrlType.Dir(fileObject);
+    }
 
     public static class Dir implements Vfs.Dir {
         private final FileObject file;

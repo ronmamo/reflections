@@ -19,8 +19,8 @@ import java.util.jar.JarFile;
 
 /**
  * a simple virtual file system bridge
- * <p>use the {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)} to get a {@link org.reflections.vfs.Vfs.Dir}
- * and than use {@link org.reflections.vfs.Vfs.Dir#getFiles()} to iterate over it's {@link org.reflections.vfs.Vfs.File}
+ * <p>use the {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)} to get a {@link org.reflections.vfs.Vfs.Dir},
+ * then use {@link org.reflections.vfs.Vfs.Dir#getFiles()} to iterate over the {@link org.reflections.vfs.Vfs.File}
  * <p>for example:
  * <pre>
  *      Vfs.Dir dir = Vfs.fromURL(url);
@@ -29,10 +29,9 @@ import java.util.jar.JarFile;
  *          InputStream is = file.openInputStream();
  *      }
  * </pre>
- * <p>use {@link org.reflections.vfs.Vfs#findFiles(java.util.Collection, com.google.common.base.Predicate)} to get an
- * iteration of files matching given name predicate over given list of urls
- * <p><p>{@link org.reflections.vfs.Vfs#fromURL(java.net.URL)} uses static {@link org.reflections.vfs.Vfs.DefaultUrlTypes} to resolves URLs
- * and it can be plugged in with {@link org.reflections.vfs.Vfs#addDefaultURLTypes(org.reflections.vfs.Vfs.UrlType)} or {@link org.reflections.vfs.Vfs#setDefaultURLTypes(java.util.List)}.
+ * <p>{@link org.reflections.vfs.Vfs#fromURL(java.net.URL)} uses static {@link org.reflections.vfs.Vfs.DefaultUrlTypes} to resolve URLs.
+ * It contains VfsTypes for handling for common resources such as local jar file, local directory, jar url, jar input stream and more.
+ * <p>It can be plugged in with other {@link org.reflections.vfs.Vfs.UrlType} using {@link org.reflections.vfs.Vfs#addDefaultURLTypes(org.reflections.vfs.Vfs.UrlType)} or {@link org.reflections.vfs.Vfs#setDefaultURLTypes(java.util.List)}.
  * <p>for example:
  * <pre>
  *      Vfs.addDefaultURLTypes(new Vfs.UrlType() {
@@ -46,6 +45,8 @@ import java.util.jar.JarFile;
  *
  *      Vfs.Dir dir = Vfs.fromURL(new URL("http://mirrors.ibiblio.org/pub/mirrors/maven2/org/slf4j/slf4j-api/1.5.6/slf4j-api-1.5.6.jar"));
  * </pre>
+ * <p>use {@link org.reflections.vfs.Vfs#findFiles(java.util.Collection, com.google.common.base.Predicate)} to get an
+ * iteration of files matching given name predicate over given list of urls
  */
 public abstract class Vfs {
     private static List<UrlType> defaultUrlTypes = Lists.<UrlType>newArrayList(DefaultUrlTypes.values());
@@ -80,9 +81,9 @@ public abstract class Vfs {
         defaultUrlTypes = urlTypes;
     }
 
-    /** add a static default url types. can be used to statically plug in urlTypes */
+    /** add a static default url types to the beginning of the default url types list. can be used to statically plug in urlTypes */
     public static void addDefaultURLTypes(UrlType urlType) {
-        defaultUrlTypes.add(urlType);
+        defaultUrlTypes.add(0, urlType);
     }
 
     /** tries to create a Dir from the given url, using the defaultUrlTypes */
@@ -194,8 +195,12 @@ public abstract class Vfs {
     /** default url types used by {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)}
      * <p>
      * <p>jarFile - creates a {@link org.reflections.vfs.ZipDir} over jar file
-     * <p>jarUrl - creates a {@link org.reflections.vfs.ZipDir} over a jar url (contains ".jar!/" in it's name)
+     * <p>jarUrl - creates a {@link org.reflections.vfs.ZipDir} over a jar url (contains ".jar!/" in it's name), using Java's {@link JarURLConnection}
      * <p>directory - creates a {@link org.reflections.vfs.SystemDir} over a file system directory
+     * <p>jboss vfs - for protocols vfs, using jboss vfs (should be provided in classpath)
+     * <p>jboss vfsfile - creates a {@link UrlTypeVFS} for protocols vfszip and vfsfile.
+     * <p>bundle - for bundle protocol, using eclipse FileLocator (should be provided in classpath)
+     * <p>jarInputStream - creates a {@link JarInputDir} over jar files, using Java's JarInputStream
      * */
     public static enum DefaultUrlTypes implements UrlType {
         jarFile {
@@ -273,20 +278,6 @@ public abstract class Vfs {
             public Dir createDir(URL url) throws Exception {
                 return fromURL((URL) ClasspathHelper.contextClassLoader().
                         loadClass("org.eclipse.core.runtime.FileLocator").getMethod("resolve", URL.class).invoke(null, url));
-            }
-        },
-
-        commons_vfs2 {
-            public boolean matches(URL url) throws Exception {
-                final FileSystemManager manager = VFS.getManager();
-                final FileObject fileObject = manager.resolveFile(url.toExternalForm());
-                return fileObject.exists() && fileObject.getType() == FileType.FOLDER;
-            }
-
-            public Vfs.Dir createDir(URL url) throws Exception {
-                final FileSystemManager manager = VFS.getManager();
-                final FileObject fileObject = manager.resolveFile(url.toExternalForm());
-                return new CommonsVfs2UrlType.Dir(fileObject);
             }
         },
 
