@@ -95,14 +95,15 @@ import static org.reflections.util.Utils.*;
  * <p>You can use other scanners defined in Reflections as well, such as: SubTypesScanner, TypeAnnotationsScanner (both default), 
  * ResourcesScanner, MethodAnnotationsScanner, ConstructorAnnotationsScanner, FieldAnnotationsScanner,
  * MethodParameterScanner, MethodParameterNamesScanner, MemberUsageScanner or any custom scanner.
- * <p>use {@link #getStore()} to access and query the store directly
- * <p>in order to save a metadata use {@link #save(String)} or {@link #save(String, org.reflections.serializers.Serializer)}
+ * <p>Use {@link #getStore()} to access and query the store directly
+ * <p>In order to save the store metadata, use {@link #save(String)} or {@link #save(String, org.reflections.serializers.Serializer)}
  * for example with {@link org.reflections.serializers.XmlSerializer} or {@link org.reflections.serializers.JavaCodeSerializer}
- * <p>in order to collect pre saved metadata and avoid re-scanning, use {@link #collect(String, com.google.common.base.Predicate, org.reflections.serializers.Serializer...)}}
- * <p><i>* be aware that when using the constructor new Reflections("my.package"), only urls with prefix 'my.package' will be scanned,
- * and any transitive classes in other urls will not be scanned (for example if my.package.SomeClass extends other.package.OtherClass,
- * than the later will not be scanned). in that case use the other constructors and specify the relevant packages/urls
- * <p><p><p>For Javadoc, source code, and more information about Reflections Library, see http://code.google.com/p/reflections/
+ * <p>In order to collect pre saved metadata and avoid re-scanning, use {@link #collect(String, com.google.common.base.Predicate, org.reflections.serializers.Serializer...)}}
+ * <p><i>Make sure to scan all the transitively relevant packages.
+ * <br>for instance, given your class C extends B extends A, and both B and A are located in another package than C,
+ * when only the package of C is scanned - then querying for sub types of A returns nothing (transitive), but querying for sub types of B returns C (direct).
+ * In that case make sure to scan all relevant packages a priori.</i>
+ * <p><p><p>For Javadoc, source code, and more information about Reflections Library, see http://github.com/ronmamo/reflections/
  */
 public class Reflections {
     @Nullable public static Logger log = findLogger(Reflections.class);
@@ -371,7 +372,7 @@ public class Reflections {
      * get types annotated with a given annotation, both classes and annotations
      * <p>{@link java.lang.annotation.Inherited} is not honored by default.
      * <p>when honoring @Inherited, meta-annotation should only effect annotated super classes and its sub types
-     * <p><i>Note that this (@Inherited) meta-annotation type has no effect if the annotated type is used for anything other than a class.
+     * <p><i>Note that this (@Inherited) meta-annotation type has no effect if the annotated type is used for anything other then a class.
      * Also, this meta-annotation causes annotations to be inherited only from superclasses; annotations on implemented interfaces have no effect.</i>
      * <p/>depends on TypeAnnotationsScanner and SubTypesScanner configured
      */
@@ -384,7 +385,7 @@ public class Reflections {
      * <p>{@link java.lang.annotation.Inherited} is honored according to given honorInherited.
      * <p>when honoring @Inherited, meta-annotation should only effect annotated super classes and it's sub types
      * <p>when not honoring @Inherited, meta annotation effects all subtypes, including annotations interfaces and classes
-     * <p><i>Note that this (@Inherited) meta-annotation type has no effect if the annotated type is used for anything other than a class.
+     * <p><i>Note that this (@Inherited) meta-annotation type has no effect if the annotated type is used for anything other then a class.
      * Also, this meta-annotation causes annotations to be inherited only from superclasses; annotations on implemented interfaces have no effect.</i>
      * <p/>depends on TypeAnnotationsScanner and SubTypesScanner configured
      */

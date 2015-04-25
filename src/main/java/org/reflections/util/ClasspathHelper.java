@@ -387,7 +387,7 @@ public abstract class ClasspathHelper {
 
     //http://michaelscharf.blogspot.co.il/2006/11/javaneturlequals-and-hashcode-make.html
     private static Collection<URL> distinctUrls(Collection<URL> urls) {
-        Map<String, URL> distinct = new HashMap<>(urls.size());
+        Map<String, URL> distinct = new HashMap<String, URL>(urls.size());
         for (URL url : urls) {
             distinct.put(url.toExternalForm(), url);
         }
