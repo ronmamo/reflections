@@ -381,21 +381,23 @@ public abstract class ReflectionUtils {
 
             if (Reflections.log != null) {
                 for (ReflectionsException reflectionsException : reflectionsExceptions) {
-                    Reflections.log.debug("could not get type for name " + typeName + " from any class loader",
+                    Reflections.log.warn("could not get type for name " + typeName + " from any class loader",
                             reflectionsException);
                 }
             }
 
-            throw new ReflectionsException("could not get type for name " + typeName);
+            return null;
         }
     }
 
     /** try to resolve all given string representation of types to a list of java types */
-    public static <T> List<Class<? extends T>> forNames(final Iterable<String> classes, ClassLoader[] classLoaders) {
+    public static <T> List<Class<? extends T>> forNames(final Iterable<String> classes, ClassLoader... classLoaders) {
         List<Class<? extends T>> result = new ArrayList<Class<? extends T>>();
         for (String className : classes) {
-            //noinspection unchecked
-            result.add((Class<? extends T>) forName(className, classLoaders));
+            Class<?> type = forName(className, classLoaders);
+            if (type != null) {
+                result.add((Class<? extends T>) type);
+            }
         }
         return result;
     }
