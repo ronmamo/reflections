@@ -5,6 +5,7 @@
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
     <version>0.10-SNAPSHOT</version>
+    <packaging>bundle</packaging>
 
     <name>Reflections</name>
     <description>Reflections - a Java runtime metadata analysis</description>
@@ -249,6 +250,29 @@
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
                 </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.felix</groupId>
+              <artifactId>maven-bundle-plugin</artifactId>
+              <version>2.3.4</version>
+              <extensions>true</extensions>
+              <configuration>
+                <instructions>
+                  <Import-Package>
+                    org.jboss.vfs.*;resolution:=optional,
+                    *
+                  </Import-Package>
+                  <Export-Package>
+                    org.reflections;version=${project.version},
+                    org.reflections.adapters;version=${project.version},
+                    org.reflections.scanners;version=${project.version},
+                    org.reflections.serializers;version=${project.version},
+                    org.reflections.util;version=${project.version},
+                    org.reflections.vfs;version=${project.version}
+                  </Export-Package>
+                  <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                </instructions>
+              </configuration>
             </plugin>
         </plugins>
     </build>
