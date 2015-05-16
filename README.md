@@ -16,7 +16,7 @@ Add Reflections to your project. for maven projects just add this dependency:
 <dependency>
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.9</version>
+    <version>0.9.10</version>
 </dependency>
 ```
 
