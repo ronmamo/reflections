@@ -126,12 +126,13 @@ ClasspathHelper contains some convenient methods to get urls for package, for cl
 
 *See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/util/ClasspathHelper.html)*
 
-###Reflections Maven plugin
-With simple Maven configuration you can save all scanned metadata into xml files on compile time. 
+###Integrating into your build lifecycle
+Although scanning can be easily done on bootstrap time of your application - and shouldn't take long, it is sometime a good idea to integrate Reflections into your build lifecyle.
+With simple Maven/Gradle/SBT/whatever configuration you can save all scanned metadata into xml/json files just after compile time. 
 Later on, when your project is bootstrapping you can let Reflections collect all those resources and re-create that metadata for you, 
 making it available at runtime without re-scanning the classpath - thus reducing the bootstrapping time.
 
-*See the [reflections-maven repository](https://github.com/ronmamo/reflections-maven/)*
+*For Maven, see example using gmavenplus in the [reflections-maven](https://github.com/ronmamo/reflections-maven/) repository*
 
 ###Other use cases
 Reflections can also:
