@@ -12,12 +12,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -188,7 +183,7 @@ public abstract class ClasspathHelper {
                 if (classLoader instanceof URLClassLoader) {
                     URL[] urls = ((URLClassLoader) classLoader).getURLs();
                     if (urls != null) {
-                        result.addAll(Sets.<URL>newHashSet(urls));
+                        result.addAll(Arrays.asList(urls));
                     }
                 }
                 classLoader = classLoader.getParent();
@@ -387,7 +382,7 @@ public abstract class ClasspathHelper {
 
     //http://michaelscharf.blogspot.co.il/2006/11/javaneturlequals-and-hashcode-make.html
     private static Collection<URL> distinctUrls(Collection<URL> urls) {
-        Map<String, URL> distinct = new HashMap<String, URL>(urls.size());
+        Map<String, URL> distinct = new LinkedHashMap<String, URL>(urls.size());
         for (URL url : urls) {
             distinct.put(url.toExternalForm(), url);
         }
