@@ -204,7 +204,7 @@ public class Reflections {
                     scan(url);
                 }
                 scannedUrls++;
-            } catch (ReflectionsException e) {
+            } catch (ReflectionsException | NullPointerException e) {
                 if (log != null && log.isWarnEnabled()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
             }
         }
