@@ -249,7 +249,7 @@ public class Reflections {
                             if (scanner.acceptsInput(path) || scanner.acceptResult(fqn)) {
                                 classObject = scanner.scan(file, classObject);
                             }
-                        } catch (Exception e) {
+                        } catch (ReflectionsException e) {
                             if (log != null && log.isDebugEnabled())
                                 log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e.getMessage());
                         }
