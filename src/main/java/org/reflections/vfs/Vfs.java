@@ -205,7 +205,7 @@ public abstract class Vfs {
     public static enum DefaultUrlTypes implements UrlType {
         jarFile {
             public boolean matches(URL url) {
-                return url.getProtocol().equals("file") && url.toExternalForm().contains(".jar");
+                return url.getProtocol().equals("file") && url.toExternalForm().endsWith(".jar");
             }
 
             public Dir createDir(final URL url) throws Exception {
@@ -235,7 +235,7 @@ public abstract class Vfs {
 
         directory {
             public boolean matches(URL url) {
-                return url.getProtocol().equals("file") && !url.toExternalForm().contains(".jar") &&
+                return url.getProtocol().equals("file") && !url.toExternalForm().endsWith(".jar") &&
                         getFile(url).isDirectory();
             }
 
@@ -283,7 +283,7 @@ public abstract class Vfs {
 
         jarInputStream {
             public boolean matches(URL url) throws Exception {
-                return url.toExternalForm().contains(".jar");
+                return url.toExternalForm().endsWith(".jar");
             }
 
             public Dir createDir(final URL url) throws Exception {

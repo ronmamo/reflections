@@ -33,7 +33,7 @@ public class VfsTest {
         {
             URL jar1 = getSomeJar();
             assertTrue(jar1.toString().startsWith("file:"));
-            assertTrue(jar1.toString().contains(".jar"));
+            assertTrue(jar1.toString().endsWith(".jar"));
 
             assertTrue(Vfs.DefaultUrlTypes.jarFile.matches(jar1));
             assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(jar1));
@@ -73,7 +73,7 @@ public class VfsTest {
         {
             URL thisUrl = ClasspathHelper.forClass(getClass());
             assertTrue(thisUrl.toString().startsWith("file:"));
-            assertFalse(thisUrl.toString().contains(".jar"));
+            assertFalse(thisUrl.toString().endsWith(".jar"));
 
             assertFalse(Vfs.DefaultUrlTypes.jarFile.matches(thisUrl));
             assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(thisUrl));
@@ -94,7 +94,7 @@ public class VfsTest {
             File tempFile = File.createTempFile("nosuch", "dir");
             tempFile.delete();
             assertFalse(tempFile.exists());
-            Vfs.Dir dir = Vfs.DefaultUrlTypes.directory.createDir(tempFile.toURL());
+            Vfs.Dir dir = Vfs.DefaultUrlTypes.directory.createDir(tempFile.toURI().toURL());
             assertNotNull(dir);
             assertFalse(dir.getFiles().iterator().hasNext());
             assertNotNull(dir.getPath());
