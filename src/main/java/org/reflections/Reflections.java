@@ -251,7 +251,7 @@ public class Reflections {
                             }
                         } catch (Exception e) {
                             if (log != null && log.isDebugEnabled())
-                                log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e.getMessage());
+                                log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e);
                         }
                     }
                 }
