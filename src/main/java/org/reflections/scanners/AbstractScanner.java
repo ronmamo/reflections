@@ -29,7 +29,7 @@ public abstract class AbstractScanner implements Scanner {
             try {
                 classObject = configuration.getMetadataAdapter().getOfCreateClassObject(file);
             } catch (Exception e) {
-                throw new ReflectionsException("could not create class object from file " + file.getRelativePath());
+                throw new ReflectionsException("could not create class object from file " + file.getRelativePath(), e);
             }
         }
         scan(classObject);
