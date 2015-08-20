@@ -218,6 +218,11 @@ public class Reflections {
 
         time = System.currentTimeMillis() - time;
 
+        //gracefully shutdown the parallel scanner executor service.
+        if (executorService != null) {
+            executorService.shutdown();
+        }
+
         if (log != null) {
             int keys = 0;
             int values = 0;
