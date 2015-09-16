@@ -1,6 +1,5 @@
 package org.reflections.util;
 
-import com.google.common.collect.Sets;
 import org.reflections.Reflections;
 
 import javax.servlet.ServletContext;
@@ -8,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -229,7 +227,11 @@ public abstract class ClasspathHelper {
      */
     public static Collection<URL> forWebInfLib(final ServletContext servletContext) {
         final Collection<URL> urls = new ArrayList<URL>();
-        for (Object urlString : servletContext.getResourcePaths("/WEB-INF/lib")) {
+        Set<?> resourcePaths = servletContext.getResourcePaths("/WEB-INF/lib");
+        if (resourcePaths == null) {
+            return urls;
+        }
+        for (Object urlString : resourcePaths) {
             try {
                 urls.add(servletContext.getResource((String) urlString));
             } catch (MalformedURLException e) { /*fuck off*/ }
