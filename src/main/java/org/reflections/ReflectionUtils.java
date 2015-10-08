@@ -36,6 +36,8 @@ import static org.reflections.util.Utils.isEmpty;
  *         <li>{@link #withParameters(Class[])}
  *         <li>{@link #withAnyParameterAnnotation(Class)}
  *         <li>{@link #withParametersAssignableTo(Class[])}
+ *         <li>{@link #withParametersAndSubclasses(Class[])}
+ *         <li>{@link #withParametersAndSuperclasses(Class[])}
  *         <li>{@link #withPrefix(String)}
  *         <li>{@link #withReturnType(Class)}
  *         <li>{@link #withType(Class)}
@@ -222,6 +224,15 @@ public abstract class ReflectionUtils {
 
     /** when member parameter types assignable to given {@code types} */
     public static Predicate<Member> withParametersAssignableTo(final Class... types) {
+        return withParametersAndSuperclasses(types);
+    }
+    
+    /**
+     * With parameters which are superclasses of the given {@code types}.
+     * 
+     * @param	types	the types to compare
+     */
+    public static Predicate<Member> withParametersAndSuperclasses(final Class... types) {
         return new Predicate<Member>() {
             public boolean apply(@Nullable Member input) {
                 if (input != null) {
@@ -229,6 +240,27 @@ public abstract class ReflectionUtils {
                     if (parameterTypes.length == types.length) {
                         for (int i = 0; i < parameterTypes.length; i++) {
                             if (!parameterTypes[i].isAssignableFrom(types[i]) ||
+                                    (parameterTypes[i] == Object.class && types[i] != Object.class)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+    
+    /** when member parameter types assignable to given {@code types} */
+    public static Predicate<Member> withParametersAndSubclasses(final Class... types) {
+        return new Predicate<Member>() {
+            public boolean apply(@Nullable Member input) {
+                if (input != null) {
+                    Class<?>[] parameterTypes = parameterTypes(input);
+                    if (parameterTypes.length == types.length) {
+                        for (int i = 0; i < parameterTypes.length; i++) {
+                            if (!types[i].isAssignableFrom(parameterTypes[i]) ||
                                     (parameterTypes[i] == Object.class && types[i] != Object.class)) {
                                 return false;
                             }
