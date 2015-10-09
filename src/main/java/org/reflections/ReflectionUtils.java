@@ -228,7 +228,8 @@ public abstract class ReflectionUtils {
     }
     
     /**
-     * With parameters which are superclasses of the given {@code types}.
+     * With parameters which are the same as one of the {@code types} or are
+     * superclasses of them.
      * 
      * @param	types	the types to compare
      */
@@ -252,7 +253,12 @@ public abstract class ReflectionUtils {
         };
     }
     
-    /** when member parameter types assignable to given {@code types} */
+    /**
+     * With parameters which are the same as one of the {@code types} or are
+     * subclasses of them.
+     * 
+     * @param	types	the types to compare
+     */
     public static Predicate<Member> withParametersAndSubclasses(final Class... types) {
         return new Predicate<Member>() {
             public boolean apply(@Nullable Member input) {
