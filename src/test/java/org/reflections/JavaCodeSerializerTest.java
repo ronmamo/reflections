@@ -29,7 +29,7 @@ public class JavaCodeSerializerTest {
                 .setUrls(asList(ClasspathHelper.forClass(TestModel.class))));
 
         //save
-        String filename = ReflectionsTest.getUserDir() + "/src/test/java/org.reflections.MyTestModelStore";
+        String filename = "src/test/java/org.reflections.MyTestModelStore";
         reflections.save(filename, new JavaCodeSerializer());
     }
 
