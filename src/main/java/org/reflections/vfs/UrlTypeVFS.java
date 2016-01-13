@@ -38,13 +38,11 @@ public class UrlTypeVFS implements UrlType {
             URL adaptedUrl = adaptURL(url);
             return new ZipDir(new JarFile(adaptedUrl.getFile()));
         } catch (Exception e) {
-            if (Reflections.log != null) {
-                Reflections.log.warn("Could not get URL", e);
-            }
             try {
                 return new ZipDir(new JarFile(url.getFile()));
             } catch (IOException e1) {
                 if (Reflections.log != null) {
+                    Reflections.log.warn("Could not get URL", e);
                     Reflections.log.warn("Could not get URL", e1);
                 }
             }
