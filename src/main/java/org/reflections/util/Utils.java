@@ -4,8 +4,9 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.reflections.log.Logger;
+import org.reflections.log.NullLogger;
+import org.reflections.log.Slf4jLogger;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -140,19 +141,24 @@ public abstract class Utils {
     }
 
     public static void close(InputStream closeable) {
-        try { if (closeable != null) closeable.close(); }
-        catch (IOException e) {
-            if (Reflections.log != null) {
-                Reflections.log.warn("Could not close InputStream", e);
-            }
+        try {
+            if (closeable != null)
+                closeable.close();
+        } catch (IOException e) {
+            Reflections.log.warn("Could not close InputStream", e);
         }
     }
 
     @Nullable
     public static Logger findLogger(Class<?> aClass) {
+        Logger logger = trySlf4j(aClass);
+        return logger != null ? logger : new NullLogger();
+    }
+
+    private static Logger trySlf4j(Class<?> aClass) {
         try {
             Class.forName("org.slf4j.impl.StaticLoggerBinder");
-            return LoggerFactory.getLogger(aClass);
+            return new Slf4jLogger(aClass); 
         } catch (Throwable e) {
             return null;
         }

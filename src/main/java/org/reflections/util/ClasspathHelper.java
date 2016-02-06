@@ -109,9 +109,7 @@ public abstract class ClasspathHelper {
                     }
                 }
             } catch (IOException e) {
-                if (Reflections.log != null) {
-                    Reflections.log.error("error getting resources for " + resourceName, e);
-                }
+                Reflections.log.error("error getting resources for " + resourceName, e);
             }
         }
         return distinctUrls(result);
@@ -138,9 +136,7 @@ public abstract class ClasspathHelper {
                     return new URL(normalizedUrl);
                 }
             } catch (MalformedURLException e) {
-                if (Reflections.log != null) {
-                    Reflections.log.warn("Could not get URL", e);
-                }
+                Reflections.log.warn("Could not get URL", e);
             }
         }
         return null;
@@ -207,9 +203,7 @@ public abstract class ClasspathHelper {
                 try {
                     urls.add(new File(path).toURI().toURL());
                 } catch (Exception e) {
-                    if (Reflections.log != null) {
-                        Reflections.log.warn("Could not get URL", e);
-                    }
+                    Reflections.log.warn("Could not get URL", e);
                 }
             }
         }
