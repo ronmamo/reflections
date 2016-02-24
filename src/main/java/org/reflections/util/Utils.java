@@ -15,11 +15,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.reflections.ReflectionUtils.forName;
 
 /**
@@ -58,7 +59,7 @@ public abstract class Utils {
         return file;
     }
 
-    public static Member getMemberFromDescriptor(String descriptor, ClassLoader... classLoaders) throws ReflectionsException {
+    public static Optional<? extends Member> getMemberFromDescriptor(String descriptor, ClassLoader... classLoaders) throws ReflectionsException {
         int p0 = descriptor.lastIndexOf('(');
         String memberKey = p0 != -1 ? descriptor.substring(0, p0) : descriptor;
         String methodParameters = p0 != -1 ? descriptor.substring(p0 + 1, descriptor.lastIndexOf(')')) : "";
@@ -81,25 +82,25 @@ public abstract class Utils {
         while (aClass != null) {
             try {
                 if (!descriptor.contains("(")) {
-                    return aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName);
+                    return of(aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName));
                 } else if (isConstructor(descriptor)) {
-                    return aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes);
+                    return of(aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes));
                 } else {
-                    return aClass.isInterface() ? aClass.getMethod(memberName, parameterTypes) : aClass.getDeclaredMethod(memberName, parameterTypes);
+                    return of(aClass.isInterface() ? aClass.getMethod(memberName, parameterTypes) : aClass.getDeclaredMethod(memberName, parameterTypes));
                 }
-            } catch (Exception e) {
+            } catch (Exception | NoClassDefFoundError e) {
                 aClass = aClass.getSuperclass();
             }
         }
-        throw new ReflectionsException("Can't resolve member named " + memberName + " for class " + className);
+
+        return empty();
     }
 
     public static Set<Method> getMethodsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
         Set<Method> result = Sets.newHashSet();
         for (String annotated : annotatedWith) {
             if (!isConstructor(annotated)) {
-                Method member = (Method) getMemberFromDescriptor(annotated, classLoaders);
-                if (member != null) result.add(member);
+                getMemberFromDescriptor(annotated, classLoaders).ifPresent(member -> result.add((Method) member));
             }
         }
         return result;
@@ -109,8 +110,7 @@ public abstract class Utils {
         Set<Constructor> result = Sets.newHashSet();
         for (String annotated : annotatedWith) {
             if (isConstructor(annotated)) {
-                Constructor member = (Constructor) getMemberFromDescriptor(annotated, classLoaders);
-                if (member != null) result.add(member);
+                getMemberFromDescriptor(annotated, classLoaders).ifPresent(member -> result.add((Constructor) member));
             }
         }
         return result;
@@ -118,12 +118,8 @@ public abstract class Utils {
 
     public static Set<Member> getMembersFromDescriptors(Iterable<String> values, ClassLoader... classLoaders) {
         Set<Member> result = Sets.newHashSet();
-        for (String value : values) {
-            try {
-                result.add(Utils.getMemberFromDescriptor(value, classLoaders));
-            } catch (ReflectionsException e) {
-                throw new ReflectionsException("Can't resolve member named " + value, e);
-            }
+        for (final String value : values) {
+            result.add(Utils.getMemberFromDescriptor(value, classLoaders).orElseThrow(() -> new ReflectionsException("Can't resolve member named " + value)));
         }
         return result;
     }
