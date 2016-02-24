@@ -103,9 +103,10 @@ public abstract class ClasspathHelper {
                     final URL url = urls.nextElement();
                     int index = url.toExternalForm().lastIndexOf(resourceName);
                     if (index != -1) {
-                        result.add(new URL(url.toExternalForm().substring(0, index)));
+                    	// Add old url as contextUrl to support exotic url handlers
+                        result.add(new URL(url, url.toExternalForm().substring(0, index)));
                     } else {
-						result.add(url);
+                        result.add(url);
                     }
                 }
             } catch (IOException e) {
