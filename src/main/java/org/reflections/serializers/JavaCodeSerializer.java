@@ -7,6 +7,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
@@ -79,7 +81,8 @@ public class JavaCodeSerializer implements Serializer {
         }
 
         //prepare file
-        String filename = name.replace('.', '/').concat(".java");
+        Path path = Paths.get(name);
+        String filename = path.getFileName().toString().replace('.', '/').concat(".java");
         File file = prepareFile(filename);
 
         //get package and class names
