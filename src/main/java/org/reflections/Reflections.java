@@ -6,6 +6,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+import org.reflections.log.Logger;
 import org.reflections.scanners.*;
 import org.reflections.scanners.Scanner;
 import org.reflections.serializers.Serializer;
@@ -15,7 +17,6 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -178,11 +179,11 @@ public class Reflections {
     //
     protected void scan() {
         if (configuration.getUrls() == null || configuration.getUrls().isEmpty()) {
-            if (log != null) log.warn("given scan urls are empty. set urls in the configuration");
+            log.warn("given scan urls are empty. set urls in the configuration");
             return;
         }
 
-        if (log != null && log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("going to scan these urls:\n" + Joiner.on("\n").join(configuration.getUrls()));
         }
 
@@ -196,7 +197,7 @@ public class Reflections {
                 if (executorService != null) {
                     futures.add(executorService.submit(new Runnable() {
                         public void run() {
-                            if (log != null && log.isDebugEnabled()) log.debug("[" + Thread.currentThread().toString() + "] scanning " + url);
+                            if (log.isDebugEnabled()) log.debug("[" + Thread.currentThread().toString() + "] scanning " + url);
                             scan(url);
                         }
                     }));
@@ -205,7 +206,7 @@ public class Reflections {
                 }
                 scannedUrls++;
             } catch (ReflectionsException e) {
-                if (log != null && log.isWarnEnabled()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
+                if (log.isWarnEnabled()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
             }
         }
 
@@ -223,19 +224,17 @@ public class Reflections {
             executorService.shutdown();
         }
 
-        if (log != null) {
-            int keys = 0;
-            int values = 0;
-            for (String index : store.keySet()) {
-                keys += store.get(index).keySet().size();
-                values += store.get(index).size();
-            }
-
-            log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
-                    time, scannedUrls, keys, values,
-                    executorService != null && executorService instanceof ThreadPoolExecutor ?
-                            format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
+        int keys = 0;
+        int values = 0;
+        for (String index : store.keySet()) {
+            keys += store.get(index).keySet().size();
+            values += store.get(index).size();
         }
+
+        log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
+                time, scannedUrls, keys, values,
+                executorService != null && executorService instanceof ThreadPoolExecutor ?
+                        format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
     }
 
     protected void scan(URL url) {
@@ -255,8 +254,9 @@ public class Reflections {
                                 classObject = scanner.scan(file, classObject);
                             }
                         } catch (Exception e) {
-                            if (log != null && log.isDebugEnabled())
+                            if (log.isDebugEnabled()) {
                                 log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e);
+                            }
                         }
                     }
                 }
@@ -302,18 +302,17 @@ public class Reflections {
             }
         }
 
-        if (log != null) {
-            Store store = reflections.getStore();
-            int keys = 0;
-            int values = 0;
-            for (String index : store.keySet()) {
-                keys += store.get(index).keySet().size();
-                values += store.get(index).size();
-            }
-
-            log.info(format("Reflections took %d ms to collect %d url%s, producing %d keys and %d values [%s]",
-                    System.currentTimeMillis() - start, urls.size(), urls.size() > 1 ? "s" : "", keys, values, Joiner.on(", ").join(urls)));
+        Store store = reflections.getStore();
+        int keys = 0;
+        int values = 0;
+        for (String index : store.keySet()) {
+            keys += store.get(index).keySet().size();
+            values += store.get(index).size();
         }
+
+        log.info(format("Reflections took %d ms to collect %d url%s, producing %d keys and %d values [%s]",
+                System.currentTimeMillis() - start, urls.size(), urls.size() > 1 ? "s" : "", keys, values, Joiner.on(", ").join(urls)));
+
         return reflections;
     }
 
@@ -323,7 +322,7 @@ public class Reflections {
     public Reflections collect(final InputStream inputStream) {
         try {
             merge(configuration.getSerializer().read(inputStream));
-            if (log != null) log.info("Reflections collected metadata from input stream using serializer " + configuration.getSerializer().getClass().getName());
+            log.info("Reflections collected metadata from input stream using serializer " + configuration.getSerializer().getClass().getName());
         } catch (Exception ex) {
             throw new ReflectionsException("could not merge input stream", ex);
         }
@@ -628,8 +627,7 @@ public class Reflections {
      */
     public File save(final String filename, final Serializer serializer) {
         File file = serializer.save(this, filename);
-        if (log != null) //noinspection ConstantConditions
-            log.info("Reflections successfully saved in " + file.getAbsolutePath() + " using " + serializer.getClass().getSimpleName());
+        log.info("Reflections successfully saved in " + file.getAbsolutePath() + " using " + serializer.getClass().getSimpleName());
         return file;
     }
 

@@ -109,7 +109,7 @@ public class ConfigurationBuilder implements Configuration {
             else if (param instanceof ClassLoader) { /* already taken care */ }
             else if (param instanceof Predicate) { filter.add((Predicate<String>) param); }
             else if (param instanceof ExecutorService) { builder.setExecutorService((ExecutorService) param); }
-            else if (Reflections.log != null) { throw new ReflectionsException("could not use param " + param); }
+            else { throw new ReflectionsException("could not use param " + param); }
         }
 
         if (builder.getUrls().isEmpty()) {
@@ -197,8 +197,7 @@ public class ConfigurationBuilder implements Configuration {
             try {
                 return (metadataAdapter = new JavassistAdapter());
             } catch (Throwable e) {
-                if (Reflections.log != null)
-                    Reflections.log.warn("could not create JavassistAdapter, using JavaReflectionAdapter", e);
+                Reflections.log.warn("could not create JavassistAdapter, using JavaReflectionAdapter", e);
                 return (metadataAdapter = new JavaReflectionAdapter());
             }
         }

@@ -379,11 +379,9 @@ public abstract class ReflectionUtils {
                 }
             }
 
-            if (Reflections.log != null) {
-                for (ReflectionsException reflectionsException : reflectionsExceptions) {
-                    Reflections.log.warn("could not get type for name " + typeName + " from any class loader",
-                            reflectionsException);
-                }
+            for (ReflectionsException reflectionsException : reflectionsExceptions) {
+                Reflections.log.warn("could not get type for name " + typeName + " from any class loader",
+                        reflectionsException);
             }
 
             return null;
