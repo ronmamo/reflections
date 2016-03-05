@@ -191,6 +191,10 @@ public abstract class Vfs {
 
         return null;
     }
+    
+    private static boolean hasJarFileInPath(URL url) {
+		return url.toExternalForm().matches(".*\\.jar(\\!.*|$)");
+	}
 
     /** default url types used by {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)}
      * <p>
@@ -205,7 +209,7 @@ public abstract class Vfs {
     public static enum DefaultUrlTypes implements UrlType {
         jarFile {
             public boolean matches(URL url) {
-                return url.getProtocol().equals("file") && url.toExternalForm().contains(".jar");
+                return url.getProtocol().equals("file") && hasJarFileInPath(url);
             }
 
             public Dir createDir(final URL url) throws Exception {
@@ -235,7 +239,7 @@ public abstract class Vfs {
 
         directory {
             public boolean matches(URL url) {
-                return url.getProtocol().equals("file") && !url.toExternalForm().contains(".jar") &&
+                return url.getProtocol().equals("file") && !hasJarFileInPath(url) &&
                         getFile(url).isDirectory();
             }
 
