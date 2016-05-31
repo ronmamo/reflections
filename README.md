@@ -149,8 +149,6 @@ Pull requests are welcomed!!
 
 The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. 
 
-I would even use a shorter version of it (if there was).
-
 This library is published as an act of giving and generosity, from developers to developers. 
 
 Please feel free to use it, and to contribute to the developers community in the same manner. [Dāna](http://en.wikipedia.org/wiki/D%C4%81na)
