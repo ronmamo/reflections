@@ -187,7 +187,7 @@ public abstract class Utils {
     }
 
     public static String name(Constructor constructor) {
-        return constructor.getName() + "." + "<init>" + "(" + Joiner.on(",").join(names(constructor.getParameterTypes())) + ")";
+        return constructor.getName() + "." + "<init>" + "(" + Joiner.on(", ").join(names(constructor.getParameterTypes())) + ")";
     }
 
     public static String name(Method method) {
