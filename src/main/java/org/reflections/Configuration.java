@@ -38,4 +38,8 @@ public interface Configuration {
     /** get class loaders, might be used for resolving methods/fields */
     @Nullable
     ClassLoader[] getClassLoaders();
+
+    /** if true (default), expand super types after scanning, for super types that were not scanned.
+     * <p>see {@link org.reflections.Reflections#expandSuperTypes()}*/
+    boolean shouldExpandSuperTypes();
 }

@@ -50,14 +50,15 @@ public class ConfigurationBuilder implements Configuration {
     /*lazy*/ private Serializer serializer;
     @Nullable private ExecutorService executorService;
     @Nullable private ClassLoader[] classLoaders;
+    private boolean expandSuperTypes = true;
 
     public ConfigurationBuilder() {
         scanners = Sets.<Scanner>newHashSet(new TypeAnnotationsScanner(), new SubTypesScanner());
         urls = Sets.newHashSet();
     }
 
-    /** constructs a {@link ConfigurationBuilder} using the given parameters, in a non statically typed way. that is, each element in {@code params} is
-     * guessed by it's type and populated into the configuration.
+    /** constructs a {@link ConfigurationBuilder} using the given parameters, in a non statically typed way.
+     * that is, each element in {@code params} is guessed by it's type and populated into the configuration.
      * <ul>
      *     <li>{@link String} - add urls using {@link ClasspathHelper#forPackage(String, ClassLoader...)} ()}</li>
      *     <li>{@link Class} - add urls using {@link ClasspathHelper#forClass(Class, ClassLoader...)} </li>
@@ -67,7 +68,8 @@ public class ConfigurationBuilder implements Configuration {
      *     <li>{@code Object[]} - flatten and use each element as above</li>
      * </ul>
      *
-     * use any parameter type in any order. this constructor uses instanceof on each param and instantiate a {@link ConfigurationBuilder} appropriately.
+     * an input {@link FilterBuilder} will be set according to given packages.
+     * <p>use any parameter type in any order. this constructor uses instanceof on each param and instantiate a {@link ConfigurationBuilder} appropriately.
      * */
     @SuppressWarnings("unchecked")
     public static ConfigurationBuilder build(final @Nullable Object... params) {
@@ -268,6 +270,20 @@ public class ConfigurationBuilder implements Configuration {
     @Nullable
     public ClassLoader[] getClassLoaders() {
         return classLoaders;
+    }
+
+    @Override
+    public boolean shouldExpandSuperTypes() {
+        return expandSuperTypes;
+    }
+
+    /**
+     * if set to true, Reflections will expand super types after scanning.
+     * <p>see {@link org.reflections.Reflections#expandSuperTypes()}
+     */
+    public ConfigurationBuilder setExpandSuperTypes(boolean expandSuperTypes) {
+        this.expandSuperTypes = expandSuperTypes;
+        return this;
     }
 
     /** set class loader, might be used for resolving methods/fields */

@@ -2,6 +2,7 @@ package org.reflections;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -64,10 +65,21 @@ public abstract class ReflectionUtils {
         Set<Class<?>> result = Sets.newLinkedHashSet();
         if (type != null && (includeObject || !type.equals(Object.class))) {
             result.add(type);
-            result.addAll(getAllSuperTypes(type.getSuperclass()));
-            for (Class<?> ifc : type.getInterfaces()) result.addAll(getAllSuperTypes(ifc));
+            for (Class<?> supertype : getSuperTypes(type)) {
+                result.addAll(getAllSuperTypes(supertype));
+            }
         }
         return filter(result, predicates);
+    }
+
+    /** get the immediate supertype and interfaces of the given {@code type} */
+    public static Set<Class<?>> getSuperTypes(Class<?> type) {
+        Set<Class<?>> result = new LinkedHashSet<>();
+        Class<?> superclass = type.getSuperclass();
+        Class<?>[] interfaces = type.getInterfaces();
+        if (superclass != null && (includeObject || !superclass.equals(Object.class))) result.add(superclass);
+        if (interfaces != null && interfaces.length > 0) result.addAll(Arrays.asList(interfaces));
+        return result;
     }
 
     /** get all methods of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */

@@ -2,18 +2,12 @@ package org.reflections;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import org.reflections.scanners.*;
 import org.reflections.scanners.Scanner;
 import org.reflections.serializers.Serializer;
 import org.reflections.serializers.XmlSerializer;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
-import org.reflections.util.Utils;
+import org.reflections.util.*;
 import org.reflections.vfs.Vfs;
 import org.slf4j.Logger;
 
@@ -127,6 +121,10 @@ public class Reflections {
             }
 
             scan();
+
+            if (configuration.shouldExpandSuperTypes()) {
+                expandSuperTypes();
+            }
         }
     }
 
@@ -361,6 +359,38 @@ public class Reflections {
             }
         }
         return this;
+    }
+
+    /**
+     * expand super types after scanning, for super types that were not scanned.
+     * this is helpful in finding the transitive closure without scanning all 3rd party dependencies.
+     * it uses {@link ReflectionUtils#getSuperTypes(Class)}.
+     * <p>
+     * for example, for classes A,B,C where A supertype of B, B supertype of C:
+     * <ul>
+     *     <li>if scanning C resulted in B (B->C in store), but A was not scanned (although A supertype of B) - then getSubTypes(A) will not return C</li>
+     *     <li>if expanding supertypes, B will be expanded with A (A->B in store) - then getSubTypes(A) will return C</li>
+     * </ul>
+     */
+    public void expandSuperTypes() {
+        if (store.keySet().contains(index(SubTypesScanner.class))) {
+            Multimap<String, String> mmap = store.get(index(SubTypesScanner.class));
+            Sets.SetView<String> keys = Sets.difference(mmap.keySet(), Sets.newHashSet(mmap.values()));
+            Multimap<String, String> expand = HashMultimap.create();
+            for (String key : keys) {
+                expandSupertypes(expand, key, forName(key));
+            }
+            mmap.putAll(expand);
+        }
+    }
+
+    private void expandSupertypes(Multimap<String, String> mmap, String key, Class<?> type) {
+        for (Class<?> supertype : ReflectionUtils.getSuperTypes(type)) {
+            if (mmap.put(supertype.getName(), key)) {
+                if (log != null) log.debug("expanded subtype {} -> {}", supertype.getName(), key);
+                expandSupertypes(mmap, supertype.getName(), supertype);
+            }
+        }
     }
 
     //query
