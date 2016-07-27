@@ -63,7 +63,7 @@ public class VfsTest {
             assertTrue(rtJarUrl.toString().contains(".jar!"));
 
             assertFalse(Vfs.DefaultUrlTypes.jarFile.matches(rtJarUrl));
-            assertTrue(Vfs.DefaultUrlTypes.jarUrl.matches(rtJarUrl));
+            assertTrue(Vfs.DefaultUrlTypes.jarInputStream.matches(rtJarUrl));
             assertFalse(Vfs.DefaultUrlTypes.directory.matches(rtJarUrl));
 
             Vfs.Dir dir = Vfs.DefaultUrlTypes.jarUrl.createDir(rtJarUrl);

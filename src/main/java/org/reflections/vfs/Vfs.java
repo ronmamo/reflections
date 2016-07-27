@@ -218,7 +218,8 @@ public abstract class Vfs {
 
         jarUrl {
             public boolean matches(URL url) {
-                return "jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol());
+                return ("jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol()))
+                         && (!url.toExternalForm().contains(".jar!") || url.toExternalForm().endsWith(".jar!/")); // will be handled by jarInputStream
             }
 
             public Dir createDir(URL url) throws Exception {
