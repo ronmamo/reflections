@@ -1,15 +1,10 @@
 package org.reflections;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
-import javassist.bytecode.ClassFile;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.reflections.adapters.JavassistAdapter;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.vfs.JarInputDir;
-import org.reflections.vfs.Vfs;
-import org.reflections.vfs.ZipDir;
+import static java.text.MessageFormat.format;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -21,7 +16,19 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.jar.JarFile;
 
-import static org.junit.Assert.*;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.reflections.adapters.JavassistAdapter;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.vfs.JarInputDir;
+import org.reflections.vfs.SystemDir;
+import org.reflections.vfs.Vfs;
+import org.reflections.vfs.ZipDir;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
+
+import javassist.bytecode.ClassFile;
 
 /** */
 public class VfsTest {
@@ -120,6 +127,41 @@ public class VfsTest {
     @Test
     public void vfsFromDir() {
         testVfsDir(getSomeDirectory());
+    }
+    
+    @Test
+    public void vfsFromDirWithJarInName() throws MalformedURLException {
+        String tmpFolder = System.getProperty("java.io.tmpdir");
+		tmpFolder = tmpFolder.endsWith(File.separator) ? tmpFolder : tmpFolder + File.separator;
+        String dirWithJarInName = tmpFolder + "tony.jarvis";
+        File newDir = new File(dirWithJarInName);
+        newDir.mkdir();
+
+        try {
+            Vfs.Dir dir = Vfs.fromURL(new URL(format("file:{0}", dirWithJarInName)));
+
+            assertEquals(dirWithJarInName, dir.getPath());
+            assertEquals(SystemDir.class, dir.getClass());
+        } finally {
+            newDir.delete();
+        }
+    }
+    
+    @Test
+    public void vfsFromDirWithinAJarUrl() throws MalformedURLException {
+    	URL directoryInJarUrl = ClasspathHelper.forClass(String.class);
+        assertTrue(directoryInJarUrl.toString().startsWith("jar:file:"));
+        assertTrue(directoryInJarUrl.toString().contains(".jar!"));
+        
+        String directoryInJarPath = directoryInJarUrl.toExternalForm().replaceFirst("jar:", "");
+        int start = directoryInJarPath.indexOf(":") + 1;
+		int end = directoryInJarPath.indexOf(".jar!") + 4;
+		String expectedJarFile = directoryInJarPath.substring(start, end);
+        
+        Vfs.Dir dir = Vfs.fromURL(new URL(directoryInJarPath));
+
+        assertEquals(ZipDir.class, dir.getClass());
+        assertEquals(expectedJarFile, dir.getPath());
     }
 
     @Test
@@ -227,7 +269,7 @@ public class VfsTest {
     private URL getSomeJar() {
         Collection<URL> urls = ClasspathHelper.forClassLoader();
         for (URL url : urls) {
-            if (!url.toExternalForm().contains("surefire")) return url; //damn
+            if (!url.toExternalForm().contains("surefire") && url.toExternalForm().endsWith(".jar")) return url; //damn
         }
         throw new RuntimeException();
     }
