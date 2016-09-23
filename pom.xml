@@ -1,250 +1,239 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.reflections</groupId>
-    <artifactId>reflections</artifactId>
-    <version>0.9.11-SNAPSHOT</version>
-    <packaging>${packaging.type}</packaging>
+  <parent>
+    <groupId>org.rapidpm</groupId>
+    <artifactId>rapidpm-dependencies</artifactId>
+    <version>3.2.0-SNAPSHOT</version>
+  </parent>
 
-    <name>Reflections</name>
-    <description>Reflections - a Java runtime metadata analysis</description>
-    <url>http://github.com/ronmamo/reflections</url>
 
-    <licenses>
-        <license>
-            <name>WTFPL</name>
-            <url>http://www.wtfpl.net/</url>
-        </license>
-        <license>
-            <name>The New BSD License</name>
-            <url>http://www.opensource.org/licenses/bsd-license.html</url>
-        </license>
-    </licenses>
+  <artifactId>reflections</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>${packaging.type}</packaging>
 
-    <scm>
-        <url>https://github.com/ronmamo/reflections/issues</url>
-        <connection>scm:git:git://github.com/ronmamo/reflections.git</connection>
-    </scm>
+  <name>RapidPM - Reflections</name>
+  <description>Reflections - a Java runtime metadata analysis for Java 8</description>
+  <!--<url>http://github.com/ronmamo/reflections</url>-->
+  <url>https://github.com/RapidPM/reflections</url>
 
-    <issueManagement>
-        <url>https://github.com/ronmamo/reflections/issues</url>
-        <system>GitHub Issues</system>
-    </issueManagement>
+  <licenses>
+    <license>
+      <name>WTFPL</name>
+      <url>http://www.wtfpl.net/</url>
+    </license>
+    <license>
+      <name>The New BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.html</url>
+    </license>
+  </licenses>
 
-    <mailingLists>
-        <mailingList>
-            <name>google-code-reflections</name>
-            <archive>http://groups.google.com/group/google-code-reflections</archive>
-        </mailingList>
-    </mailingLists>
+  <scm>
+    <url>https://github.com/RapidPM/reflections.git</url>
+    <connection>scm:git:https://github.com/RapidPM/reflections.git</connection>
+  </scm>
 
-    <developers>
-        <developer>
-            <email>ronmamo at gmail</email>
-        </developer>
-    </developers>
+  <issueManagement>
+    <url>https://issues.rapidpm.org/issues/RFL</url>
+    <system>Youtrack</system>
+  </issueManagement>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+  <!--<mailingLists>-->
+  <!--<mailingList>-->
+  <!--<name>google-code-reflections</name>-->
+  <!--<archive>http://groups.google.com/group/google-code-reflections</archive>-->
+  <!--</mailingList>-->
+  <!--</mailingLists>-->
 
-    <properties>
-        <packaging.type>jar</packaging.type>
-        <guava.version>19.0</guava.version>
-        <javassist.version>3.20.0-GA</javassist.version>
-        <jdk.version>1.7</jdk.version>
-        <additionalparam>-Xdoclint:none</additionalparam>
-    </properties>
+  <developers>
+    <developer>
+      <email>sven.ruppert@gmail.com</email>
+    </developer>
+  </developers>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>${javassist.version}</version>
-            <optional>false
-            </optional> <!-- case: when not actually scanning with javassist or if using {@link Reflections.collect()} -->
-        </dependency>
+  <properties>
+    <packaging.type>jar</packaging.type>
+    <additionalparam>-Xdoclint:none</additionalparam>
+  </properties>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.6.1</version>
-            <optional>true</optional> <!-- case: when logging is not needed -->
-        </dependency>
+  <dependencies>
+    <!--<dependency>-->
+    <!--<groupId>com.google.guava</groupId>-->
+    <!--<artifactId>guava</artifactId>-->
+    <!--</dependency>-->
 
-        <dependency>
-            <groupId>dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>1.6.1</version>
-            <optional>true</optional> <!-- case: when no xml de/serialization -->
-        </dependency>
+    <dependency>
+      <groupId>org.javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <optional>false
+      </optional> <!-- case: when not actually scanning with javassist or if using {@link Reflections.collect()} -->
+    </dependency>
 
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>1.4</version>
-            <optional>true</optional> <!-- case: when no json de/serialization -->
-        </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <optional>true</optional> <!-- case: when logging is not needed -->
+    </dependency>
 
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-            <scope>provided</scope>
-            <optional>true</optional> <!-- case: when no servlet environment -->
-        </dependency>
+    <dependency>
+      <groupId>dom4j</groupId>
+      <artifactId>dom4j</artifactId>
+      <optional>true</optional> <!-- case: when no xml de/serialization -->
+    </dependency>
 
-        <!-- use any implementation you like -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.6.1</version>
-            <optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
-        </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <optional>true</optional> <!-- case: when no json de/serialization -->
+    </dependency>
 
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.0</version>
-            <scope>provided</scope>
-        </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+      <scope>provided</scope>
+      <optional>true</optional> <!-- case: when no servlet environment -->
+    </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.5</version>
-            <scope>test</scope>
-        </dependency>
+    <!-- use any implementation you like -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
+    </dependency>
 
-    </dependencies>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
-    <profiles>
-        <profile>
-            <id>bundle</id>
-            <properties>
-                <packaging.type>bundle</packaging.type>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>maven-bundle-plugin</artifactId>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <instructions>
-                                <Import-Package>
-                                    org.jboss.vfs.*;resolution:=optional,
-                                    *
-                                </Import-Package>
-                                <Export-Package>
-                                    org.reflections.*
-                                </Export-Package>
-                                <Bundle-SymbolicName>org.reflections</Bundle-SymbolicName>
-                            </instructions>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <profile>
-            <id>build</id>
-            <properties>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                                <configuration>
-                                    <rules>
-                                        <requireProperty>
-                                            <property>gpg.keyname</property>
-                                            <message>gpg.keyname must be supplied using -D.
-                                                create a key using gpg --gen-key or use existing one.
-                                            </message>
-                                        </requireProperty>
-                                        <requireProperty>
-                                            <property>gpg.passphrase</property>
-                                            <message>gpg.passphrase must be supplied using -D.
-                                                create a key using gpg --gen-key or use existing one.
-                                            </message>
-                                        </requireProperty>
-                                    </rules>
-                                    <fail>true</fail>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
-    <build>
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>bundle</id>
+      <properties>
+        <packaging.type>bundle</packaging.type>
+      </properties>
+      <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
-                </configuration>
-            </plugin>
+          <plugin>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>maven-bundle-plugin</artifactId>
+            <extensions>true</extensions>
+            <configuration>
+              <instructions>
+                <Import-Package>
+                  org.jboss.vfs.*;resolution:=optional,
+                  *
+                </Import-Package>
+                <Export-Package>
+                  org.reflections.*
+                </Export-Package>
+                <Bundle-SymbolicName>org.reflections</Bundle-SymbolicName>
+              </instructions>
+            </configuration>
+          </plugin>
         </plugins>
-    </build>
+      </build>
+    </profile>
+
+    <profile>
+      <id>build</id>
+      <properties>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.4</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <version>1.4.1</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireProperty>
+                      <property>gpg.keyname</property>
+                      <message>gpg.keyname must be supplied using -D.
+                        create a key using gpg --gen-key or use existing one.
+                      </message>
+                    </requireProperty>
+                    <requireProperty>
+                      <property>gpg.passphrase</property>
+                      <message>gpg.passphrase must be supplied using -D.
+                        create a key using gpg --gen-key or use existing one.
+                      </message>
+                    </requireProperty>
+                  </rules>
+                  <fail>false</fail>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!--<plugin>-->
+          <!--<groupId>org.apache.maven.plugins</groupId>-->
+          <!--<artifactId>maven-gpg-plugin</artifactId>-->
+          <!--<version>1.6</version>-->
+          <!--<executions>-->
+          <!--<execution>-->
+          <!--<id>sign-artifacts</id>-->
+          <!--<phase>verify</phase>-->
+          <!--<goals>-->
+          <!--<goal>sign</goal>-->
+          <!--</goals>-->
+          <!--</execution>-->
+          <!--</executions>-->
+          <!--</plugin>-->
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

@@ -12,17 +12,17 @@ import javax.annotation.Nullable;
  */
 public interface Scanner {
 
-    void setConfiguration(Configuration configuration);
+  void setConfiguration(Configuration configuration);
 
-    Multimap<String, String> getStore();
+  Multimap<String, String> getStore();
 
-    void setStore(Multimap<String, String> store);
+  void setStore(Multimap<String, String> store);
 
-    Scanner filterResultsBy(Predicate<String> filter);
+  Scanner filterResultsBy(Predicate<String> filter);
 
-    boolean acceptsInput(String file);
+  boolean acceptsInput(String file);
 
-    Object scan(Vfs.File file, @Nullable Object classObject);
+  Object scan(Vfs.File file, @Nullable Object classObject);
 
-    boolean acceptResult(String fqn);
+  boolean acceptResult(String fqn);
 }
