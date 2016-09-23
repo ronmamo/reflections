@@ -477,11 +477,7 @@ public class Reflections {
   protected Iterable<String> getAllAnnotated(Iterable<String> annotated, boolean inherited, boolean honorInherited) {
     if (honorInherited) {
       if (inherited) {
-        Iterable<String> subTypes = store.get(index(SubTypesScanner.class), filter(annotated, new Predicate<String>() {
-          public boolean apply(@Nullable String input) {
-            return !ReflectionUtils.forName(input, loaders()).isInterface();
-          }
-        }));
+        Iterable<String> subTypes = store.get(index(SubTypesScanner.class), filter(annotated, (Predicate<String>) input -> !ReflectionUtils.forName(input, loaders()).isInterface()));
         return concat(subTypes, store.getAll(index(SubTypesScanner.class), subTypes));
       } else {
         return annotated;
@@ -636,11 +632,7 @@ public class Reflections {
    * <pre>Set<String> xmls = reflections.getResources(".*\\.xml");</pre>
    */
   public Set<String> getResources(final Pattern pattern) {
-    return getResources(new Predicate<String>() {
-      public boolean apply(String input) {
-        return pattern.matcher(input).matches();
-      }
-    });
+    return getResources(input -> pattern.matcher(input).matches());
   }
 
   /**

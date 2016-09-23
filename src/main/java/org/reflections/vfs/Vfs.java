@@ -107,15 +107,13 @@ public abstract class Vfs {
    * return an iterable of all {@link org.reflections.vfs.Vfs.File} in given urls, starting with given packagePrefix and matching nameFilter
    */
   public static Iterable<File> findFiles(final Collection<URL> inUrls, final String packagePrefix, final Predicate<String> nameFilter) {
-    Predicate<File> fileNamePredicate = new Predicate<File>() {
-      public boolean apply(File file) {
-        String path = file.getRelativePath();
-        if (path.startsWith(packagePrefix)) {
-          String filename = path.substring(path.indexOf(packagePrefix) + packagePrefix.length());
-          return !Utils.isEmpty(filename) && nameFilter.apply(filename.substring(1));
-        } else {
-          return false;
-        }
+    Predicate<File> fileNamePredicate = file -> {
+      String path = file.getRelativePath();
+      if (path.startsWith(packagePrefix)) {
+        String filename = path.substring(path.indexOf(packagePrefix) + packagePrefix.length());
+        return !Utils.isEmpty(filename) && nameFilter.apply(filename.substring(1));
+      } else {
+        return false;
       }
     };
 

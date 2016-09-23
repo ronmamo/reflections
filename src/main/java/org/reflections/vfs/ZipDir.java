@@ -5,7 +5,6 @@ import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -24,22 +23,18 @@ public class ZipDir implements Vfs.Dir {
   }
 
   public Iterable<Vfs.File> getFiles() {
-    return new Iterable<Vfs.File>() {
-      public Iterator<Vfs.File> iterator() {
-        return new AbstractIterator<Vfs.File>() {
-          final Enumeration<? extends ZipEntry> entries = jarFile.entries();
+    return () -> new AbstractIterator<Vfs.File>() {
+      final Enumeration<? extends ZipEntry> entries = jarFile.entries();
 
-          protected Vfs.File computeNext() {
-            while (entries.hasMoreElements()) {
-              ZipEntry entry = entries.nextElement();
-              if (!entry.isDirectory()) {
-                return new ZipFile(ZipDir.this, entry);
-              }
-            }
-
-            return endOfData();
+      protected Vfs.File computeNext() {
+        while (entries.hasMoreElements()) {
+          ZipEntry entry = entries.nextElement();
+          if (!entry.isDirectory()) {
+            return new ZipFile(ZipDir.this, entry);
           }
-        };
+        }
+
+        return endOfData();
       }
     };
   }
