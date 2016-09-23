@@ -90,9 +90,7 @@ public class Predicates {
     public boolean apply(T t) {
       try {
         return target.contains(t);
-      } catch (NullPointerException e) {
-        return false;
-      } catch (ClassCastException e) {
+      } catch (NullPointerException | ClassCastException e) {
         return false;
       }
     }    @Override
@@ -165,8 +163,8 @@ public class Predicates {
     }    @Override
     public boolean apply(T t) {
       // Avoid using the Iterator to avoid generating garbage (issue 820).
-      for (int i = 0; i < components.size(); i++) {
-        if (!components.get(i).apply(t)) {
+      for (Predicate<? super T> component : components) {
+        if (!component.apply(t)) {
           return false;
         }
       }

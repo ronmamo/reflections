@@ -21,6 +21,8 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.util.Arrays.asList;
 import static junit.org.reflections.TestModel.*;
@@ -165,12 +167,7 @@ public class ReflectionsTest {
   }
 
   private Iterable<Class<? extends Annotation>> annotationTypes(Iterable<Annotation> annotations) {
-    return Iterables.transform(annotations, new Function<Annotation, Class<? extends Annotation>>() {
-      @Nullable
-      public Class<? extends Annotation> apply(@Nullable Annotation input) {
-        return input != null ? input.annotationType() : null;
-      }
-    });
+    return StreamSupport.stream(annotations.spliterator(), false).map(input -> input != null ? input.annotationType() : null).collect(Collectors.toList());
   }
 
   @Test

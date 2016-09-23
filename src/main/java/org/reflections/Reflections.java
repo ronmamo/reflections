@@ -640,7 +640,7 @@ public class Reflections {
    * <p>depends on ResourcesScanner configured
    */
   public Set<String> getResources(final Predicate<String> namePredicate) {
-    Iterable<String> resources = Iterables.filter(store.get(index(ResourcesScanner.class)).keySet(), namePredicate);
+    Iterable<String> resources = store.get(index(ResourcesScanner.class)).keySet().stream().filter(namePredicate::apply).collect(Collectors.toList());
 
     final Iterator<String> sourceIterator = resources.iterator();
 

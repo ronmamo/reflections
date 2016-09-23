@@ -2,7 +2,6 @@ package org.reflections;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
 import org.reflections.util.ClasspathHelper;
 
 import java.lang.annotation.Annotation;
@@ -171,7 +170,7 @@ public abstract class ReflectionUtils {
    */
   public static <T extends AnnotatedElement> Set<T> getAll(final Set<T> elements, Predicate<? super T>... predicates) {
     final Predicate<T> and = Predicates.and(predicates);
-    final Iterable<T> filter = Iterables.filter(elements, and);
+    final Iterable<T> filter = elements.stream().filter(and::apply).collect(Collectors.toList());
     return Predicates.isEmpty(predicates) ?
         elements :
         StreamSupport.stream(filter.spliterator(), false).collect(Collectors.toSet());
@@ -307,7 +306,7 @@ public abstract class ReflectionUtils {
    * when method/constructor has any parameter with an annotation matches given {@code annotations}
    */
   public static Predicate<Member> withAnyParameterAnnotation(final Class<? extends Annotation> annotationClass) {
-    return input -> input != null && Iterables.any(annotationTypes(parameterAnnotations(input)), input1 -> input1.equals(annotationClass));
+    return input -> input != null && annotationTypes(parameterAnnotations(input)).stream().anyMatch(input1 -> input1.equals(annotationClass));
   }
 
   private static Set<Class<? extends Annotation>> annotationTypes(Iterable<Annotation> annotations) {
@@ -332,9 +331,7 @@ public abstract class ReflectionUtils {
    */
   public static Predicate<Member> withAnyParameterAnnotation(final Annotation annotation) {
     return input -> input != null &&
-        Iterables.any(
-            parameterAnnotations(input),
-            input1 -> areAnnotationMembersMatching(annotation, input1));
+        parameterAnnotations(input).stream().anyMatch(input1 -> areAnnotationMembersMatching(annotation, input1));
   }
 
   /**
@@ -482,7 +479,7 @@ public abstract class ReflectionUtils {
         Stream.of(elements).collect(Collectors.toSet())
         :
         StreamSupport
-            .stream(Iterables.filter(Arrays.asList(elements), Predicates.and(predicates)).spliterator(), false)
+            .stream(Arrays.asList(elements).stream().filter(Predicates.and(predicates)::apply).collect(Collectors.toList()).spliterator(), false)
             .collect(Collectors.toSet());
   }
 
@@ -491,7 +488,7 @@ public abstract class ReflectionUtils {
         StreamSupport
             .stream(elements.spliterator(), false).collect(Collectors.toSet()) :
         StreamSupport
-            .stream(Iterables.filter(elements, Predicates.and(predicates)).spliterator(), false)
+            .stream(StreamSupport.stream(elements.spliterator(), false).filter(Predicates.and(predicates)::apply).collect(Collectors.toList()).spliterator(), false)
             .collect(Collectors.toSet());
   }
 }
