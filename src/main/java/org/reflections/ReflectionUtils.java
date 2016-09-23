@@ -122,7 +122,7 @@ public abstract class ReflectionUtils {
    * get constructors of given {@code type}, optionally filtered by {@code predicates}
    */
   public static Set<Constructor> getConstructors(Class<?> t, Predicate<? super Constructor>... predicates) {
-    return ReflectionUtils.<Constructor>filter(t.getDeclaredConstructors(), predicates); //explicit needed only for jdk1.5
+    return ReflectionUtils.filter(t.getDeclaredConstructors(), predicates); //explicit needed only for jdk1.5
   }
 
   /**

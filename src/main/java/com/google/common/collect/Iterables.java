@@ -71,6 +71,7 @@ public class Iterables {
    *
    * @throws NullPointerException if any of the provided iterables is null
    */
+  @SafeVarargs
   public static <T> Iterable<T> concat(Iterable<? extends T>... inputs) {
     return concat(Arrays.asList(inputs));
   }

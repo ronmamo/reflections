@@ -63,6 +63,7 @@ public class Predicates {
     return new AndPredicate<>(defensiveCopy(predicates));
   }
 
+  @SafeVarargs
   private static <T> List<T> defensiveCopy(T... array) {
     return defensiveCopy(Arrays.asList(array));
   }

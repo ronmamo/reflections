@@ -659,7 +659,7 @@ public class Reflections {
    */
   public List<String> getMethodParamNames(Method method) {
     Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), name(method));
-    return !Iterables.isEmpty(names) ? Arrays.asList(Iterables.getOnlyElement(names).split(", ")) : Arrays.<String>asList();
+    return !Iterables.isEmpty(names) ? Arrays.asList(Iterables.getOnlyElement(names).split(", ")) : Arrays.asList();
   }
 
   /**
@@ -668,7 +668,7 @@ public class Reflections {
    */
   public List<String> getConstructorParamNames(Constructor constructor) {
     Iterable<String> names = store.get(index(MethodParameterNamesScanner.class), Utils.name(constructor));
-    return !Iterables.isEmpty(names) ? Arrays.asList(Iterables.getOnlyElement(names).split(", ")) : Arrays.<String>asList();
+    return !Iterables.isEmpty(names) ? Arrays.asList(Iterables.getOnlyElement(names).split(", ")) : Arrays.asList();
   }
 
   /**

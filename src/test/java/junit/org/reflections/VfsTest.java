@@ -215,7 +215,7 @@ public class VfsTest {
   @Test
   public void findFilesFromEmptyMatch() throws MalformedURLException {
     final URL jar = getSomeJar();
-    final Iterable<Vfs.File> files = Vfs.findFiles(java.util.Arrays.asList(jar), Predicates.<Vfs.File>alwaysTrue());
+    final Iterable<Vfs.File> files = Vfs.findFiles(java.util.Arrays.asList(jar), Predicates.alwaysTrue());
     assertNotNull(files);
     assertTrue(files.iterator().hasNext());
   }
