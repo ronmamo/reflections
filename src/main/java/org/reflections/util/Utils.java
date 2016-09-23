@@ -64,7 +64,7 @@ public abstract class Utils {
     Class<?>[] parameterTypes = null;
     if (!isEmpty(methodParameters)) {
       String[] parameterNames = methodParameters.split(",");
-      List<Class<?>> result = new ArrayList<Class<?>>(parameterNames.length);
+      List<Class<?>> result = new ArrayList<>(parameterNames.length);
       for (String name : parameterNames) {
         result.add(forName(name.trim(), classLoaders));
       }
@@ -158,7 +158,7 @@ public abstract class Utils {
   }
 
   public static List<String> names(Iterable<Class<?>> types) {
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
     for (Class<?> type : types) result.add(name(type));
     return result;
   }

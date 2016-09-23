@@ -36,7 +36,7 @@ public class SystemDir implements Vfs.Dir {
       return Collections.emptyList();
     }
     return () -> new AbstractIterator<Vfs.File>() {
-      final Stack<File> stack = new Stack<File>();
+      final Stack<File> stack = new Stack<>();
 
       {
         stack.addAll(listFiles(file));

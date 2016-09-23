@@ -26,7 +26,7 @@ public class MethodParameterNamesScanner extends AbstractScanner {
         int length = table.tableLength();
         int i = Modifier.isStatic(((MethodInfo) method).getAccessFlags()) ? 0 : 1; //skip this
         if (i < length) {
-          List<String> names = new ArrayList<String>(length - i);
+          List<String> names = new ArrayList<>(length - i);
           while (i < length) names.add(((MethodInfo) method).getConstPool().getUtf8Info(table.nameIndex(i++)));
           getStore().put(key, Joiner.on(", ").join(names));
         }

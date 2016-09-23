@@ -119,7 +119,7 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
 
   public List<String> getInterfacesNames(Class cls) {
     Class[] classes = cls.getInterfaces();
-    List<String> names = new ArrayList<String>(classes != null ? classes.length : 0);
+    List<String> names = new ArrayList<>(classes != null ? classes.length : 0);
     if (classes != null) for (Class cls1 : classes) names.add(cls1.getName());
     return names;
   }
@@ -130,7 +130,7 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
 
   //
   private List<String> getAnnotationNames(Annotation[] annotations) {
-    List<String> names = new ArrayList<String>(annotations.length);
+    List<String> names = new ArrayList<>(annotations.length);
     for (Annotation annotation : annotations) {
       names.add(annotation.annotationType().getName());
     }

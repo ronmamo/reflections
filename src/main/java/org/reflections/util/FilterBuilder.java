@@ -47,7 +47,7 @@ public class FilterBuilder implements Predicate<String> {
    * See also the more useful {@link FilterBuilder#parsePackages(String)} method.
    */
   public static FilterBuilder parse(String includeExcludeString) {
-    List<Predicate<String>> filters = new ArrayList<Predicate<String>>();
+    List<Predicate<String>> filters = new ArrayList<>();
 
     if (!Utils.isEmpty(includeExcludeString)) {
       for (String string : includeExcludeString.split(",")) {
@@ -88,7 +88,7 @@ public class FilterBuilder implements Predicate<String> {
    * The input strings "-java" and "-java." are equivalent.
    */
   public static FilterBuilder parsePackages(String includeExcludeString) {
-    List<Predicate<String>> filters = new ArrayList<Predicate<String>>();
+    List<Predicate<String>> filters = new ArrayList<>();
 
     if (!Utils.isEmpty(includeExcludeString)) {
       for (String string : includeExcludeString.split(",")) {

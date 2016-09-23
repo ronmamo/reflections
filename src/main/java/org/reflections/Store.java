@@ -75,7 +75,7 @@ public class Store {
    */
   public Iterable<String> get(String index, Iterable<String> keys) {
     Multimap<String, String> mmap = get(index);
-    IterableChain<String> result = new IterableChain<String>();
+    IterableChain<String> result = new IterableChain<>();
     for (String key : keys) {
       result.addAll(mmap.get(key));
     }
@@ -100,14 +100,14 @@ public class Store {
    * recursively get the values stored for the given {@code index} and {@code keys}, not including keys
    */
   public Iterable<String> getAll(String index, String key) {
-    return getAllIncluding(index, get(index, key), new IterableChain<String>());
+    return getAllIncluding(index, get(index, key), new IterableChain<>());
   }
 
   /**
    * recursively get the values stored for the given {@code index} and {@code keys}, not including keys
    */
   public Iterable<String> getAll(String index, Iterable<String> keys) {
-    return getAllIncluding(index, get(index, keys), new IterableChain<String>());
+    return getAllIncluding(index, get(index, keys), new IterableChain<>());
   }
 
   private static class IterableChain<T> implements Iterable<T> {

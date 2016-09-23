@@ -37,7 +37,7 @@ public class Predicates {
    * {@code false}.
    */
   public static <T> Predicate<T> not(Predicate<T> predicate) {
-    return new NotPredicate<T>(predicate);
+    return new NotPredicate<>(predicate);
   }
 
   /**
@@ -52,7 +52,7 @@ public class Predicates {
    * @param target the collection that may contain the function input
    */
   public static <T> Predicate<T> in(Collection<? extends T> target) {
-    return new InPredicate<T>(target);
+    return new InPredicate<>(target);
   }
 
   public static <T> boolean isEmpty(final Predicate<? super T>[] predicates) {
@@ -60,7 +60,7 @@ public class Predicates {
   }
 
   public static <T> Predicate<T> and(final Predicate<? super T>[] predicates) {
-    return new AndPredicate<T>(defensiveCopy(predicates));
+    return new AndPredicate<>(defensiveCopy(predicates));
   }
 
   private static <T> List<T> defensiveCopy(T... array) {
@@ -68,7 +68,7 @@ public class Predicates {
   }
 
   static <T> List<T> defensiveCopy(Iterable<T> iterable) {
-    ArrayList<T> list = new ArrayList<T>();
+    ArrayList<T> list = new ArrayList<>();
     for (T element : iterable) {
       list.add(checkNotNull(element));
     }

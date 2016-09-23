@@ -391,7 +391,7 @@ public abstract class ReflectionUtils {
    * try to resolve all given string representation of types to a list of java types
    */
   public static <T> List<Class<? extends T>> forNames(final Iterable<String> classes, ClassLoader... classLoaders) {
-    List<Class<? extends T>> result = new ArrayList<Class<? extends T>>();
+    List<Class<? extends T>> result = new ArrayList<>();
     for (String className : classes) {
       Class<?> type = forName(className, classLoaders);
       if (type != null) {
