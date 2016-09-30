@@ -1,9 +1,8 @@
 package com.google.common.collect;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Copyright (C) 2010 RapidPM
@@ -22,39 +21,97 @@ import java.util.Set;
 public class Multimap<KEY, VALUES> {
 
 
-  public boolean put(final KEY key, final VALUES value) {
-    return false;
+  public Multimap(final Supplier<Collection<VALUES>> valuesSupplier) {
+    this.valuesSupplier = valuesSupplier;
   }
 
+  public Multimap() {
+  }
+
+  private final Map<KEY, Collection<VALUES>> multimap = new HashMap<>();
+
+  private int totalSize;
+
+  public boolean put(@Nullable KEY key, @Nullable VALUES value) {
+    Collection<VALUES> collection = multimap.get(key);
+    if (collection == null) {
+      collection = createCollection(key);
+      if (collection.add(value)) {
+        totalSize++;
+        multimap.put(key, collection);
+        return true;
+      } else {
+        throw new AssertionError("New Collection violated the Collection spec");
+      }
+    } else if (collection.add(value)) {
+      totalSize++;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private Supplier<Collection<VALUES>> valuesSupplier = HashSet::new;
+
+  private Collection<VALUES> createCollection(final KEY key) {
+    return valuesSupplier.get();
+  }
+
+
   public boolean isEmpty() {
-    return false;
+    return multimap.isEmpty();
   }
 
   public Set<KEY> keySet() {
-    return Collections.emptySet();
+    return multimap.keySet();
   }
 
   public Iterable<? extends Map.Entry<KEY, VALUES>> entries() {
-    return null;
+    throw new RuntimeException("not yet implemented");
   }
 
   public Collection<VALUES> get(final KEY key) {
-    return null;
+    return multimap.get(key);
   }
 
   public int size() {
-    return 0;
+    return totalSize;
   }
 
   public Collection<VALUES> values() {
-    return Collections.emptySet();
+    return multimap
+        .values()
+        .stream()
+        .reduce((values, values2) -> {
+          final Set<VALUES> result = new HashSet<>();
+          result.addAll(values);
+          result.addAll(values2);
+          return result;
+        }).orElse(Collections.emptyList());
   }
 
-  public boolean putAll(final Multimap<KEY, KEY> expand) {
-    return false;
+  public boolean putAll(Multimap<KEY, VALUES> multimap) {
+    boolean changed = false;
+    for (Map.Entry<KEY, VALUES> entry : multimap.entries()) {
+      changed |= put(entry.getKey(), entry.getValue());
+    }
+    return changed;
+  }
+
+
+  public boolean putAll(@Nullable KEY key, Iterable<? extends VALUES> values) {
+    // make sure we only call values.iterator() once
+    // and we only call get(key) if values is nonempty
+    if (values instanceof Collection) {
+      final Collection<? extends VALUES> valueCollection = (Collection<? extends VALUES>) values;
+      return !valueCollection.isEmpty() && get(key).addAll(valueCollection);
+    } else {
+      Iterator<? extends VALUES> valueItr = values.iterator();
+      return valueItr.hasNext() && Iterators.addAll(get(key), valueItr);
+    }
   }
 
   public Map<KEY, Collection<VALUES>> asMap() {
-    return null;
+    return multimap;
   }
 }

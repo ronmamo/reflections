@@ -1,5 +1,10 @@
 package com.google.common.base;
 
+import java.io.IOException;
+import java.util.Iterator;
+
+import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
+
 /**
  * Copyright (C) 2010 RapidPM
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,16 +21,80 @@ package com.google.common.base;
  */
 public class Joiner {
 
-  public static Joiner on(final String s) {
-    return null;
+  /**
+   * Returns a joiner which automatically places {@code separator} between consecutive elements.
+   */
+  public static Joiner on(String separator) {
+    return new Joiner(separator);
   }
 
-  public static Joiner on(final char c) {
-    return null;
+  /**
+   * Returns a joiner which automatically places {@code separator} between consecutive elements.
+   */
+  public static Joiner on(char separator) {
+    return new Joiner(String.valueOf(separator));
   }
+
+  private final String separator;
+
+  private Joiner(String separator) {
+    this.separator = checkNotNull(separator);
+  }
+
 
 
   public String join(final Iterable<?> valuesToJoin) {
-    return null;
+    return join(valuesToJoin.iterator());
   }
+
+  /**
+   * Returns a string containing the string representation of each of {@code parts}, using the
+   * previously configured separator between each.
+   *
+   * @since 11.0
+   */
+  public final String join(Iterator<?> valuesToJoin) {
+    return appendTo(new StringBuilder(), valuesToJoin).toString();
+  }
+
+  /**
+   * Appends the string representation of each of {@code parts}, using the previously configured
+   * separator between each, to {@code builder}. Identical to
+   * {@link #appendTo(Appendable, Iterable)}, except that it does not throw {@link IOException}.
+   *
+   * @since 11.0
+   */
+  public final StringBuilder appendTo(StringBuilder builder, Iterator<?> valuesToJoin) {
+    try {
+      appendTo((Appendable) builder, valuesToJoin);
+    } catch (IOException impossible) {
+      throw new AssertionError(impossible);
+    }
+    return builder;
+  }
+
+
+  /**
+   * Appends the string representation of each of {@code parts}, using the previously configured
+   * separator between each, to {@code appendable}.
+   *
+   * @since 11.0
+   */
+  public <A extends Appendable> A appendTo(A appendable, Iterator<?> parts) throws IOException {
+    checkNotNull(appendable);
+    if (parts.hasNext()) {
+      appendable.append(toString(parts.next()));
+      while (parts.hasNext()) {
+        appendable.append(separator);
+        appendable.append(toString(parts.next()));
+      }
+    }
+    return appendable;
+  }
+
+  CharSequence toString(Object part) {
+    checkNotNull(part); // checkNotNull for GWT (do not optimize).
+    return (part instanceof CharSequence) ? (CharSequence) part : part.toString();
+  }
+
 }

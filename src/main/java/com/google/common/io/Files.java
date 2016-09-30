@@ -1,6 +1,7 @@
 package com.google.common.io;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
@@ -22,7 +23,25 @@ public class Files {
   private Files() {
   }
 
-  public static void write(final String s, final File file, final Charset charset) throws IOException {
-
+  /**
+   * Writes a character sequence (such as a string) to a file using the given character set.
+   *
+   * @param from    the character sequence to write
+   * @param to      the destination file
+   * @param charset the charset used to encode the output stream; see { StandardCharsets} for
+   *                helpful predefined constants
+   *
+   * @throws IOException if an I/O error occurs
+   */
+  public static void write(CharSequence from, File to, Charset charset) throws IOException {
+    if (to.exists()) {
+      try (FileOutputStream fileOutputStream = new FileOutputStream(to)) {
+        final String string = from.toString();
+        fileOutputStream.write(string.getBytes(charset));
+        fileOutputStream.flush();
+      }
+    }
   }
+
+
 }

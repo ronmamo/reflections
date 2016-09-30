@@ -4,10 +4,8 @@ package com.google.common.collect;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Copyright (C) 2010 RapidPM
@@ -67,52 +65,55 @@ public class Iterables {
    * {@code inputs}. The input iterators are not polled until necessary.
    *
    * <p>The returned iterable's iterator supports {@code remove()} when the
-   * corresponding input iterator supports it.
-   *
-   * @throws NullPointerException if any of the provided iterables is null
-   */
-  @SafeVarargs
-  public static <T> Iterable<T> concat(Iterable<? extends T>... inputs) {
-    return concat(Arrays.asList(inputs));
-  }
-
-  /**
-   * Combines multiple iterables into a single iterable. The returned iterable
-   * has an iterator that traverses the elements of each iterable in
-   * {@code inputs}. The input iterators are not polled until necessary.
-   *
-   * <p>The returned iterable's iterator supports {@code remove()} when the
    * corresponding input iterator supports it. The methods of the returned
    * iterable may throw {@code NullPointerException} if any of the input
    * iterators is null.
    */
-  public static <T> Iterable<T> concat(Iterable<? extends Iterable<? extends T>> inputs) {
+  public static <T> Iterable<T> concat(Iterable<Iterable<T>> inputs) {
     return FluentIterable.concat(inputs);
   }
 
 
   public static <T> boolean isEmpty(final Iterable<T> iterable) {
-    return false;
+    if (iterable instanceof Collection) {
+      return ((Collection<?>) iterable).isEmpty();
+    }
+    return !iterable.iterator().hasNext();
   }
 
-  public static <T> Pattern getOnlyElement(final Iterable<T> iterable) {
-    return null;
+  public static <T> T getOnlyElement(final Iterable<T> iterable) {
+    final Iterator<T> iterator = iterable.iterator();
+    return Iterators.getOnlyElement(iterator);
   }
 
-  public static <T> boolean any(final Set<? extends T> classes, final Predicate<? extends T> predicate) {
-    return false;
+  public static <T> boolean any(Iterable<T> iterable, Predicate<? super T> predicate) {
+    return Iterators.any(iterable.iterator(), predicate);
   }
 
-  public static boolean contains(final Iterable<?> classes, final Class<?> annotation) {
-    return false;
+  public static boolean contains(final Iterable<?> iterable, final Object element) {
+    if (iterable instanceof Collection) {
+      Collection<?> collection = (Collection<?>) iterable;
+      return Collections2.safeContains(collection, element);
+    }
+    return Iterators.contains(iterable.iterator(), element);
   }
 
   public static <F, T> Iterable<T> transform(
       final Iterable<F> fromIterable, final Function<? super F, ? extends T> function) {
-    return null;
+    return new FluentIterable<T>() {
+      @Override
+      public Iterator<T> iterator() {
+        return Iterators.transform(fromIterable.iterator(), function);
+      }
+    };
   }
 
   public static <T> Iterable<T> limit(final Iterable<T> iterable, final int limitSize) {
-    return null;
+    return new FluentIterable<T>() {
+      @Override
+      public Iterator<T> iterator() {
+        return Iterators.limit(iterable.iterator(), limitSize);
+      }
+    };
   }
 }

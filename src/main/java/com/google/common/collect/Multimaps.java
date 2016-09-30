@@ -1,10 +1,9 @@
 package com.google.common.collect;
 
-import com.google.common.base.Supplier;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * Copyright (C) 2010 RapidPM
@@ -26,12 +25,14 @@ public class Multimaps {
   }
 
   public static <KEY, VALUES> Multimap<KEY, VALUES> newSetMultimap(final Map<KEY, Collection<VALUES>> map,
-                                                                   final Supplier<? extends Set<VALUES>> supplier) {
-    return null;
+                                                                   final Supplier<Collection<VALUES>> supplier) {
+    return new Multimap<KEY, VALUES>(supplier);
   }
 
   //  public static <KEY,VALUES> Multimap<KEY, VALUES> synchronizedSetMultimap(final SetMultimap<KEY, VALUES> multimap) {
   public static <KEY, VALUES> Multimap<KEY, VALUES> synchronizedSetMultimap(final Multimap<KEY, VALUES> multimap) {
     return null;
   }
+
+
 }

@@ -41,7 +41,7 @@ public abstract class AbstractIterator<E> implements Iterator<E> {
 
   /**
    * Returns the next element in the iteration without advancing the iteration,
-   * according to the contract of {@link PeekingIterator#peek()}.
+   * according to the contract of { PeekingIterator#peek()}.
    *
    * <p>Implementations of {@code AbstractIterator} that wish to expose this
    * functionality should implement {@code PeekingIterator}.

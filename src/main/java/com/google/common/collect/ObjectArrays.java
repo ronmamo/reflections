@@ -1,5 +1,7 @@
 package com.google.common.collect;
 
+import java.lang.reflect.Array;
+
 /**
  * Copyright (C) 2010 RapidPM
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +22,14 @@ public class ObjectArrays {
   }
 
   public static <T> T[] concat(final T[] arrayA, final T[] arrayB, final Class<T> arrayTypeClass) {
-    return null;
+    T[] result = newArray(arrayTypeClass, arrayA.length + arrayB.length);
+    System.arraycopy(arrayA, 0, result, 0, arrayA.length);
+    System.arraycopy(arrayB, 0, result, arrayA.length, arrayB.length);
+    return result;
   }
 
+  public static <T> T[] newArray(Class<T> type, int length) {
+    return (T[]) Array.newInstance(type, length);
+  }
 
 }

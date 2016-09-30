@@ -2,7 +2,11 @@ package com.google.common.collect;
 
 import com.google.common.base.Function;
 
+import javax.annotation.Nullable;
+import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.Iterator;
+
 
 /**
  * Copyright (C) 2010 RapidPM
@@ -25,6 +29,53 @@ public class Collections2 {
 
   public static <F, T> Collection<T> transform(
       Collection<F> fromCollection, Function<? super F, T> function) {
-    return null;
+    return new TransformedCollection<>(fromCollection, function);
   }
+
+  static class TransformedCollection<F, T> extends AbstractCollection<T> {
+    final Collection<F> fromCollection;
+    final Function<? super F, ? extends T> function;
+
+    TransformedCollection(Collection<F> fromCollection, Function<? super F, ? extends T> function) {
+      this.fromCollection = fromCollection;
+      this.function = function;
+    }
+
+    @Override
+    public void clear() {
+      fromCollection.clear();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return fromCollection.isEmpty();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+      return Iterators.transform(fromCollection.iterator(), function);
+    }
+
+    @Override
+    public int size() {
+      return fromCollection.size();
+    }
+  }
+
+
+  /**
+   * Delegates to {@link Collection#contains}. Returns {@code false} if the
+   * {@code contains} method throws a {@code ClassCastException} or
+   * {@code NullPointerException}.
+   */
+  static boolean safeContains(Collection<?> collection, @Nullable Object object) {
+    try {
+      return collection.contains(object);
+    } catch (ClassCastException e) {
+      return false;
+    } catch (NullPointerException e) {
+      return false;
+    }
+  }
+
 }

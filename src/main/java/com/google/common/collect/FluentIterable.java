@@ -1,5 +1,9 @@
 package com.google.common.collect;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 /**
  * Copyright (C) 2010 RapidPM
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +19,62 @@ package com.google.common.collect;
  * Created by RapidPM - Team on 19.09.16.
  */
 public abstract class FluentIterable<E> implements Iterable<E> {
-  public static <T> Iterable<T> concat(final Iterable<? extends T> a, final Iterable<? extends T> b) {
-    return null;
+
+
+  /**
+   * Returns a fluent iterable that combines two iterables. The returned iterable has an iterator
+   * that traverses the elements in {@code a}, followed by the elements in {@code b}. The source
+   * iterators are not polled until necessary.
+   *
+   * <p>The returned iterable's iterator supports {@code remove()} when the corresponding input
+   * iterator supports it.
+   *
+   * <p><b>{@code Stream} equivalent:</b> { Stream#concat}.
+   *
+   * @since 20.0
+   */
+  public static <T> Iterable<T> concat(Iterable<? extends T> a, Iterable<? extends T> b) {
+    return Stream
+        .concat(
+            StreamSupport.stream(a.spliterator(), false),
+            StreamSupport.stream(b.spliterator(), false))
+        .collect(Collectors.toList());
+//    return concat(ImmutableList.of(a, b));
   }
 
-  public static <T> Iterable<T> concat(final Iterable<? extends Iterable<? extends T>> iterables) {
-    return null;
+
+  /**
+   * Returns a fluent iterable that combines several iterables. The returned iterable has an
+   * iterator that traverses the elements of each iterable in {@code inputs}. The input iterators
+   * are not polled until necessary.
+   *
+   * <p>The returned iterable's iterator supports {@code remove()} when the corresponding input
+   * iterator supports it. The methods of the returned iterable may throw {@code
+   * NullPointerException} if any of the input iterators is {@code null}.
+   *
+   * <p><b>{@code Stream} equivalent:</b> {@code streamOfStreams.flatMap(s -> s)} or {@code
+   * streamOfIterables.flatMap(Streams::stream)}. (See { Streams#stream}.)
+   *
+   * @since 20.0
+   */
+  public static <T> Iterable<T> concat(final Iterable<Iterable<T>> inputs) {
+
+    return StreamSupport
+        .stream(inputs.spliterator(), false)
+        .reduce((ts1, ts2) -> Stream.concat(
+            StreamSupport.stream(ts1.spliterator(), false),
+            StreamSupport.stream(ts2.spliterator(), false))
+            .collect(Collectors.toList())
+        ).get();
+
+
+//    return new FluentIterable<T>() {
+//      @Override
+//      public Iterator<T> iterator() {
+//        return Iterators.concat(Iterables.transform(inputs, Iterables.<T>toIterator()).iterator());
+//      }
+//    };
   }
+
+
 }
