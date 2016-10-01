@@ -31,7 +31,9 @@ public class Multimaps {
 
   //  public static <KEY,VALUES> Multimap<KEY, VALUES> synchronizedSetMultimap(final SetMultimap<KEY, VALUES> multimap) {
   public static <KEY, VALUES> Multimap<KEY, VALUES> synchronizedSetMultimap(final Multimap<KEY, VALUES> multimap) {
-    return null;
+
+    return new Multimap<KEY, VALUES>(); // TODO not Thread Safe
+    //return null;
   }
 
 

@@ -67,7 +67,7 @@ public class Multimap<KEY, VALUES> {
   }
 
   public Iterable<? extends Map.Entry<KEY, VALUES>> entries() {
-    throw new RuntimeException("not yet implemented");
+    throw new RuntimeException("not yet implemented"); //Todo impl
   }
 
   public Collection<VALUES> get(final KEY key) {

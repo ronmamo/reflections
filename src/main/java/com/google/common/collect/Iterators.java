@@ -5,6 +5,7 @@ import com.google.common.base.Predicate;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import static com.google.common.base.Predicates.equalTo;
 
@@ -128,7 +129,28 @@ public class Iterators {
   }
 
   public static <T> Iterator<T> limit(final Iterator<T> iterator, final int limitSize) {
-    return null;
+    return new Iterator<T>() {
+      private int count;
+
+      @Override
+      public boolean hasNext() {
+        return count < limitSize && iterator.hasNext();
+      }
+
+      @Override
+      public T next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+        count++;
+        return iterator.next();
+      }
+
+      @Override
+      public void remove() {
+        iterator.remove();
+      }
+    };
   }
 
   /**

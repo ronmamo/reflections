@@ -7,8 +7,6 @@ import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static kotlin.jvm.internal.Intrinsics.checkNotNull;
-
 /**
  * Copyright (C) 2010 RapidPM
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,12 +38,30 @@ public class Sets {
    */
 //  public static <E> SetView<E> difference(final Set<E> set1, final Set<?> set2) {
   public static <E> Set<E> difference(final Set<E> set1, final Set<?> set2) {
-    checkNotNull(set1, "set1");
-    checkNotNull(set2, "set2");
-
     final Predicate<Object> notInSet2 = Predicates.not(Predicates.in(set2));
 
-    return null;
+    return new SetView<E>() {
+      @Override
+      public Iterator<E> iterator() {
+        return Iterators.filter(set1.iterator(), notInSet2);
+      }
+
+      @Override
+      public int size() {
+        return Iterators.size(iterator());
+      }
+
+      @Override
+      public boolean isEmpty() {
+        return set2.containsAll(set1);
+      }
+
+      @Override
+      public boolean contains(Object element) {
+        return set1.contains(element) && !set2.contains(element);
+      }
+    };
+    //return null;
   }
 
 
@@ -73,7 +89,8 @@ public class Sets {
      * Object#equals(Object)}.
      */
     public Set<E> immutableCopy() {
-      return null;
+      throw new RuntimeException("not yet impl - immutableCopy"); //Todo impl
+      //return null;
 //      return ImmutableSet.copyOf(this);
     }
 
