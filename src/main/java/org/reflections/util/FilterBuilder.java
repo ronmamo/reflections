@@ -4,12 +4,11 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import org.reflections.ReflectionsException;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Builds include/exclude filters for Reflections.
@@ -29,9 +28,8 @@ public class FilterBuilder implements Predicate<String> {
 
   private FilterBuilder(final Iterable<Predicate<String>> filters) {
     final Iterator<Predicate<String>> predicateIterator = filters.iterator();
-    chain = Stream
-        .generate(predicateIterator::next)
-        .collect(Collectors.toList());
+    Stream<Predicate<String>> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(predicateIterator, Spliterator.ORDERED), false);
+    chain = stream.collect(Collectors.toList());
   }
 
   /**
@@ -186,8 +184,8 @@ public class FilterBuilder implements Predicate<String> {
   @Override
   public String toString() {
     return Joiner
-        .on(", ")
-        .join(chain);
+            .on(", ")
+            .join(chain);
   }
 
   public boolean apply(String regex) {
