@@ -640,17 +640,15 @@ public class Reflections {
    * <p>depends on ResourcesScanner configured
    */
   public Set<String> getResources(final Predicate<String> namePredicate) {
-    Iterable<String> resources = store.get(index(ResourcesScanner.class)).keySet().stream().filter(namePredicate::apply).collect(Collectors.toList());
+    Iterable<String> resources = store.get(index(ResourcesScanner.class)).keySet()
+            .stream()
+            .filter(namePredicate::apply)
+            .collect(Collectors.toList()
+            );
+    Iterable<String> resourceStrings = store.get(index(ResourcesScanner.class), resources);
+    Stream<String> resourceStringStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(resourceStrings.iterator(), Spliterator.ORDERED), false);
 
-    final Iterator<String> sourceIterator = resources.iterator();
-
-    final Iterable<String> strings = store.get(index(ResourcesScanner.class), resources);
-    final Iterator<String> stringIterator = strings.iterator();
-
-    return Stream.concat(
-        Stream.generate(sourceIterator::next),
-        Stream.generate(stringIterator::next)
-    ).collect(Collectors.toSet());
+    return resourceStringStream.collect(Collectors.toSet());
   }
 
   /**
