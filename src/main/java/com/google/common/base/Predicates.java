@@ -20,7 +20,7 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * Created by RapidPM - Team on 18.09.16.
  */
 public class Predicates {
@@ -45,7 +45,7 @@ public class Predicates {
    * Returns a predicate that evaluates to {@code true} if the object reference being tested is a
    * member of the given collection. It does not defensively copy the collection passed in, so
    * future changes to it will alter the behavior of the predicate.
-   *
+   * <p>
    * <p>This method can technically accept any {@code Collection<?>}, but using a typed collection
    * helps prevent bugs. This approach doesn't block any potential users since it is always possible
    * to use {@code Predicates.<Object>in()}.
@@ -57,8 +57,10 @@ public class Predicates {
   }
 
   public static <T> boolean isEmpty(final Predicate<? super T>[] predicates) {
-    throw new RuntimeException("not yet impl"); //TODO impl
-    //return false;
+    if (predicates == null || predicates.length == 0) {
+      return true;
+    }
+    return false;
   }
 
   public static <T> Predicate<T> and(final Predicate<? super T>[] predicates) {
@@ -293,7 +295,8 @@ public class Predicates {
       }
     };
 
-    @SuppressWarnings("unchecked") // safe contravariant cast
+    @SuppressWarnings("unchecked")
+      // safe contravariant cast
     <T> Predicate<T> withNarrowedType() {
       return (Predicate<T>) this;
     }
