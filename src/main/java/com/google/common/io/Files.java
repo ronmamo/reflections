@@ -16,7 +16,7 @@ import java.nio.charset.Charset;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * Created by RapidPM - Team on 18.09.16.
  */
 public class Files {
@@ -30,16 +30,13 @@ public class Files {
    * @param to      the destination file
    * @param charset the charset used to encode the output stream; see { StandardCharsets} for
    *                helpful predefined constants
-   *
    * @throws IOException if an I/O error occurs
    */
   public static void write(CharSequence from, File to, Charset charset) throws IOException {
-    if (to.exists()) {
-      try (FileOutputStream fileOutputStream = new FileOutputStream(to)) {
-        final String string = from.toString();
-        fileOutputStream.write(string.getBytes(charset));
-        fileOutputStream.flush();
-      }
+    try (FileOutputStream fileOutputStream = new FileOutputStream(to)) {
+      final String string = from.toString();
+      fileOutputStream.write(string.getBytes(charset));
+      fileOutputStream.flush();
     }
   }
 

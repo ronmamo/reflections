@@ -62,7 +62,7 @@ public class JsonSerializer implements Serializer {
                 final Multimap<String, String> map = Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(), HashSet::new);
                 for (Map.Entry<String, JsonElement> entry : ((JsonObject) jsonElement).entrySet()) {
                   for (JsonElement element : (JsonArray) entry.getValue()) {
-                    map.get(entry.getKey()).add(element.getAsString());
+                    map.put(entry.getKey(),element.getAsString());
                   }
                 }
                 return map;

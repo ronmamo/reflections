@@ -22,14 +22,15 @@ public class ReflectionsCollectTest extends ReflectionsTest {
   @BeforeClass
   public static void init() {
     Reflections ref = new Reflections(new ConfigurationBuilder()
-        .addUrls(ClasspathHelper.forClass(TestModel.class))
-        .filterInputsBy(TestModelFilter)
-        .setScanners(
-            new SubTypesScanner(false),
-            new TypeAnnotationsScanner(),
-            new MethodAnnotationsScanner(),
-            new MethodParameterNamesScanner(),
-            new MemberUsageScanner()));
+            .addUrls(ClasspathHelper.forClass(TestModel.class))
+            .filterInputsBy(TestModelFilter)
+            .setScanners(
+                    new SubTypesScanner(false),
+                    new TypeAnnotationsScanner(),
+                    new MethodAnnotationsScanner(),
+                    new MethodParameterNamesScanner(),
+                    new MethodParameterScanner(),
+                    new MemberUsageScanner()));
 
     ref.save(getUserDir() + "/target/test-classes" + "/META-INF/reflections/testModel-reflections.xml");
 
