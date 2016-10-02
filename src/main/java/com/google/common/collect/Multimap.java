@@ -68,8 +68,7 @@ public class Multimap<KEY, VALUES> {
   }
 
   public Iterable<? extends Map.Entry<KEY, VALUES>> entries() {
-    return multimap.entrySet().stream()
-            .filter(key -> multimap.get(key) != null)
+    return multimap.keySet().stream()
             .flatMap(key -> multimap.get(key)
                     .stream()
                     .map(value ->
