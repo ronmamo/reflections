@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * serialization of Reflections to json
- *
+ * <p>
  * <p>an example of produced json:
  * <pre>
  * {"store":{"storeMap":
@@ -53,22 +53,22 @@ public class JsonSerializer implements Serializer {
   private Gson getGson() {
     if (gson == null) {
       gson = new GsonBuilder()
-          .registerTypeAdapter(
-              Multimap.class,
-              (com.google.gson.JsonSerializer<Multimap>) (multimap, type, jsonSerializationContext) -> jsonSerializationContext.serialize(multimap.asMap()))
-          .registerTypeAdapter(
-              Multimap.class,
-              (JsonDeserializer<Multimap>) (jsonElement, type, jsonDeserializationContext) -> {
-                final Multimap<String, String> map = Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(), HashSet::new);
-                for (Map.Entry<String, JsonElement> entry : ((JsonObject) jsonElement).entrySet()) {
-                  for (JsonElement element : (JsonArray) entry.getValue()) {
-                    map.put(entry.getKey(),element.getAsString());
-                  }
-                }
-                return map;
-              })
-          .setPrettyPrinting()
-          .create();
+              .registerTypeAdapter(
+                      Multimap.class,
+                      (com.google.gson.JsonSerializer<Multimap>) (multimap, type, jsonSerializationContext) -> jsonSerializationContext.serialize(multimap.asMap()))
+              .registerTypeAdapter(
+                      Multimap.class,
+                      (JsonDeserializer<Multimap>) (jsonElement, type, jsonDeserializationContext) -> {
+                        final Multimap<String, String> map = Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(), HashSet::new);
+                        for (Map.Entry<String, JsonElement> entry : ((JsonObject) jsonElement).entrySet()) {
+                          for (JsonElement element : (JsonArray) entry.getValue()) {
+                            map.put(entry.getKey(), element.getAsString());
+                          }
+                        }
+                        return map;
+                      })
+              .setPrettyPrinting()
+              .create();
 
     }
     return gson;

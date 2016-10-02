@@ -34,9 +34,9 @@ public class ThreadFactoryBuilder {
 
   public ThreadFactory build() {
     //TODO find better ThreadFactory
-    if (deamon == true){
+    if (deamon) {
       return Executors.privilegedThreadFactory();
     }
-      return Executors.defaultThreadFactory();
+    return Executors.defaultThreadFactory();
   }
 }

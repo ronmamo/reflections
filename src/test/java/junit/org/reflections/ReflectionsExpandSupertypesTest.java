@@ -1,6 +1,5 @@
 package junit.org.reflections;
 
-import junit.framework.Assert;
 import org.junit.Test;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -8,6 +7,9 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
 import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ReflectionsExpandSupertypesTest {
 
@@ -20,10 +22,10 @@ public class ReflectionsExpandSupertypesTest {
     Reflections refExpand = new Reflections(new ConfigurationBuilder().
         setUrls(ClasspathHelper.forClass(TestModel.ScannedScope.C.class)).
         filterInputsBy(inputsFilter));
-    Assert.assertTrue(refExpand.getConfiguration().shouldExpandSuperTypes());
+    assertTrue(refExpand.getConfiguration().shouldExpandSuperTypes());
     Set<Class<? extends TestModel.A>> subTypesOf = refExpand.getSubTypesOf(TestModel.A.class);
-    Assert.assertTrue("expanded", subTypesOf.contains(TestModel.B.class));
-    Assert.assertTrue("transitivity", subTypesOf.containsAll(refExpand.getSubTypesOf(TestModel.B.class)));
+    assertTrue("expanded", subTypesOf.contains(TestModel.B.class));
+    assertTrue("transitivity", subTypesOf.containsAll(refExpand.getSubTypesOf(TestModel.B.class)));
   }
 
   @Test
@@ -32,9 +34,9 @@ public class ReflectionsExpandSupertypesTest {
         setUrls(ClasspathHelper.forClass(TestModel.ScannedScope.C.class)).
         filterInputsBy(inputsFilter).
         setExpandSuperTypes(false));
-    Assert.assertFalse(refDontExpand.getConfiguration().shouldExpandSuperTypes());
+    assertFalse(refDontExpand.getConfiguration().shouldExpandSuperTypes());
     Set<Class<? extends TestModel.A>> subTypesOf1 = refDontExpand.getSubTypesOf(TestModel.A.class);
-    Assert.assertFalse(subTypesOf1.contains(TestModel.B.class));
+    assertFalse(subTypesOf1.contains(TestModel.B.class));
   }
 
   public interface TestModel {
