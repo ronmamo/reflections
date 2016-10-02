@@ -3,6 +3,7 @@ package com.google.common.collect;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Copyright (C) 2010 RapidPM
@@ -15,7 +16,7 @@ import java.util.function.Supplier;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * Created by RapidPM - Team on 18.09.16.
  */
 public class Multimap<KEY, VALUES> {
@@ -67,7 +68,15 @@ public class Multimap<KEY, VALUES> {
   }
 
   public Iterable<? extends Map.Entry<KEY, VALUES>> entries() {
-    throw new RuntimeException("not yet implemented"); //Todo impl
+    return multimap.entrySet().stream()
+            .filter(key -> multimap.get(key) != null)
+            .flatMap(key -> multimap.get(key)
+                    .stream()
+                    .map(value ->
+                            (Map.Entry<KEY, VALUES>) new MultiMapEntry(key, value)
+                    )
+            )
+            .collect(Collectors.toList());
   }
 
   public Collection<VALUES> get(final KEY key) {
@@ -80,19 +89,16 @@ public class Multimap<KEY, VALUES> {
 
   public Collection<VALUES> values() {
     return multimap
-        .values()
-        .stream()
-        .reduce((values, values2) -> {
-          final Set<VALUES> result = new HashSet<>();
-          result.addAll(values);
-          result.addAll(values2);
-          return result;
-        }).orElse(Collections.emptyList());
+            .values()
+            .stream()
+            .flatMap(values -> values.stream())
+            .collect(Collectors.toList());
   }
 
   public boolean putAll(Multimap<KEY, VALUES> multimap) {
     boolean changed = false;
-    for (Map.Entry<KEY, VALUES> entry : multimap.entries()) {
+    Iterable<? extends Map.Entry<KEY, VALUES>> entries = multimap.entries();
+    for (Map.Entry<KEY, VALUES> entry : entries) {
       changed |= put(entry.getKey(), entry.getValue());
     }
     return changed;
