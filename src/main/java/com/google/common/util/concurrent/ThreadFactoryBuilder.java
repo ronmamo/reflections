@@ -1,7 +1,6 @@
 package com.google.common.util.concurrent;
 
-import org.jetbrains.annotations.NotNull;
-
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -15,7 +14,7 @@ import java.util.concurrent.ThreadFactory;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * Created by RapidPM - Team on 18.09.16.
  */
 public class ThreadFactoryBuilder {
@@ -34,8 +33,10 @@ public class ThreadFactoryBuilder {
 
 
   public ThreadFactory build() {
-    return new DefaulttF
-
-    throw new RuntimeException("not yet impl"); //Todo impl
+    //TODO find better ThreadFactory
+    if (deamon == true){
+      return Executors.privilegedThreadFactory();
+    }
+      return Executors.defaultThreadFactory();
   }
 }
