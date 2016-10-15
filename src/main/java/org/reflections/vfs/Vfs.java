@@ -180,6 +180,7 @@ public abstract class Vfs {
             if (path.startsWith("wsjar:")) path = path.substring("wsjar:".length());
             if (path.startsWith("file:")) path = path.substring("file:".length());
             if (path.contains(".jar!")) path = path.substring(0, path.indexOf(".jar!") + ".jar".length());
+            if (path.contains(".war!")) path = path.substring(0, path.indexOf(".war!") + ".war".length());
             if ((file = new java.io.File(path)).exists()) return file;
 
             path = path.replace("%20", " ");
