@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * stores metadata information in multimaps
@@ -44,8 +43,8 @@ public class Store {
     Multimap<String, String> mmap = storeMap.get(index);
     if (mmap == null) {
       Multimap<String, String> multimap =
-          Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(),
-              () -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+              Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(),
+                      HashSet::new);
       mmap = concurrent ? Multimaps.synchronizedSetMultimap(multimap) : multimap;
       storeMap.put(index, mmap);
     }

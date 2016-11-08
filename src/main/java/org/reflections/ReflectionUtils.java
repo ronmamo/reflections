@@ -421,6 +421,7 @@ public abstract class ReflectionUtils {
         type = array + type;
       } else {
         type = typeName;
+        type = typeName;
       }
 
       List<ReflectionsException> reflectionsExceptions = new ArrayList();

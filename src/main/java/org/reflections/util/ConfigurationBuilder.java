@@ -150,7 +150,7 @@ public class ConfigurationBuilder implements Configuration {
    * set the scanners instances for scanning different metadata
    */
   public ConfigurationBuilder addScanners(final Scanner... scanners) {
-    this.scanners.addAll(new HashSet<>(Arrays.asList(scanners)));
+    this.scanners.addAll(Arrays.asList(scanners));
     return this;
   }
 
@@ -159,7 +159,7 @@ public class ConfigurationBuilder implements Configuration {
    * <p>use {@link org.reflections.util.ClasspathHelper} convenient methods to get the relevant urls
    */
   public ConfigurationBuilder addUrls(final URL... urls) {
-    this.urls.addAll(new HashSet<>(Arrays.asList(urls)));
+    this.urls.addAll(Arrays.asList(urls));
     return this;
   }
 

@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapImpl;
 import com.google.common.collect.Sets;
 import org.reflections.scanners.*;
 import org.reflections.scanners.Scanner;
@@ -108,7 +109,8 @@ import static org.reflections.util.Utils.*;
  * <p><p><p>For Javadoc, source code, and more information about Reflections Library, see http://github.com/ronmamo/reflections/
  */
 public class Reflections {
-  @Nullable public static Logger log = findLogger(Reflections.class);
+  @Nullable
+  public static Logger log = findLogger(Reflections.class);
 
   protected final transient Configuration configuration;
   protected Store store;
@@ -160,10 +162,10 @@ public class Reflections {
    * <li>{@link java.net.URL} - would add the given url for scanning</li>
    * <li>{@link Object[]} - would use each element as above</li>
    * </ul>
-   *
+   * <p>
    * use any parameter type in any order. this constructor uses instanceof on each param and instantiate a {@link org.reflections.util.ConfigurationBuilder} appropriately.
    * if you prefer the usual statically typed constructor, don't use this, although it can be very useful.
-   *
+   * <p>
    * <br><br>for example:
    * <pre>
    *     new Reflections("my.package", classLoader);
@@ -230,7 +232,7 @@ public class Reflections {
       }
 
       log.info(format("Reflections took %d ms to collect %d url%s, producing %d keys and %d values [%s]",
-          System.currentTimeMillis() - start, urls.size(), urls.size() > 1 ? "s" : "", keys, values, Joiner.on(", ").join(urls)));
+              System.currentTimeMillis() - start, urls.size(), urls.size() > 1 ? "s" : "", keys, values, Joiner.on(", ").join(urls)));
     }
     return reflections;
   }
@@ -279,7 +281,8 @@ public class Reflections {
       try {
         if (executorService != null) {
           futures.add(executorService.submit(() -> {
-            if (log != null && log.isDebugEnabled()) log.debug("[" + Thread.currentThread().toString() + "] scanning " + url);
+            if (log != null && log.isDebugEnabled())
+              log.debug("[" + Thread.currentThread().toString() + "] scanning " + url);
             scan(url);
           }));
         } else {
@@ -287,7 +290,8 @@ public class Reflections {
         }
         scannedUrls++;
       } catch (ReflectionsException e) {
-        if (log != null && log.isWarnEnabled()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
+        if (log != null && log.isWarnEnabled())
+          log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
       }
     }
 
@@ -318,9 +322,9 @@ public class Reflections {
       }
 
       log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
-          time, scannedUrls, keys, values,
-          executorService != null && executorService instanceof ThreadPoolExecutor ?
-              format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
+              time, scannedUrls, keys, values,
+              executorService != null && executorService instanceof ThreadPoolExecutor ?
+                      format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
     }
   }
 
@@ -375,7 +379,8 @@ public class Reflections {
   public Reflections collect(final InputStream inputStream) {
     try {
       merge(configuration.getSerializer().read(inputStream));
-      if (log != null) log.info("Reflections collected metadata from input stream using serializer " + configuration.getSerializer().getClass().getName());
+      if (log != null)
+        log.info("Reflections collected metadata from input stream using serializer " + configuration.getSerializer().getClass().getName());
     } catch (Exception ex) {
       throw new ReflectionsException("could not merge input stream", ex);
     }
@@ -399,7 +404,7 @@ public class Reflections {
       final Multimap<String, String> mmap = store.get(index(SubTypesScanner.class));
       final Collection<String> values = mmap.values();
       final Set<String> keys = Sets.difference(mmap.keySet(), new HashSet<>(values));
-      final Multimap<String, String> expand = new Multimap<>();
+      final Multimap<String, String> expand = new MultimapImpl<>();
       for (final String key : keys) {
         expandSupertypes(expand, key, forName(key));
       }
@@ -424,12 +429,12 @@ public class Reflections {
    */
   public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type) {
     return new HashSet<>(
-        ReflectionUtils.<T>forNames(
-            store.getAll(
-                index(SubTypesScanner.class),
-                Arrays.asList(type.getName())
-            ),
-            loaders()));
+            ReflectionUtils.<T>forNames(
+                    store.getAll(
+                            index(SubTypesScanner.class),
+                            Arrays.asList(type.getName())
+                    ),
+                    loaders()));
   }
 
   private static String index(Class<? extends Scanner> scannerClass) {
@@ -470,8 +475,8 @@ public class Reflections {
     final Iterable<Class<?>> concat = concat(classes1, classes2);
 
     return StreamSupport
-        .stream(concat.spliterator(), false)
-        .collect(Collectors.toSet());
+            .stream(concat.spliterator(), false)
+            .collect(Collectors.toSet());
   }
 
   protected Iterable<String> getAllAnnotated(Iterable<String> annotated, boolean inherited, boolean honorInherited) {
@@ -507,19 +512,19 @@ public class Reflections {
     final Iterable<Class<?>> filter = filter(forNames(annotated, loaders()), withAnnotation(annotation));
     final Iterable<String> classes = getAllAnnotated(names(filter), annotation.annotationType().isAnnotationPresent(Inherited.class), honorInherited);
     final Iterable<Class<?>> concat = concat(
-        filter,
-        forNames(
-            filter(classes,
-                not(
-                    in(
-                        StreamSupport
-                            .stream(annotated.spliterator(), false)
-                            .collect(Collectors.toSet())
+            filter,
+            forNames(
+                    filter(classes,
+                            not(
+                                    in(
+                                            StreamSupport
+                                                    .stream(annotated.spliterator(), false)
+                                                    .collect(Collectors.toSet())
 
-                    ))), loaders()));
+                                    ))), loaders()));
     return StreamSupport
-        .stream(concat.spliterator(), false)
-        .collect(Collectors.toSet());
+            .stream(concat.spliterator(), false)
+            .collect(Collectors.toSet());
   }
 
   /**
@@ -705,12 +710,12 @@ public class Reflections {
     final String index = index(SubTypesScanner.class);
     final Iterable<String> storeAll = store.getAll(index, Object.class.getName());
     final Set<String> allTypes = StreamSupport
-        .stream(storeAll.spliterator(), false)
-        .collect(Collectors.toSet());
+            .stream(storeAll.spliterator(), false)
+            .collect(Collectors.toSet());
 
     if (allTypes.isEmpty()) {
       throw new ReflectionsException("Couldn't find subtypes of Object. " +
-          "Make sure SubTypesScanner initialized to include Object class - new SubTypesScanner(false)");
+              "Make sure SubTypesScanner initialized to include Object class - new SubTypesScanner(false)");
     }
     return allTypes;
   }

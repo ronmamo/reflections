@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * Created by RapidPM - Team on 18.09.16.
  */
 public class Multimaps {
@@ -24,16 +24,13 @@ public class Multimaps {
   private Multimaps() {
   }
 
-  public static <KEY, VALUES> Multimap<KEY, VALUES> newSetMultimap(final Map<KEY, Collection<VALUES>> map,
-                                                                   final Supplier<Collection<VALUES>> supplier) {
-    return new Multimap<KEY, VALUES>(supplier);
+  public static <KEY, VALUES> Multimap<KEY, VALUES> newSetMultimap(final Map<KEY, Collection<VALUES>> map,                                                                   final Supplier<Collection<VALUES>> supplier) {
+    return new MultimapImpl<KEY, VALUES>(map, supplier) {
+    };
   }
 
-  //  public static <KEY,VALUES> Multimap<KEY, VALUES> synchronizedSetMultimap(final SetMultimap<KEY, VALUES> multimap) {
   public static <KEY, VALUES> Multimap<KEY, VALUES> synchronizedSetMultimap(final Multimap<KEY, VALUES> multimap) {
-
-    return new Multimap<KEY, VALUES>(); // TODO not Thread Safe
-    //return null;
+    return new SycronizedMultimapProxy<>(multimap);
   }
 
 
