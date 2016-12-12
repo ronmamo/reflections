@@ -122,8 +122,8 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.5</version>
-            <scope>test</scope>
+            <version>4.8</version>
+	    <scope>compile</scope> <!-- case: Junit used at compilation time for JUnitCategoryScanner class -->
         </dependency>
 
     </dependencies>
