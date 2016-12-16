@@ -238,8 +238,9 @@ public abstract class Vfs {
 
         directory {
             public boolean matches(URL url) {
+                final java.io.File file = getFile(url);
                 return url.getProtocol().equals("file") && !hasJarFileInPath(url) &&
-                        getFile(url).isDirectory();
+                    (file != null && file.isDirectory());
             }
 
             public Dir createDir(final URL url) throws Exception {
