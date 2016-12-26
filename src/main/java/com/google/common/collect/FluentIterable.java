@@ -1,5 +1,6 @@
 package com.google.common.collect;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -62,7 +63,7 @@ public abstract class FluentIterable<E> implements Iterable<E> {
 
     return StreamSupport
             .stream(inputs.spliterator(), false)
-            .filter(item -> item != null)
+            .filter(Objects::nonNull)
             .flatMap(itreable -> StreamSupport.stream(itreable.spliterator(), false))
             .collect(Collectors.toList());
   }

@@ -102,7 +102,7 @@ public class MultimapImpl<KEY, VALUES> implements Multimap<KEY, VALUES> {
     return multimap
             .values()
             .stream()
-            .flatMap(values -> values.stream())
+            .flatMap(Collection::stream)
             .collect(Collectors.toList());
   }
 

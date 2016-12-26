@@ -71,9 +71,7 @@ public class Collections2 {
   static boolean safeContains(Collection<?> collection, @Nullable Object object) {
     try {
       return collection.contains(object);
-    } catch (ClassCastException e) {
-      return false;
-    } catch (NullPointerException e) {
+    } catch (ClassCastException | NullPointerException e) {
       return false;
     }
   }
