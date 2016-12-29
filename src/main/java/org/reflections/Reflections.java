@@ -232,7 +232,7 @@ public class Reflections {
       }
 
       log.info(format("Reflections took %d ms to collect %d url%s, producing %d keys and %d values [%s]",
-              System.currentTimeMillis() - start, urls.size(), urls.size() > 1 ? "s" : "", keys, values, Joiner.on(", ").join(urls)));
+          System.currentTimeMillis() - start, urls.size(), urls.size() > 1 ? "s" : "", keys, values, Joiner.on(", ").join(urls)));
     }
     return reflections;
   }
@@ -322,9 +322,9 @@ public class Reflections {
       }
 
       log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
-              time, scannedUrls, keys, values,
-              executorService != null && executorService instanceof ThreadPoolExecutor ?
-                      format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
+          time, scannedUrls, keys, values,
+          executorService != null && executorService instanceof ThreadPoolExecutor ?
+              format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
     }
   }
 
@@ -428,13 +428,8 @@ public class Reflections {
    * <p/>depends on SubTypesScanner configured
    */
   public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type) {
-    return new HashSet<>(
-            ReflectionUtils.<T>forNames(
-                    store.getAll(
-                            index(SubTypesScanner.class),
-                            Arrays.asList(type.getName())
-                    ),
-                    loaders()));
+    final Iterable<String> all = store.getAll(index(SubTypesScanner.class), Arrays.asList(type.getName()));
+    return new HashSet<>(ReflectionUtils.<T>forNames(all, loaders()));
   }
 
   private static String index(Class<? extends Scanner> scannerClass) {
@@ -475,8 +470,8 @@ public class Reflections {
     final Iterable<Class<?>> concat = concat(classes1, classes2);
 
     return StreamSupport
-            .stream(concat.spliterator(), false)
-            .collect(Collectors.toSet());
+        .stream(concat.spliterator(), false)
+        .collect(Collectors.toSet());
   }
 
   protected Iterable<String> getAllAnnotated(Iterable<String> annotated, boolean inherited, boolean honorInherited) {
@@ -512,19 +507,19 @@ public class Reflections {
     final Iterable<Class<?>> filter = filter(forNames(annotated, loaders()), withAnnotation(annotation));
     final Iterable<String> classes = getAllAnnotated(names(filter), annotation.annotationType().isAnnotationPresent(Inherited.class), honorInherited);
     final Iterable<Class<?>> concat = concat(
-            filter,
-            forNames(
-                    filter(classes,
-                            not(
-                                    in(
-                                            StreamSupport
-                                                    .stream(annotated.spliterator(), false)
-                                                    .collect(Collectors.toSet())
+        filter,
+        forNames(
+            filter(classes,
+                not(
+                    in(
+                        StreamSupport
+                            .stream(annotated.spliterator(), false)
+                            .collect(Collectors.toSet())
 
-                                    ))), loaders()));
+                    ))), loaders()));
     return StreamSupport
-            .stream(concat.spliterator(), false)
-            .collect(Collectors.toSet());
+        .stream(concat.spliterator(), false)
+        .collect(Collectors.toSet());
   }
 
   /**
@@ -646,10 +641,10 @@ public class Reflections {
    */
   public Set<String> getResources(final Predicate<String> namePredicate) {
     Iterable<String> resources = store.get(index(ResourcesScanner.class)).keySet()
-            .stream()
-            .filter(namePredicate::apply)
-            .collect(Collectors.toList()
-            );
+        .stream()
+        .filter(namePredicate::apply)
+        .collect(Collectors.toList()
+        );
     Iterable<String> resourceStrings = store.get(index(ResourcesScanner.class), resources);
     Stream<String> resourceStringStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(resourceStrings.iterator(), Spliterator.ORDERED), false);
 
@@ -710,12 +705,12 @@ public class Reflections {
     final String index = index(SubTypesScanner.class);
     final Iterable<String> storeAll = store.getAll(index, Object.class.getName());
     final Set<String> allTypes = StreamSupport
-            .stream(storeAll.spliterator(), false)
-            .collect(Collectors.toSet());
+        .stream(storeAll.spliterator(), false)
+        .collect(Collectors.toSet());
 
     if (allTypes.isEmpty()) {
       throw new ReflectionsException("Couldn't find subtypes of Object. " +
-              "Make sure SubTypesScanner initialized to include Object class - new SubTypesScanner(false)");
+          "Make sure SubTypesScanner initialized to include Object class - new SubTypesScanner(false)");
     }
     return allTypes;
   }
