@@ -50,6 +50,10 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 
     <properties>
@@ -190,6 +194,14 @@
                             <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
                     <plugin>
                         <artifactId>maven-enforcer-plugin</artifactId>
                         <executions>
@@ -199,18 +211,18 @@
                                 </goals>
                                 <configuration>
                                     <rules>
-                                        <requireProperty>
-                                            <property>gpg.keyname</property>
-                                            <message>gpg.keyname must be supplied using -D.
-                                                create a key using gpg --gen-key or use existing one.
-                                            </message>
-                                        </requireProperty>
-                                        <requireProperty>
-                                            <property>gpg.passphrase</property>
-                                            <message>gpg.passphrase must be supplied using -D.
-                                                create a key using gpg --gen-key or use existing one.
-                                            </message>
-                                        </requireProperty>
+                                        <requireEnvironmentVariable>
+                                            <variableName>GPG_KEYNAME</variableName>
+                                        </requireEnvironmentVariable>
+                                        <requireEnvironmentVariable>
+                                            <variableName>GPG_PASSPHRASE</variableName>
+                                        </requireEnvironmentVariable>
+                                        <requireEnvironmentVariable>
+                                            <variableName>SONATYPE_USERNAME</variableName>
+                                        </requireEnvironmentVariable>
+                                        <requireEnvironmentVariable>
+                                            <variableName>SONATYPE_PASSWORD</variableName>
+                                        </requireEnvironmentVariable>
                                     </rules>
                                     <fail>true</fail>
                                 </configuration>
@@ -220,6 +232,10 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <keyname>${env.GPG_KEYNAME}</keyname>
+                            <passphrase>${env.GPG_PASSPHRASE}</passphrase>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -229,6 +245,17 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

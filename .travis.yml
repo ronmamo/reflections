@@ -1,1 +1,15 @@
 language: java
+
+jdk:
+  - oraclejdk8
+
+script: mvn clean install -Pbuild
+
+deploy:
+  -
+    provider: script
+    script: mvn deploy -Prelease --settings .travis/settings.xml -DskipTests --batch-mode --update-snapshots
+    skip_cleanup: true
+    on:
+      branch: deploy
+      tags: true
