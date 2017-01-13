@@ -8,7 +8,9 @@ script: mvn clean install -Pbuild
 deploy:
   -
     provider: script
-    script: mvn deploy -Prelease --settings .travis/settings.xml -DskipTests --batch-mode --update-snapshots
+    script:
+      - gpg --keyserver keyserver.ubuntu.com  --recv-keys $PGP_KEYNAME
+      - mvn deploy -Prelease --settings .travis/settings.xml -DskipTests --batch-mode --update-snapshots
     skip_cleanup: true
     on:
       branch: deploy
