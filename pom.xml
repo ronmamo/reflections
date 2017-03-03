@@ -4,7 +4,7 @@
 
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.11-SNAPSHOT</version>
+    <version>0.9.12-SNAPSHOT</version>
     <packaging>${packaging.type}</packaging>
 
     <name>Reflections</name>
@@ -56,7 +56,7 @@
         <packaging.type>jar</packaging.type>
         <guava.version>19.0</guava.version>
         <javassist.version>3.20.0-GA</javassist.version>
-        <jdk.version>1.7</jdk.version>
+        <jdk.version>1.8</jdk.version>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 

@@ -606,7 +606,8 @@ public class Reflections {
      * <p>depends on MemberUsageScanner configured
      */
     public Set<Member> getMethodUsage(Method method) {
-        return getMembersFromDescriptors(store.get(index(MemberUsageScanner.class), name(method)));
+    	return getMembersFromDescriptors(
+                resolveSyntheticMethods(method, store.get(index(MemberUsageScanner.class), name(method)), null));
     }
 
     /** get all given {@code constructors} usages in methods and constructors
@@ -666,4 +667,50 @@ public class Reflections {
     private static String index(Class<? extends Scanner> scannerClass) { return scannerClass.getSimpleName(); }
 
     private ClassLoader[] loaders() { return configuration.getClassLoaders(); }
+    
+    /**
+     * some of the elements denote synthetic/bridged methods, we need to track
+     * down the original methods.
+     * 
+     * @param values
+     * @param exclusions
+     *            TODO
+     * @return
+     */
+    private Collection<String> resolveSyntheticMethods(Method method, Iterable<String> values,
+            Collection<String> exclusions) {
+        Collection<String> newValues = new ArrayList<String>();
+        if (exclusions == null)
+            exclusions = new ArrayList<String>();
+        for (String value : values) {
+            if (exclusions.contains(value))
+                continue;
+            exclusions.add(value);
+            if (value.contains("$"))
+                newValues.addAll(findOriginalMethods(method, value, exclusions));
+            else
+                newValues.add(value);
+        }
+        return newValues;
+    }
+
+    private Collection<String> findOriginalMethods(Method method, String methodStr, Collection<String> exclusions) {
+        methodStr = methodStr.replaceFirst("\\s*#\\d+\\s*", "");
+        Iterable<String> candidates = store.get(index(MemberUsageScanner.class), methodStr);
+        Collection<String> result = resolveSyntheticMethods(method, candidates, exclusions);
+        if (!result.isEmpty())
+            return result;
+        // may be in a callback method passed into anonymous class
+        // perform fuzzy query because we don't know the exact parameter types
+        // of the <init> method
+        String prefix = methodStr.replaceFirst("(.*\\$\\d+\\.)[\\w\\d_]+\\(.*\\)",
+                "$1<init>(" + method.getDeclaringClass().getName());
+        Optional<String> key = store.get(index(MemberUsageScanner.class)).keySet().stream()
+                .filter(k -> k.startsWith(prefix)).findFirst();
+        if (key.isPresent()) {
+            candidates = store.get(index(MemberUsageScanner.class), key.get());
+            return resolveSyntheticMethods(method, candidates, exclusions);
+        } else
+            return result;
+    }
 }
