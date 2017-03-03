@@ -7,6 +7,6 @@ script: mvn clean install -Pbuild
 
 deploy:
     provider: script
-    script: mvn deploy -Prelease --settings .travis/settings.xml -DskipTests --batch-mode --update-snapshots
+    script: mvn deploy --settings .travis/settings.xml
     skip_cleanup: true
     all_branches: true
