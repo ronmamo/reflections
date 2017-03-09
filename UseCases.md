@@ -82,14 +82,6 @@ And use the helper methods in `JavaCodeSerializer` to resolve into the runtime e
 
 Querying through Reflections results in classes defined by the class loader. this is usually not a problem, but in cases class definition is not desirable, you can query the store directly using strings only Reflections reflections = new Reflections(...); //see in other use cases Set<String> serializableFqns = reflections.getStore().getSubTypesOf("java.io.Serializable"); plus, you can create your specialized query methods by querying the store directly Map<String, Multimap<String, String>> storeMap = reflections.getStore().getStoreMap(); //or Multimap<String, String> scannerMap = reflections.getStore().get(ResourcesScanner.class);
 
-find resources in your classpath
-
-``` Reflections reflections = new Reflections(new ConfigurationBuilder() .setUrls(ClasspathHelper.forPackage("your.package.here")) .setScanners(new ResourcesScanner());
-
-    Set<String> propertiesFiles = reflections.getResources(Pattern.compile(".*\\.properties"));
-    Set<String> hibernateCfgFiles = reflections.getResources(Pattern.compile(".*\\.cfg\\.xml"));
-```
-
 ###Find resources in your classpath
 
 ``` 
