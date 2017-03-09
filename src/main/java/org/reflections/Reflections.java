@@ -378,7 +378,10 @@ public class Reflections {
             Sets.SetView<String> keys = Sets.difference(mmap.keySet(), Sets.newHashSet(mmap.values()));
             Multimap<String, String> expand = HashMultimap.create();
             for (String key : keys) {
-                expandSupertypes(expand, key, forName(key));
+                final Class<?> type = forName(key);
+                if (type != null) {
+                    expandSupertypes(expand, key, type);
+                }
             }
             mmap.putAll(expand);
         }
@@ -456,7 +459,8 @@ public class Reflections {
             if (inherited) {
                 Iterable<String> subTypes = store.get(index(SubTypesScanner.class), filter(annotated, new Predicate<String>() {
                     public boolean apply(@Nullable String input) {
-                        return !ReflectionUtils.forName(input, loaders()).isInterface();
+                        final Class<?> type = forName(input, loaders());
+                        return type != null && !type.isInterface();
                     }
                 }));
                 return concat(subTypes, store.getAll(index(SubTypesScanner.class), subTypes));

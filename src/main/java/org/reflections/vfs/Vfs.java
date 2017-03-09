@@ -9,6 +9,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.Utils;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -238,8 +239,10 @@ public abstract class Vfs {
 
         directory {
             public boolean matches(URL url) {
-                return url.getProtocol().equals("file") && !hasJarFileInPath(url) &&
-                        getFile(url).isDirectory();
+                if (url.getProtocol().equals("file") && !hasJarFileInPath(url)) {
+                    java.io.File file = getFile(url);
+                    return file != null && file.isDirectory();
+                } else return false;
             }
 
             public Dir createDir(final URL url) throws Exception {
