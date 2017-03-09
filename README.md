@@ -4,7 +4,7 @@ Reflections scans your classpath, indexes the metadata, allows you to query it o
 
 Using Reflections you can query your metadata such as:
   * get all subtypes of some type
-  * get all types/members annotated with some annotation, optionally with annotation parameters matching
+  * get all types/members annotated with some annotation
   * get all resources matching a regular expression
   * get all methods with specific signature including parameters, parameter annotations and return type
 
@@ -16,7 +16,7 @@ Add Reflections to your project. for maven projects just add this dependency:
 <dependency>
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.10</version>
+    <version>0.9.11</version>
 </dependency>
 ```
 
@@ -93,11 +93,12 @@ Set<Member> usages =
     reflections.getMethodUsages(Method.class)
 ```
 
-  * If no scanners are configured, the default will be used - SubTypesScanner and TypeAnnotationsScanner. 
+  * If no scanners are configured, the default will be used - `SubTypesScanner` and `TypeAnnotationsScanner`. 
   * Classloader can also be configured, which will be used for resolving runtime classes from names.
-  * Make sure to scan all the transitive relevant urls (your packages and relevant 3rd party).
+  * Reflections [expands super types](http://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes()) by default. This solves some [problems](https://github.com/ronmamo/reflections/issues/65#issuecomment-95036047) with transitive urls are not scanned. 
 
-*Browse the [javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/index.html?org/reflections/Reflections.html) for more info.* 
+*Checkout the [javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/Reflections.html) for more info.* 
+
 *Also, browse the [tests directory](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections) to see some more examples.*
 
 ###ReflectionUtils
@@ -119,12 +120,12 @@ Set<Method> listMethodsFromCollectionToBoolean =
 Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), withTypeAssignableTo(type));
 ```
 
-*See more in the [ReflectionUtils javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/ReflectionUtils.html)*
+*See more in the [ReflectionUtils javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/ReflectionUtils.html)*
 
 ###ClasspathHelper
 ClasspathHelper contains some convenient methods to get urls for package, for class, for classloader and so.
 
-*See more in the [ClasspathHelper javadoc](http://reflections.googlecode.com/svn/trunk/reflections/javadoc/apidocs/org/reflections/util/ClasspathHelper.html)*
+*See more in the [ClasspathHelper javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/util/ClasspathHelper.html)*
 
 ###Integrating into your build lifecycle
 Although scanning can be easily done on bootstrap time of your application - and shouldn't take long, it is sometime a good idea to integrate Reflections into your build lifecyle.
@@ -135,14 +136,7 @@ making it available at runtime without re-scanning the classpath - thus reducing
 *For Maven, see example using gmavenplus in the [reflections-maven](https://github.com/ronmamo/reflections-maven/) repository*
 
 ###Other use cases
-Reflections can also:
-  * scan urls in parallel
-  * serialize scanned metadata to xml/json
-  * collect saved metadata on bootstrap time for fastest load time without scanning
-  * save your model entities metadata as .java file, so you can reference types/fields/methods/annotation in a static manner
-  * initial [Spring component scan](https://code.google.com/p/reflections/wiki/ReflectionsSpring)
-
-*See the [UseCases](http://code.google.com/p/reflections/wiki/UseCases) wiki page*
+*See the [UseCases](https://github.com/ronmamo/reflections/blob/gh-pages/UseCases.md) wiki page*
 
 ###Contribute
 Pull requests are welcomed!!
@@ -153,5 +147,7 @@ This library is published as an act of giving and generosity, from developers to
 
 Please feel free to use it, and to contribute to the developers community in the same manner. [Dāna](http://en.wikipedia.org/wiki/D%C4%81na)
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WLN75KYSR6HAY) 
+
+Welcome to join the [conversation](https://github.com/ronmamo/reflections/issues/159) and share your thoughts on the license issue.
 
 _Cheers_

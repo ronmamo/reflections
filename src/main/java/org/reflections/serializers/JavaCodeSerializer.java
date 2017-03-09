@@ -33,28 +33,36 @@ import static org.reflections.Reflections.log;
 import static org.reflections.util.Utils.prepareFile;
 import static org.reflections.util.Utils.repeat;
 
-/** serialization of Reflections to java code
- * <p> serializes types and types elements into interfaces respectively to fully qualified name,
- * <p> for example:
+/** Serialization of Reflections to java code
+ * <p> Serializes types and types elements into interfaces respectively to fully qualified name,
+ * <p> For example, after saving with JavaCodeSerializer:
  * <pre>
- * public interface MyTestModelStore {
- *	public interface <b>org</b> extends IPackage {
- *	    public interface <b>reflections</b> extends IPackage {
- *			public interface <b>TestModel$AC1</b> extends IClass {}
- *			public interface <b>TestModel$C4</b> extends IClass {
- *				public interface <b>f1</b> extends IField {}
- *				public interface <b>m1</b> extends IMethod {}
- *				public interface <b>m1_int_java$lang$String$$$$</b> extends IMethod {}
+ *   reflections.save(filename, new JavaCodeSerializer());
+ * </pre>
+ * <p>Saved file should look like:
+ * <pre>
+ *     public interface MyModel {
+ *      public interface my {
+ *       public interface package1 {
+ *        public interface MyClass1 {
+ *         public interface fields {
+ *          public interface f1 {}
+ *          public interface f2 {}
+ *         }
+ *         public interface methods {
+ *          public interface m1 {}
+ *          public interface m2 {}
+ *         }
  *	...
  * }
  * </pre>
- * <p> use the different resolve methods to resolve the serialized element into Class, Field or Method. for example:
+ * <p> Use the different resolve methods to resolve the serialized element into Class, Field or Method. for example:
  * <pre>
- *  Class&#60? extends IMethod> imethod = MyTestModelStore.org.reflections.TestModel$C4.m1.class;
- *  Method method = JavaCodeSerializer.resolve(imethod);
+ *  Class m1Ref = MyModel.my.package1.MyClass1.methods.m1.class;
+ *  Method method = JavaCodeSerializer.resolve(m1Ref);
  * </pre>
+ * <p>The {@link #save(org.reflections.Reflections, String)} method filename should be in the pattern: path/path/path/package.package.classname
  * <p>depends on Reflections configured with {@link org.reflections.scanners.TypeElementsScanner}
- * <p><p>the {@link #save(org.reflections.Reflections, String)} method filename should be in the pattern: path/path/path/package.package.classname
  * */
 public class JavaCodeSerializer implements Serializer {
 
