@@ -4,7 +4,7 @@
 
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.11-SNAPSHOT</version>
+    <version>0.9.11</version>
     <packaging>${packaging.type}</packaging>
 
     <name>Reflections</name>
@@ -54,10 +54,9 @@
 
     <properties>
         <packaging.type>jar</packaging.type>
-        <guava.version>19.0</guava.version>
-        <javassist.version>3.20.0-GA</javassist.version>
+        <guava.version>20.0</guava.version>
+        <javassist.version>3.21.0-GA</javassist.version>
         <jdk.version>1.7</jdk.version>
-        <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
     <dependencies>
@@ -78,7 +77,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.6.1</version>
+            <version>1.7.24</version>
             <optional>true</optional> <!-- case: when logging is not needed -->
         </dependency>
 
@@ -92,7 +91,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>1.4</version>
+            <version>2.8.0</version>
             <optional>true</optional> <!-- case: when no json de/serialization -->
         </dependency>
 
@@ -108,21 +107,21 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.6.1</version>
+            <version>1.7.24</version>
             <optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
         </dependency>
 
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.5</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
 
@@ -130,36 +129,9 @@
 
     <profiles>
         <profile>
-            <id>bundle</id>
-            <properties>
-                <packaging.type>bundle</packaging.type>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>maven-bundle-plugin</artifactId>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <instructions>
-                                <Import-Package>
-                                    org.jboss.vfs.*;resolution:=optional,
-                                    *
-                                </Import-Package>
-                                <Export-Package>
-                                    org.reflections.*
-                                </Export-Package>
-                                <Bundle-SymbolicName>org.reflections</Bundle-SymbolicName>
-                            </instructions>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
             <id>build</id>
             <properties>
+                <packaging.type>bundle</packaging.type>
             </properties>
             <build>
                 <plugins>
@@ -186,8 +158,22 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>maven-bundle-plugin</artifactId>
+                        <extensions>true</extensions>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <instructions>
+                                <Import-Package>
+                                    org.jboss.vfs.*;resolution:=optional,
+                                    *
+                                </Import-Package>
+                                <Export-Package>
+                                    org.reflections.*
+                                </Export-Package>
+                                <Bundle-SymbolicName>org.reflections</Bundle-SymbolicName>
+                            </instructions>
                         </configuration>
                     </plugin>
                     <plugin>
