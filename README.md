@@ -1,4 +1,4 @@
-##Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
+## Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
 
 Reflections scans your classpath, indexes the metadata, allows you to query it on runtime and may save and collect that information for many modules within your project.
 
@@ -10,7 +10,7 @@ Using Reflections you can query your metadata such as:
 
 [![Build Status](https://travis-ci.org/ronmamo/reflections.svg?branch=master)](https://travis-ci.org/ronmamo/reflections)
 
-###Intro
+### Intro
 Add Reflections to your project. for maven projects just add this dependency:
 ```xml
 <dependency>
@@ -29,7 +29,7 @@ Set<Class<? extends SomeType>> subTypes = reflections.getSubTypesOf(SomeType.cla
 Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(SomeAnnotation.class);
 ```
 
-###Usage
+### Usage
 Basically, to use Reflections first instantiate it with urls and scanners
 
 ```java
@@ -101,7 +101,7 @@ Set<Member> usages =
 
 *Also, browse the [tests directory](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections) to see some more examples.*
 
-###ReflectionUtils
+### ReflectionUtils
 ReflectionsUtils contains some convenient Java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
 
 for example:
@@ -122,12 +122,7 @@ Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), w
 
 *See more in the [ReflectionUtils javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/ReflectionUtils.html)*
 
-###ClasspathHelper
-ClasspathHelper contains some convenient methods to get urls for package, for class, for classloader and so.
-
-*See more in the [ClasspathHelper javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/util/ClasspathHelper.html)*
-
-###Integrating into your build lifecycle
+### Integrating into your build lifecycle
 Although scanning can be easily done on bootstrap time of your application - and shouldn't take long, it is sometime a good idea to integrate Reflections into your build lifecyle.
 With simple Maven/Gradle/SBT/whatever configuration you can save all scanned metadata into xml/json files just after compile time. 
 Later on, when your project is bootstrapping you can let Reflections collect all those resources and re-create that metadata for you, 
@@ -135,10 +130,10 @@ making it available at runtime without re-scanning the classpath - thus reducing
 
 *For Maven, see example using gmavenplus in the [reflections-maven](https://github.com/ronmamo/reflections-maven/) repository*
 
-###Other use cases
+### Other use cases
 *See the [UseCases](https://github.com/ronmamo/reflections/blob/gh-pages/UseCases.md) wiki page*
 
-###Contribute
+### Contribute
 Pull requests are welcomed!!
 
 The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. 
