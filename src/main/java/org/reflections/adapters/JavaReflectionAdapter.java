@@ -80,11 +80,11 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
         return field.getName();
     }
 
-    public Class getOfCreateClassObject(Vfs.File file) throws Exception {
-        return getOfCreateClassObject(file, null);
+    public Class getOrCreateClassObject(Vfs.File file) throws Exception {
+        return getOrCreateClassObject(file, null);
     }
 
-    public Class getOfCreateClassObject(Vfs.File file, @Nullable ClassLoader... loaders) throws Exception {
+    public Class getOrCreateClassObject(Vfs.File file, @Nullable ClassLoader... loaders) throws Exception {
         String name = file.getRelativePath().replace("/", ".").replace(".class", "");
         return forName(name, loaders);
     }

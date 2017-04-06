@@ -37,7 +37,7 @@ public interface MetadataAdapter<C,F,M> {
 
     String getFieldName(final F field);
 
-    C getOfCreateClassObject(Vfs.File file) throws Exception;
+    C getOrCreateClassObject(Vfs.File file) throws Exception;
 
     String getMethodModifier(M method);
 

@@ -92,7 +92,7 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
         return field.getName();
     }
 
-    public ClassFile getOfCreateClassObject(final Vfs.File file) {
+    public ClassFile getOrCreateClassObject(final Vfs.File file) {
         InputStream inputStream = null;
         try {
             inputStream = file.openInputStream();
