@@ -19,6 +19,16 @@ import java.util.jar.Manifest;
  * Helper methods for working with the classpath.
  */
 public abstract class ClasspathHelper {
+	
+    /**
+     * Is the classloader from IBM and thus the WebSphere platform?
+     *
+     * @param loader  the classloader
+     * @return  <tt>true</tt> if IBM classloader, <tt>false</tt> otherwise.
+     */
+    public static boolean isWebSphereClassLoader(ClassLoader loader) {
+        return loader != null ? loader.getClass().getName().startsWith("com.ibm") : false;
+    }
 
     /**
      * Gets the current thread context class loader.
@@ -76,6 +86,11 @@ public abstract class ClasspathHelper {
      * @return the collection of URLs, not null
      */
     public static Collection<URL> forPackage(String name, ClassLoader... classLoaders) {
+        if(isWebSphereClassLoader(classLoaders(classLoaders)[0])){
+            // inexplicable WAS returns only half of the jars when not adding / to a directory (package)
+            String filteredResourceName = resourceName(name);
+            return forResource(filteredResourceName.endsWith("/") ? filteredResourceName : filteredResourceName +"/", classLoaders);
+        }
         return forResource(resourceName(name), classLoaders);
     }
 
@@ -98,7 +113,22 @@ public abstract class ClasspathHelper {
         final ClassLoader[] loaders = classLoaders(classLoaders);
         for (ClassLoader classLoader : loaders) {
             try {
-                final Enumeration<URL> urls = classLoader.getResources(resourceName);
+                Enumeration<URL> urls = classLoader.getResources(resourceName);
+                if (!urls.hasMoreElements() && isWebSphereClassLoader(classLoader) && !resourceName.endsWith("/")) {
+                    // WebSphere can not load resources if the resource to load is a folder name, such as a packagename.
+                    // It is only able to find resources if they end with / in that case!
+                    if (Reflections.log != null) {
+                        Reflections.log.warn("Reflections did not find any resources on Websphere, appending a / to resource filter and trying again");
+					}
+                    urls = classLoader.getResources(resourceName + "/");
+                }else if(isWebSphereClassLoader(classLoader)){
+                    // If we did find resources it doesn't mean we found them all!
+                    // Inexplicable WAS returns only half of the jars when not adding a / to a directory.
+                    // But that's what happening, so it might be a good idea to at least log some debug about that WAS "bug/feature".
+                    if (Reflections.log != null && Reflections.log.isDebugEnabled()) {
+                        Reflections.log.debug("Reflections is running on Websphere, please ensure that you append a / if you want to restrict the search to a directory or package (via forRecource())");
+                    }
+                }
                 while (urls.hasMoreElements()) {
                     final URL url = urls.nextElement();
                     int index = url.toExternalForm().lastIndexOf(resourceName);
