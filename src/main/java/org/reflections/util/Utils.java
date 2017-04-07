@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
+import org.reflections.scanners.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,4 +198,6 @@ public abstract class Utils {
     public static String name(Field field) {
         return field.getDeclaringClass().getName() + "." + field.getName();
     }
+
+    public static String index(Class<? extends Scanner> scannerClass) { return scannerClass.getSimpleName(); }
 }

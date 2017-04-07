@@ -117,7 +117,7 @@ public class Reflections {
             //inject to scanners
             for (Scanner scanner : configuration.getScanners()) {
                 scanner.setConfiguration(configuration);
-                scanner.setStore(store.getOrCreate(scanner.getClass().getSimpleName()));
+                scanner.setStore(store.getOrCreate(index(scanner.getClass())));
             }
 
             scan();
@@ -666,8 +666,6 @@ public class Reflections {
             log.info("Reflections successfully saved in " + file.getAbsolutePath() + " using " + serializer.getClass().getSimpleName());
         return file;
     }
-
-    private static String index(Class<? extends Scanner> scannerClass) { return scannerClass.getSimpleName(); }
 
     private ClassLoader[] loaders() { return configuration.getClassLoaders(); }
 }

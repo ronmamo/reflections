@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertThat;
+import static org.reflections.util.Utils.index;
 
 /** */
 public class ReflectionsCollectTest extends ReflectionsTest {
@@ -59,7 +60,7 @@ public class ReflectionsCollectTest extends ReflectionsTest {
         Set<String> resolved = reflections.getResources(Pattern.compile(".*resource1-reflections\\.xml"));
         assertThat(resolved, are("META-INF/reflections/resource1-reflections.xml"));
 
-        Set<String> resources = reflections.getStore().get(ResourcesScanner.class.getSimpleName()).keySet();
+        Set<String> resources = reflections.getStore().get(index(ResourcesScanner.class)).keySet();
         assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml",
                 "testModel-reflections.xml", "testModel-reflections.json"));
     }
