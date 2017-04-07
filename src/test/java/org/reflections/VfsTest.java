@@ -52,7 +52,7 @@ public class VfsTest {
                 if (f.getRelativePath().endsWith(".class")) { file = f; break; }
             }
 
-            ClassFile stringCF = mdAdapter.getOfCreateClassObject(file);
+            ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
             //noinspection UnusedDeclaration
             String className = mdAdapter.getClassName(stringCF);
         }
@@ -72,7 +72,7 @@ public class VfsTest {
                 if (f.getRelativePath().equals("java/lang/String.class")) { file = f; break; }
             }
 
-            ClassFile stringCF = mdAdapter.getOfCreateClassObject(file);
+            ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
             String className = mdAdapter.getClassName(stringCF);
             assertTrue(className.equals("java.lang.String"));
         }
@@ -92,7 +92,7 @@ public class VfsTest {
                 if (f.getRelativePath().equals("org/reflections/VfsTest.class")) { file = f; break; }
             }
 
-            ClassFile stringCF = mdAdapter.getOfCreateClassObject(file);
+            ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
             String className = mdAdapter.getClassName(stringCF);
             assertTrue(className.equals(getClass().getName()));
         }
@@ -256,7 +256,7 @@ public class VfsTest {
             try {
                 for (Vfs.File file : Iterables.limit(new JarInputDir(jar).getFiles(), 5)) {
                     if (file.getName().endsWith(".class")) {
-                        String className = javassistAdapter.getClassName(javassistAdapter.getOfCreateClassObject(file));
+                        String className = javassistAdapter.getClassName(javassistAdapter.getOrCreateClassObject(file));
                     }
                 }
             } catch (Exception e) {
