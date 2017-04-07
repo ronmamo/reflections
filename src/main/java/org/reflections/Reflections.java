@@ -202,7 +202,7 @@ public class Reflections {
                     scan(url);
                 }
                 scannedUrls++;
-            } catch (ReflectionsException e) {
+            } catch (ReflectionsException | NullPointerException e) {
                 if (log != null && log.isWarnEnabled()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
             }
         }
@@ -252,7 +252,7 @@ public class Reflections {
                             if (scanner.acceptsInput(path) || scanner.acceptResult(fqn)) {
                                 classObject = scanner.scan(file, classObject);
                             }
-                        } catch (Exception e) {
+                        } catch (ReflectionsException e) {
                             if (log != null && log.isDebugEnabled())
                                 log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e);
                         }
