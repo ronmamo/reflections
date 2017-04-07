@@ -16,12 +16,15 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static com.google.common.collect.Collections2.transform;
 import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.reflections.ReflectionUtils.*;
 import static org.reflections.ReflectionsTest.are;
+import static org.hamcrest.core.IsNot.not;
 
 /**
  * @author mamo
@@ -78,6 +81,28 @@ public class ReflectionUtilsTest {
         }
     }
 
+    @Test public void withSubclassParameters() throws Exception {
+        Set<Method> allMethods	= getAllMethods(Collections.class,
+        		withModifier(Modifier.STATIC),
+        		ReflectionUtils.withParametersAndSubclasses(Collection.class));
+        
+        assertThat(allMethods, hasItem(Collections.class.getMethod("enumeration", 
+        		Collection.class)));
+        assertThat(allMethods, hasItem(Collections.class.getMethod("sort", 
+        		List.class)));
+    }
+    
+    @Test public void withSuperclassParameters() throws Exception {
+        Set<Method> allMethods	= getAllMethods(Collections.class,
+        		withModifier(Modifier.STATIC),
+        		ReflectionUtils.withParametersAndSuperclasses(Collection.class));
+        
+        assertThat(allMethods, hasItem(Collections.class.getMethod("enumeration", 
+        		Collection.class)));
+        assertThat(allMethods, not(hasItem(Collections.class.getMethod("sort", 
+        		List.class))));
+    }
+    
     @Test public void withReturn() throws Exception {
         Set<Method> returnMember = getAllMethods(Class.class, withReturnTypeAssignableTo(Member.class));
         Set<Method> returnsAssignableToMember = getAllMethods(Class.class, withReturnType(Method.class));
