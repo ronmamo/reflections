@@ -5,7 +5,6 @@
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
     <version>0.9.12-SNAPSHOT</version>
-    <packaging>${packaging.type}</packaging>
 
     <name>Reflections</name>
     <description>Reflections - a Java runtime metadata analysis</description>
@@ -53,7 +52,6 @@
     </distributionManagement>
 
     <properties>
-        <packaging.type>jar</packaging.type>
         <guava.version>20.0</guava.version>
         <javassist.version>3.21.0-GA</javassist.version>
         <jdk.version>1.7</jdk.version>
@@ -131,11 +129,16 @@
     <profiles>
         <profile>
             <id>build</id>
-            <properties>
-                <packaging.type>bundle</packaging.type>
-            </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -166,7 +169,15 @@
                     <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
-                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>bundle-manifest</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>manifest</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                         <configuration>
                             <instructions>
                                 <Import-Package>
