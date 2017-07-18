@@ -42,7 +42,7 @@ public class Store {
                     Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(),
                             new Supplier<Set<String>>() {
                                 public Set<String> get() {
-                                    return Sets.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+                                    return Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
                                 }
                             });
             mmap = concurrent ? Multimaps.synchronizedSetMultimap(multimap) : multimap;
