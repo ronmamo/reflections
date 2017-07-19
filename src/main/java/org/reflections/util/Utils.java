@@ -152,6 +152,10 @@ public abstract class Utils {
     @Nullable
     public static Logger findLogger(Class<?> aClass) {
         try {
+            // This is to check whether an optional SLF4J binding is available. While SLF4J recommends that libraries
+            // "should not declare a dependency on any SLF4J binding but only depend on slf4j-api", doing so forces
+            // users of the library to either add a binding to the classpath (even if just slf4j-nop) or to set the
+            // "slf4j.suppressInitError" system property in order to avoid the warning, which both is inconvenient.
             Class.forName("org.slf4j.impl.StaticLoggerBinder");
             return LoggerFactory.getLogger(aClass);
         } catch (Throwable e) {
