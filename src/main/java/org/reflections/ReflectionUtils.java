@@ -74,7 +74,7 @@ public abstract class ReflectionUtils {
 
     /** get the immediate supertype and interfaces of the given {@code type} */
     public static Set<Class<?>> getSuperTypes(Class<?> type) {
-        Set<Class<?>> result = new LinkedHashSet<>();
+        Set<Class<?>> result = new LinkedHashSet<Class<?>>();
         Class<?> superclass = type.getSuperclass();
         Class<?>[] interfaces = type.getInterfaces();
         if (superclass != null && (includeObject || !superclass.equals(Object.class))) result.add(superclass);
