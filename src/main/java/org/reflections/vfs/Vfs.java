@@ -262,6 +262,16 @@ public abstract class Vfs {
                 String name = (String) virtualFile.getMethod("getName").invoke(content);
                 java.io.File file = new java.io.File(physicalFile.getParentFile(), name);
                 if (!file.exists() || !file.canRead()) file = physicalFile;
+
+                if (file.isDirectory()) {
+                    // Tell VFS to fill the directory with content. By Default at startup if
+                    // none of these classes was used, content directory will be empty
+                    List<Object> contentFiles = (List<Object>)virtualFile.getMethod("getChildrenRecursively").invoke(content);
+                    for (Object child : contentFiles) {
+                        virtualFile.getMethod("getPhysicalFile").invoke(child);
+                    }
+                }
+
                 return file.isDirectory() ? new SystemDir(file) : new ZipDir(new JarFile(file));
             }
         },
