@@ -65,7 +65,7 @@ public abstract class Utils {
         String methodParameters = p0 != -1 ? descriptor.substring(p0 + 1, descriptor.lastIndexOf(')')) : "";
 
         int p1 = Math.max(memberKey.lastIndexOf('.'), memberKey.lastIndexOf("$"));
-        String className = memberKey.substring(memberKey.lastIndexOf(' ') + 1, p1);
+        String className = memberKey.substring(0, p1);
         String memberName = memberKey.substring(p1 + 1);
 
         Class<?>[] parameterTypes = null;
