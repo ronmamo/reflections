@@ -57,7 +57,7 @@ import static org.reflections.util.Utils.*;
  * <pre>
  *      Reflections reflections = new Reflections("my.package.prefix");
  *      //or
- *      Reflections reflections = new Reflections(ClasspathHelper.forPackage("my.package.prefix"), 
+ *      Reflections reflections = new Reflections(ClasspathHelper.forPackage("my.package.prefix"),
  *            new SubTypesScanner(), new TypesAnnotationScanner(), new FilterBuilder().include(...), ...);
  *
  *       //or using the ConfigurationBuilder
@@ -86,7 +86,7 @@ import static org.reflections.util.Utils.*;
  *       Set&#60Member> methodUsage =      reflections.getMethodUsage(Method.class);
  *       Set&#60Member> constructorUsage = reflections.getConstructorUsage(Constructor.class);
  * </pre>
- * <p>You can use other scanners defined in Reflections as well, such as: SubTypesScanner, TypeAnnotationsScanner (both default), 
+ * <p>You can use other scanners defined in Reflections as well, such as: SubTypesScanner, TypeAnnotationsScanner (both default),
  * ResourcesScanner, MethodAnnotationsScanner, ConstructorAnnotationsScanner, FieldAnnotationsScanner,
  * MethodParameterScanner, MethodParameterNamesScanner, MemberUsageScanner or any custom scanner.
  * <p>Use {@link #getStore()} to access and query the store directly
@@ -378,7 +378,7 @@ public class Reflections {
             Sets.SetView<String> keys = Sets.difference(mmap.keySet(), Sets.newHashSet(mmap.values()));
             Multimap<String, String> expand = HashMultimap.create();
             for (String key : keys) {
-                final Class<?> type = forName(key);
+                final Class<?> type = forName(key, loaders());
                 if (type != null) {
                     expandSupertypes(expand, key, type);
                 }
