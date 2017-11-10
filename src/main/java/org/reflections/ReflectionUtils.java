@@ -2,7 +2,6 @@ package org.reflections;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -37,6 +36,7 @@ import static org.reflections.util.Utils.isEmpty;
  *         <li>{@link #withParameters(Class[])}
  *         <li>{@link #withAnyParameterAnnotation(Class)}
  *         <li>{@link #withParametersAssignableTo(Class[])}
+ *         <li>{@link #withParametersAssignableFrom(Class[])}
  *         <li>{@link #withPrefix(String)}
  *         <li>{@link #withReturnType(Class)}
  *         <li>{@link #withType(Class)}
@@ -236,19 +236,16 @@ public abstract class ReflectionUtils {
     public static Predicate<Member> withParametersAssignableTo(final Class... types) {
         return new Predicate<Member>() {
             public boolean apply(@Nullable Member input) {
-                if (input != null) {
-                    Class<?>[] parameterTypes = parameterTypes(input);
-                    if (parameterTypes.length == types.length) {
-                        for (int i = 0; i < parameterTypes.length; i++) {
-                            if (!parameterTypes[i].isAssignableFrom(types[i]) ||
-                                    (parameterTypes[i] == Object.class && types[i] != Object.class)) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                }
-                return false;
+                return isAssignable(types, parameterTypes(input));
+            }
+        };
+    }
+
+    /** when method/constructor parameter types assignable from given {@code types} */
+    public static Predicate<Member> withParametersAssignableFrom(final Class... types) {
+        return new Predicate<Member>() {
+            public boolean apply(@Nullable Member input) {
+                return isAssignable(parameterTypes(input), types);
             }
         };
     }
@@ -481,5 +478,22 @@ public abstract class ReflectionUtils {
             return true;
         }
         return false;
+    }
+
+
+    private static boolean isAssignable(Class[] childClasses, Class[] parentClasses) {
+        if (childClasses == null) {
+            return parentClasses == null || parentClasses.length == 0;
+        }
+        if (childClasses.length != parentClasses.length) {
+            return false;
+        }
+        for (int i = 0; i < childClasses.length; i++) {
+            if (!parentClasses[i].isAssignableFrom(childClasses[i]) ||
+                    (parentClasses[i] == Object.class && childClasses[i] != Object.class)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
