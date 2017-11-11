@@ -117,7 +117,7 @@ Set<Method> listMethodsFromCollectionToBoolean =
   getAllMethods(List.class,
     withParametersAssignableTo(Collection.class), withReturnType(boolean.class));
 
-Set<Fields> fields = getAllFields(SomeClass.class, withAnnotation(annotation), withTypeAssignableTo(type));
+Set<Field> fields = getAllFields(SomeClass.class, withAnnotation(annotation), withTypeAssignableTo(type));
 ```
 
 *See more in the [ReflectionUtils javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/ReflectionUtils.html)*
