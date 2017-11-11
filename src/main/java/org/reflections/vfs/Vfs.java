@@ -9,12 +9,14 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.Utils;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.jar.JarFile;
 
 /**
@@ -226,7 +228,8 @@ public abstract class Vfs {
                 try {
                     URLConnection urlConnection = url.openConnection();
                     if (urlConnection instanceof JarURLConnection) {
-                            return new ZipDir(((JarURLConnection) urlConnection).getJarFile());
+                        urlConnection.setUseCaches(false);
+                        return new ZipDir(((JarURLConnection) urlConnection).getJarFile());
                     }
                 } catch (Throwable e) { /*fallback*/ }
                 java.io.File file = getFile(url);
