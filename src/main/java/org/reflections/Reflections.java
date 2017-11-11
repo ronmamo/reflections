@@ -180,8 +180,8 @@ public class Reflections {
             return;
         }
 
-        if (log != null && log.isDebugEnabled()) {
-            log.debug("going to scan these urls:\n" + Joiner.on("\n").join(configuration.getUrls()));
+        if (log != null) {
+            log.debug("going to scan these urls:\n{}", Joiner.on("\n").join(configuration.getUrls()));
         }
 
         long time = System.currentTimeMillis();
@@ -194,7 +194,9 @@ public class Reflections {
                 if (executorService != null) {
                     futures.add(executorService.submit(new Runnable() {
                         public void run() {
-                            if (log != null && log.isDebugEnabled()) log.debug("[" + Thread.currentThread().toString() + "] scanning " + url);
+                            if (log != null) {
+                                log.debug("[{}] scanning {}", Thread.currentThread().toString(), url);
+                            }
                             scan(url);
                         }
                     }));
@@ -203,7 +205,9 @@ public class Reflections {
                 }
                 scannedUrls++;
             } catch (ReflectionsException e) {
-                if (log != null && log.isWarnEnabled()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
+                if (log != null) {
+                    log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
+                }
             }
         }
 
@@ -253,8 +257,10 @@ public class Reflections {
                                 classObject = scanner.scan(file, classObject);
                             }
                         } catch (Exception e) {
-                            if (log != null && log.isDebugEnabled())
-                                log.debug("could not scan file " + file.getRelativePath() + " in url " + url.toExternalForm() + " with scanner " + scanner.getClass().getSimpleName(), e);
+                            if (log != null) {
+                                // SLF4J will filter out Throwables from the format string arguments.
+                                log.debug("could not scan file {} in url {} with scanner {}", file.getRelativePath(), url.toExternalForm(), scanner.getClass().getSimpleName(), e);
+                            }
                         }
                     }
                 }
