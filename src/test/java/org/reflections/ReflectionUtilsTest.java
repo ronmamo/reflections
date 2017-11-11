@@ -78,6 +78,29 @@ public class ReflectionUtilsTest {
         }
     }
 
+    @Test
+    public void withParametersAssignableFromTest() throws Exception {
+        //Check for null safe
+        getAllMethods(Collections.class, withModifier(Modifier.STATIC), withParametersAssignableFrom());
+
+        Class target = Collections.class;
+        Object arg1 = Arrays.asList(1, 2, 3);
+
+        Set<Method> allMethods = Sets.newHashSet();
+        for (Class<?> type : getAllSuperTypes(arg1.getClass())) {
+            allMethods.addAll(getAllMethods(target, withModifier(Modifier.STATIC), withParameters(type)));
+        }
+
+        Set<Method> allMethods1 = getAllMethods(target, withModifier(Modifier.STATIC), withParametersAssignableFrom(Iterable.class), withParametersAssignableTo(arg1.getClass()));
+
+        assertEquals(allMethods, allMethods1);
+
+        for (Method method : allMethods) { //effectively invokable
+            //noinspection UnusedDeclaration
+            Object invoke = method.invoke(null, arg1);
+        }
+    }
+
     @Test public void withReturn() throws Exception {
         Set<Method> returnMember = getAllMethods(Class.class, withReturnTypeAssignableTo(Member.class));
         Set<Method> returnsAssignableToMember = getAllMethods(Class.class, withReturnType(Method.class));
