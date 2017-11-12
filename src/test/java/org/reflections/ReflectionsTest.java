@@ -94,6 +94,8 @@ public class ReflectionsTest {
         assertThat(reflections.getTypesAnnotatedWith(ac2), are(C3.class, C5.class, I3.class, C6.class, AC3.class, C7.class));
 
         assertThat(reflections.getTypesAnnotatedWith(ac2, true), are(C3.class, I3.class, AC3.class));
+        // "recursive annotation" throws StackOverflowError in 0.9.10 (worked in 0.9.8)
+        assertThat(reflections.getTypesAnnotatedWith(CyclicAnnotation.class), are(CyclicAnnotation.class));
     }
 
     @Test

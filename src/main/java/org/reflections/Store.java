@@ -68,40 +68,46 @@ public class Store {
     /** get the values stored for the given {@code index} and {@code keys} */
     public Iterable<String> get(String index, Iterable<String> keys) {
         Multimap<String, String> mmap = get(index);
-        IterableChain<String> result = new IterableChain<String>();
+        Set<String> result = Sets.newHashSet();
         for (String key : keys) {
             result.addAll(mmap.get(key));
         }
         return result;
     }
 
-    /** recursively get the values stored for the given {@code index} and {@code keys}, including keys */
-    private Iterable<String> getAllIncluding(String index, Iterable<String> keys, IterableChain<String> result) {
-        result.addAll(keys);
-        for (String key : keys) {
-            Iterable<String> values = get(index, key);
-            if (values.iterator().hasNext()) {
-                getAllIncluding(index, values, result);
-            }
-        }
-        return result;
-    }
-
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
     public Iterable<String> getAll(String index, String key) {
-        return getAllIncluding(index, get(index, key), new IterableChain<String>());
+        return getAllIncluding(index, key, Sets.<String>newHashSet());
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
     public Iterable<String> getAll(String index, Iterable<String> keys) {
-        return getAllIncluding(index, get(index, keys), new IterableChain<String>());
+        return getAllIncluding(index, keys, Sets.<String>newHashSet());
     }
 
-    private static class IterableChain<T> implements Iterable<T> {
-        private final List<Iterable<T>> chain = Lists.newArrayList();
+    /** recursively get the values stored for the given {@code index} and {@code keys}, including keys */
+    private Collection<String> getAllIncluding(String index, Iterable<String> keys, Set<String> result) {
+        if (keys == null || !keys.iterator().hasNext()) {
+            return result;
+        }
+        for (String key : keys) {
+            getAllIncluding(index, key, result);
+        }
+        return result;
+    }
 
-        private void addAll(Iterable<T> iterable) { chain.add(iterable); }
-
-        public Iterator<T> iterator() { return Iterables.concat(chain).iterator(); }
+    /**recursively get the values stored for the given {@code index} and {@code keys}, including keys*/
+    private Collection<String> getAllIncluding(String index, String key, Set<String> result) {
+        Iterable<String> values = get(index, key);
+        final Set<String> keyForIncluding = Sets.newHashSet();
+        if (values.iterator().hasNext()) {
+            for (String value : values) {
+                if (result.add(value)) {
+                    keyForIncluding.add(value);
+                }
+            }
+            getAllIncluding(index, keyForIncluding, result);
+        }
+        return result;
     }
 }
