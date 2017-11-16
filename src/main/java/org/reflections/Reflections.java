@@ -180,7 +180,7 @@ public class Reflections {
             return;
         }
 
-        if (log != null) {
+        if (log != null && log.isDebugEnabled()) {
             log.debug("going to scan these urls:\n{}", Joiner.on("\n").join(configuration.getUrls()));
         }
 
