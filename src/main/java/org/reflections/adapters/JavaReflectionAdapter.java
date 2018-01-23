@@ -102,9 +102,14 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
     }
 
     public boolean isPublic(Object o) {
-        Integer mod =
-                o instanceof Class ? ((Class) o).getModifiers() :
-                o instanceof Member ? ((Member) o).getModifiers() : null;
+        Integer mod;
+        if (o instanceof Class) {
+            mod = ((Class) o).getModifiers();
+        } else if (o instanceof Member) {
+            mod = ((Member) o).getModifiers();
+        } else {
+          mod = null;
+        }
 
         return mod != null && Modifier.isPublic(mod);
     }

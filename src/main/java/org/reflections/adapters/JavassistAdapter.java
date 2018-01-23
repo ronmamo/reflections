@@ -121,10 +121,16 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     }
 
     public boolean isPublic(Object o) {
-        Integer accessFlags =
-                o instanceof ClassFile ? ((ClassFile) o).getAccessFlags() :
-                o instanceof FieldInfo ? ((FieldInfo) o).getAccessFlags() :
-                o instanceof MethodInfo ? ((MethodInfo) o).getAccessFlags() : null;
+        Integer accessFlags;
+        if (o instanceof ClassFile) {
+            accessFlags = ((ClassFile) o).getAccessFlags();
+        } else if (o instanceof FieldInfo) {
+            accessFlags = ((FieldInfo) o).getAccessFlags();
+        } else if (o instanceof MethodInfo) {
+            accessFlags = ((MethodInfo) o).getAccessFlags();
+        } else {
+            accessFlags = null;
+        }
 
         return accessFlags != null && AccessFlag.isPublic(accessFlags);
     }
