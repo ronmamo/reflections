@@ -216,7 +216,7 @@ public abstract class Vfs {
             }
 
             public Dir createDir(final URL url) throws Exception {
-                return new ZipDir(new JarFile(getFile(url)));
+                return getZipDir(url);
             }
         },
 
@@ -251,6 +251,22 @@ public abstract class Vfs {
 
             public Dir createDir(final URL url) throws Exception {
                 return new SystemDir(getFile(url));
+            }
+        },
+
+        dockerExecutable {
+            @Override
+            public boolean matches(final URL url) throws Exception {
+                if (url.getProtocol().equals("file") && !hasJarFileInPath(url)) {
+                    ZipDir zipDir = getZipDir(url);
+                    return zipDir.getFiles().iterator().hasNext();
+                }
+                return false;
+            }
+
+            @Override
+            public Dir createDir(final URL url) throws Exception {
+                return getZipDir(url);
             }
         },
 
@@ -299,6 +315,10 @@ public abstract class Vfs {
             public Dir createDir(final URL url) throws Exception {
                 return new JarInputDir(url);
             }
+        };
+
+        private static ZipDir getZipDir(final URL url) throws IOException {
+            return new ZipDir(new JarFile(getFile(url)));
         }
     }
 }
