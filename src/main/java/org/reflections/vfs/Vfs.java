@@ -204,6 +204,7 @@ public abstract class Vfs {
      * <p>jarFile - creates a {@link org.reflections.vfs.ZipDir} over jar file
      * <p>jarUrl - creates a {@link org.reflections.vfs.ZipDir} over a jar url (contains ".jar!/" in it's name), using Java's {@link JarURLConnection}
      * <p>directory - creates a {@link org.reflections.vfs.SystemDir} over a file system directory
+     * <p>dockerExecutable - creates a {@link org.reflections.vfs.ZipDir} over a docker executabel, that is basically a jar or a zipfile, but has no filename extension
      * <p>jboss vfs - for protocols vfs, using jboss vfs (should be provided in classpath)
      * <p>jboss vfsfile - creates a {@link UrlTypeVFS} for protocols vfszip and vfsfile.
      * <p>bundle - for bundle protocol, using eclipse FileLocator (should be provided in classpath)
@@ -256,10 +257,14 @@ public abstract class Vfs {
 
         dockerExecutable {
             @Override
-            public boolean matches(final URL url) throws Exception {
+            public boolean matches(final URL url) {
                 if (url.getProtocol().equals("file") && !hasJarFileInPath(url)) {
-                    ZipDir zipDir = getZipDir(url);
-                    return zipDir.getFiles().iterator().hasNext();
+                    try {
+                        ZipDir zipDir = getZipDir(url);
+                        return zipDir.getFiles().iterator().hasNext();
+                    } catch (Throwable e) {
+                        Reflections.log.debug("Cannot extract given url " + url, e);
+                    }
                 }
                 return false;
             }
