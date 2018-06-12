@@ -109,6 +109,14 @@
             <version>1.7.24</version>
             <optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
         </dependency>
+             
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-vfs</artifactId>
+            <version>3.2.12.Final</version>
+            <scope>provided</scope>
+            <optional>true</optional><!-- case: when using jboss-vfs -->
+        </dependency>
 
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
