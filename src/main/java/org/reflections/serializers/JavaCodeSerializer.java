@@ -105,25 +105,30 @@ public class JavaCodeSerializer implements Serializer {
 
         //generate
         try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("//generated using Reflections JavaCodeSerializer")
-                    .append(" [").append(new Date()).append("]")
-                    .append("\n");
-            if (packageName.length() != 0) {
-                sb.append("package ").append(packageName).append(";\n");
-                sb.append("\n");
-            }
-            sb.append("public interface ").append(className).append(" {\n\n");
-            sb.append(toString(reflections));
-            sb.append("}\n");
-
-            Files.write(sb.toString(), new File(filename), Charset.defaultCharset());
+            final String fileContent = generateFileContent(reflections, packageName, className);
+            Files.write(fileContent, new File(filename), Charset.defaultCharset());
 
         } catch (IOException e) {
             throw new RuntimeException();
         }
 
         return file;
+    }
+
+    private String generateFileContent(Reflections reflections, String packageName, String className) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("//generated using Reflections JavaCodeSerializer")
+                .append(" [").append(new Date()).append("]")
+                .append("\n");
+        if (packageName.length() != 0) {
+            sb.append("package ").append(packageName).append(";\n");
+            sb.append("\n");
+        }
+        sb.append("public interface ").append(className).append(" {\n\n");
+        sb.append(toString(reflections));
+        sb.append("}\n");
+
+        return sb.toString();
     }
 
     public String toString(Reflections reflections) {
