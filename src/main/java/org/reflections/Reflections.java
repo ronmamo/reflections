@@ -175,21 +175,47 @@ public class Reflections {
 
     //
     protected void scan() {
-        if (configuration.getUrls() == null || configuration.getUrls().isEmpty()) {
+        final Set<URL> urlsToScan = configuration.getUrls();
+        if (urlsToScan == null || urlsToScan.isEmpty()) {
             if (log != null) log.warn("given scan urls are empty. set urls in the configuration");
             return;
         }
 
         if (log != null && log.isDebugEnabled()) {
-            log.debug("going to scan these urls:\n{}", Joiner.on("\n").join(configuration.getUrls()));
+            log.debug("going to scan these urls:\n{}", Joiner.on("\n").join(urlsToScan));
         }
 
         long time = System.currentTimeMillis();
-        int scannedUrls = 0;
         ExecutorService executorService = configuration.getExecutorService();
         List<Future<?>> futures = Lists.newArrayList();
 
-        for (final URL url : configuration.getUrls()) {
+        int scannedUrls = scanUrls(urlsToScan, executorService, futures);
+
+        long timeElapsed = System.currentTimeMillis() - time;
+
+        //gracefully shutdown the parallel scanner executor service.
+        if (executorService != null) {
+            executorService.shutdown();
+        }
+
+        if (log != null) {
+            int keys = 0;
+            int values = 0;
+            for (String index : store.keySet()) {
+                keys += store.get(index).keySet().size();
+                values += store.get(index).size();
+            }
+
+            log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
+                    timeElapsed, scannedUrls, keys, values,
+                    executorService != null && executorService instanceof ThreadPoolExecutor ?
+                            format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
+        }
+    }
+
+    private int scanUrls(Set<URL> urlsToScan, ExecutorService executorService, List<Future<?>> futures) {
+        int scannedUrls = 0;
+        for (final URL url : urlsToScan) {
             try {
                 if (executorService != null) {
                     futures.add(executorService.submit(new Runnable() {
@@ -217,27 +243,7 @@ public class Reflections {
                 try { future.get(); } catch (Exception e) { throw new RuntimeException(e); }
             }
         }
-
-        time = System.currentTimeMillis() - time;
-
-        //gracefully shutdown the parallel scanner executor service.
-        if (executorService != null) {
-            executorService.shutdown();
-        }
-
-        if (log != null) {
-            int keys = 0;
-            int values = 0;
-            for (String index : store.keySet()) {
-                keys += store.get(index).keySet().size();
-                values += store.get(index).size();
-            }
-
-            log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
-                    time, scannedUrls, keys, values,
-                    executorService != null && executorService instanceof ThreadPoolExecutor ?
-                            format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
-        }
+        return scannedUrls;
     }
 
     protected void scan(URL url) {
