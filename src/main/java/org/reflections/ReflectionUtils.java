@@ -357,22 +357,7 @@ public abstract class ReflectionUtils {
         if (getPrimitiveNames().contains(typeName)) {
             return getPrimitiveTypes().get(getPrimitiveNames().indexOf(typeName));
         } else {
-            String type;
-            if (typeName.contains("[")) {
-                int i = typeName.indexOf("[");
-                type = typeName.substring(0, i);
-                String array = typeName.substring(i).replace("]", "");
-
-                if (getPrimitiveNames().contains(type)) {
-                    type = getPrimitiveDescriptors().get(getPrimitiveNames().indexOf(type));
-                } else {
-                    type = "L" + type + ";";
-                }
-
-                type = array + type;
-            } else {
-                type = typeName;
-            }
+            String type = stripArrayFromTypeName(typeName);
 
             List<ReflectionsException> reflectionsExceptions = Lists.newArrayList();
             for (ClassLoader classLoader : ClasspathHelper.classLoaders(classLoaders)) {
@@ -396,6 +381,24 @@ public abstract class ReflectionUtils {
             }
 
             return null;
+        }
+    }
+
+    private static String stripArrayFromTypeName(String typeName) {
+        if (typeName.contains("[")) {
+            int i = typeName.indexOf("[");
+            String type = typeName.substring(0, i);
+            String array = typeName.substring(i).replace("]", "");
+
+            if (getPrimitiveNames().contains(type)) {
+                type = getPrimitiveDescriptors().get(getPrimitiveNames().indexOf(type));
+            } else {
+                type = "L" + type + ";";
+            }
+
+            return array + type;
+        } else {
+            return typeName;
         }
     }
 
