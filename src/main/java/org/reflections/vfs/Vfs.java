@@ -177,13 +177,14 @@ public abstract class Vfs {
         } catch (UnsupportedEncodingException e) {
         }
 
+        return getFileFromExternalForm(url);
+    }
+
+    private static java.io.File getFileFromExternalForm(URL url) {
+        java.io.File file;
         try {
-            path = url.toExternalForm();
-            if (path.startsWith("jar:")) path = path.substring("jar:".length());
-            if (path.startsWith("wsjar:")) path = path.substring("wsjar:".length());
-            if (path.startsWith("file:")) path = path.substring("file:".length());
-            if (path.contains(".jar!")) path = path.substring(0, path.indexOf(".jar!") + ".jar".length());
-            if (path.contains(".war!")) path = path.substring(0, path.indexOf(".war!") + ".war".length());
+            String path = url.toExternalForm();
+            path = removePrefixAndSuffix(path);
             if ((file = new java.io.File(path)).exists()) return file;
 
             path = path.replace("%20", " ");
@@ -194,7 +195,16 @@ public abstract class Vfs {
 
         return null;
     }
-    
+
+    private static String removePrefixAndSuffix(String path) {
+        if (path.startsWith("jar:")) path = path.substring("jar:".length());
+        if (path.startsWith("wsjar:")) path = path.substring("wsjar:".length());
+        if (path.startsWith("file:")) path = path.substring("file:".length());
+        if (path.contains(".jar!")) path = path.substring(0, path.indexOf(".jar!") + ".jar".length());
+        if (path.contains(".war!")) path = path.substring(0, path.indexOf(".war!") + ".war".length());
+        return path;
+    }
+
     private static boolean hasJarFileInPath(URL url) {
 		return url.toExternalForm().matches(".*\\.jar(\\!.*|$)");
 	}
