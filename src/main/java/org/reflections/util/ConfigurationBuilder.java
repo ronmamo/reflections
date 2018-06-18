@@ -76,16 +76,7 @@ public class ConfigurationBuilder implements Configuration {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
         //flatten
-        List<Object> parameters = Lists.newArrayList();
-        if (params != null) {
-            for (Object param : params) {
-                if (param != null) {
-                    if (param.getClass().isArray()) { for (Object p : (Object[]) param) if (p != null) parameters.add(p); }
-                    else if (param instanceof Iterable) { for (Object p : (Iterable) param) if (p != null) parameters.add(p); }
-                    else parameters.add(param);
-                }
-            }
-        }
+        List<Object> parameters = flattenArray(params);
 
         List<ClassLoader> loaders = Lists.newArrayList();
         for (Object param : parameters) if (param instanceof ClassLoader) loaders.add((ClassLoader) param);
@@ -127,6 +118,20 @@ public class ConfigurationBuilder implements Configuration {
         if (!loaders.isEmpty()) { builder.addClassLoaders(loaders); }
 
         return builder;
+    }
+
+    private static List<Object> flattenArray(@Nullable Object[] params) {
+        List<Object> parameters = Lists.newArrayList();
+        if (params != null) {
+            for (Object param : params) {
+                if (param != null) {
+                    if (param.getClass().isArray()) { for (Object p : (Object[]) param) if (p != null) parameters.add(p); }
+                    else if (param instanceof Iterable) { for (Object p : (Iterable) param) if (p != null) parameters.add(p); }
+                    else parameters.add(param);
+                }
+            }
+        }
+        return parameters;
     }
 
     public ConfigurationBuilder forPackages(String... packages) {
