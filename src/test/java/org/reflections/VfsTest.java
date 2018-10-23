@@ -23,6 +23,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.vfs.JarInputDir;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
+import org.reflections.vfs.Vfs.Dir;
 import org.reflections.vfs.ZipDir;
 
 import com.google.common.base.Predicates;
@@ -175,6 +176,13 @@ public class VfsTest {
         final Iterable<Vfs.File> files = Vfs.findFiles(java.util.Arrays.asList(jar), Predicates.<Vfs.File>alwaysTrue());
         assertNotNull(files);
         assertTrue(files.iterator().hasNext());
+    }
+    
+    @Test
+    public void vfsFromUrlForClassFile() {
+        URL thisUrl = ClasspathHelper.forClass(getClass());
+        Dir classFileDir = Vfs.fromURL(thisUrl);
+        assertNotNull(classFileDir);
     }
 
     private void testVfsDir(URL url) {

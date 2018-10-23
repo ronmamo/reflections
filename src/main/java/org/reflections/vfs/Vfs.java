@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -299,6 +300,25 @@ public abstract class Vfs {
             public Dir createDir(final URL url) throws Exception {
                 return new JarInputDir(url);
             }
-        }
+        },
+
+		classfile {
+
+			@Override
+			public boolean matches(URL url) throws Exception {
+		        return url.getProtocol().equals("file") && hasClassFileInPath(url);
+			}
+
+			@Override
+			public Dir createDir(URL url) throws Exception {
+		        return new ClassFileDir(Paths.get(url.toURI()).toFile());
+			}
+
+		    private boolean hasClassFileInPath(URL url)
+		    {
+		        return url.toExternalForm().matches(".*\\.class");
+		    }
+
+		}
     }
 }
