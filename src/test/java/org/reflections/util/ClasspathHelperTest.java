@@ -1,8 +1,7 @@
-package org.reflections;
+package org.reflections.util;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.reflections.util.ClasspathHelper;
 import sun.misc.ClassLoaderUtil;
 
 import java.net.MalformedURLException;
