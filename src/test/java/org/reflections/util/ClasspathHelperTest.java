@@ -2,8 +2,13 @@ package org.reflections.util;
 
 import org.junit.Assert;
 import org.junit.Test;
-import sun.misc.ClassLoaderUtil;
+import org.reflections.util.ClasspathHelper;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -32,4 +37,52 @@ public final class ClasspathHelperTest {
         Assert.assertArrayEquals("URLs returned from forClassLoader should be in the same order as source URLs", urls1, resultUrls1.toArray());
         Assert.assertArrayEquals("URLs returned from forClassLoader should be in the same order as source URLs", urls2, resultUrls2.toArray());
     }
+
+	@Test
+	public void cleanPathWillRemoveFileProtocol() throws Exception {
+		URL url = new URL("file:/D:/repo/reflections/");
+		String cleanPath = ClasspathHelper.cleanPath(url);
+		assertEquals("Should've removed file from path", "/D:/repo/reflections/", cleanPath);
+	}
+
+	@Test
+	public void cleanPathWillRemoveJarAndFileProtocolsAndBang() throws Exception {
+		URL url = new URL("jar:file:/D:/repo/reflections/jarWithManifest.jar!/");
+		String cleanPath = ClasspathHelper.cleanPath(url);
+		assertEquals("Should've removed jar, file and ! from path", "/D:/repo/reflections/jarWithManifest.jar/", cleanPath);
+	}
+
+	@Test
+	public void tryToGetValidUrlWillReturnNullWhenCannotFindFile() {
+		URL validUrl = ClasspathHelper.tryToGetValidUrl("does", "not", "exist.jar");
+		assertNull(validUrl);
+	}
+
+	@Test
+	public void tryToGetValidUrlWillReturnUrlBasedOnFilename() {
+		URL validUrl = ClasspathHelper.tryToGetValidUrl(null, null, "src/test/resources/jarWithManifest.jar");
+		assertNotNull(validUrl);
+	}
+
+	@Test
+	public void tryToGetValidUrlWillReturnUrlBasedOnPathAndFilename() {
+		URL validUrl = ClasspathHelper.tryToGetValidUrl(null, "src/test/resources", "jarWithManifest.jar");
+		assertNotNull(validUrl);
+	}
+
+	@Test
+	public void tryToGetValidUrlWillReturnUrlBasedOnWorkingDirAndFilename() {
+		URL validUrl = ClasspathHelper.tryToGetValidUrl("src/test/resources", null, "jarWithManifest.jar");
+		assertNotNull(validUrl);
+	}
+
+	@Test
+	public void tryToGetValidUrlWillReturnUrlBasedOnFilenameAsUrl() {
+		// handle Windows path, shouldn't affect *nix since replace won't find anything
+		String workingDir = System.getProperty("user.dir").replace("\\", "/");
+		URL validUrl = ClasspathHelper.tryToGetValidUrl(null, null,
+				"file:/" + workingDir + "/src/test/resources/jarWithManifest.jar");
+		assertNotNull(validUrl);
+	}
+
 }
