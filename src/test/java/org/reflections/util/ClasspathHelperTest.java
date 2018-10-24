@@ -60,6 +60,7 @@ public final class ClasspathHelperTest {
 	@Test
 	public void tryToGetValidUrlWillReturnUrlBasedOnFilename() {
 		URL validUrl = ClasspathHelper.tryToGetValidUrl(null, null, "src/test/resources/jarWithManifest.jar");
+		System.out.println("url path: " + validUrl);
 		assertNotNull(validUrl);
 	}
 
