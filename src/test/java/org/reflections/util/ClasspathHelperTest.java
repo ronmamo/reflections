@@ -60,7 +60,6 @@ public final class ClasspathHelperTest {
 	@Test
 	public void tryToGetValidUrlWillReturnUrlBasedOnFilename() {
 		URL validUrl = ClasspathHelper.tryToGetValidUrl(null, null, "src/test/resources/jarWithManifest.jar");
-		System.out.println("url path: " + validUrl);
 		assertNotNull(validUrl);
 	}
 
@@ -80,9 +79,10 @@ public final class ClasspathHelperTest {
 	public void tryToGetValidUrlWillReturnUrlBasedOnFilenameAsUrl() {
 		// handle Windows path, shouldn't affect *nix since replace won't find anything
 		String workingDir = System.getProperty("user.dir").replace("\\", "/");
-		System.out.println("workingDir: " + workingDir);
+		// Windows won't include starting / so add it if needed
+		workingDir = workingDir.startsWith("/") ? workingDir : "/" + workingDir;
 		URL validUrl = ClasspathHelper.tryToGetValidUrl(null, null,
-				"file:/" + workingDir + "/src/test/resources/jarWithManifest.jar");
+				"file:" + workingDir + "/src/test/resources/jarWithManifest.jar");
 		assertNotNull(validUrl);
 	}
 
