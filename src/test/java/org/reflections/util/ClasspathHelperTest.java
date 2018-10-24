@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -80,6 +79,7 @@ public final class ClasspathHelperTest {
 	public void tryToGetValidUrlWillReturnUrlBasedOnFilenameAsUrl() {
 		// handle Windows path, shouldn't affect *nix since replace won't find anything
 		String workingDir = System.getProperty("user.dir").replace("\\", "/");
+		System.out.println("workingDir: " + workingDir);
 		URL validUrl = ClasspathHelper.tryToGetValidUrl(null, null,
 				"file:/" + workingDir + "/src/test/resources/jarWithManifest.jar");
 		assertNotNull(validUrl);
