@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.reflections.Reflections;
-import org.reflections.util.FilterBuilder;
 
 /**
  * Test filtering
