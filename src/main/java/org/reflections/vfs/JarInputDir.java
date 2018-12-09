@@ -1,14 +1,14 @@
 package org.reflections.vfs;
 
-import com.google.common.collect.AbstractIterator;
-import org.reflections.ReflectionsException;
-import org.reflections.util.Utils;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
+
+import org.reflections.ReflectionsException;
+import org.reflections.util.AbstractIterator;
+import org.reflections.util.Utils;
 
 /**
  *
@@ -37,6 +37,7 @@ public class JarInputDir implements Vfs.Dir {
                         catch (Exception e) { throw new ReflectionsException("Could not open url connection", e); }
                     }
 
+                    @Override
                     protected Vfs.File computeNext() {
                         while (true) {
                             try {

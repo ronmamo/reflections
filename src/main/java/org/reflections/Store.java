@@ -1,10 +1,21 @@
 package org.reflections;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.*;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+
+import org.reflections.util.Iterables;
+import org.reflections.util.Lists;
+import org.reflections.util.Multimap;
+import org.reflections.util.Multimaps;
+import org.reflections.util.SetMultimap;
+import org.reflections.util.Sets;
 
 /**
  * stores metadata information in multimaps
@@ -18,7 +29,6 @@ public class Store {
     private final Map<String, Multimap<String, String>> storeMap;
 
     //used via reflection
-    @SuppressWarnings("UnusedDeclaration")
     protected Store() {
         storeMap = new HashMap<String, Multimap<String, String>>();
         concurrent = false;
@@ -94,11 +104,14 @@ public class Store {
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
     public Iterable<String> getAll(String index, Iterable<String> keys) {
-        return getAllIncluding(index, get(index, keys), new IterableChain<String>());
+    		Iterable<String> storedValues = get(index, keys);
+    		IterableChain<String> result = new IterableChain<String>();
+        return getAllIncluding(index, storedValues, result);
     }
 
+    @SuppressWarnings("unchecked")
     private static class IterableChain<T> implements Iterable<T> {
-        private final List<Iterable<T>> chain = Lists.newArrayList();
+		private final List<Iterable<T>> chain = Lists.newArrayList();
 
         private void addAll(Iterable<T> iterable) { chain.add(iterable); }
 

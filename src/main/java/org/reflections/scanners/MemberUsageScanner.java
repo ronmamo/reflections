@@ -1,11 +1,11 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Joiner;
 import javassist.*;
 import javassist.bytecode.MethodInfo;
 import javassist.expr.*;
 import org.reflections.ReflectionsException;
 import org.reflections.util.ClasspathHelper;
+import org.reflections.util.Joiner;
 
 /** scans methods/constructors/fields usage
  * <p><i> depends on {@link org.reflections.adapters.JavassistAdapter} configured </i>*/

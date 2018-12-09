@@ -1,17 +1,18 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Multimap;
+import java.util.function.Predicate;
+
 import org.reflections.Configuration;
 import org.reflections.ReflectionsException;
 import org.reflections.adapters.MetadataAdapter;
+import org.reflections.util.Multimap;
+import org.reflections.util.Predicates;
 import org.reflections.vfs.Vfs;
 
 /**
  *
  */
-@SuppressWarnings({"RawUseOfParameterizedType", "unchecked"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractScanner implements Scanner {
 
 	private Configuration configuration;
@@ -65,9 +66,8 @@ public abstract class AbstractScanner implements Scanner {
         this.setResultFilter(filter); return this;
     }
 
-    //
     public boolean acceptResult(final String fqn) {
-		return fqn != null && resultFilter.apply(fqn);
+		return fqn != null && resultFilter.test(fqn);
 	}
 
 	protected MetadataAdapter getMetadataAdapter() {

@@ -253,7 +253,7 @@ public abstract class ClasspathHelper {
             if (path != null) {
                 final File file = new File(path);
                 if (file.exists())
-                    return file.toURL();
+                    return file.toURI().toURL();
             } else {
                 return servletContext.getResource("/WEB-INF/classes");
             }
@@ -285,7 +285,8 @@ public abstract class ClasspathHelper {
      * 
      * @return the collection of URLs, not null
      */
-    public static Collection<URL> forManifest(final URL url) {
+    @SuppressWarnings("resource")
+	public static Collection<URL> forManifest(final URL url) {
         final Collection<URL> result = new ArrayList<URL>();
         result.add(url);
         try {

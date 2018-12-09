@@ -1,24 +1,5 @@
 package org.reflections.util;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.google.common.collect.ObjectArrays;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.reflections.Configuration;
-import org.reflections.Reflections;
-import org.reflections.ReflectionsException;
-import org.reflections.adapters.JavaReflectionAdapter;
-import org.reflections.adapters.JavassistAdapter;
-import org.reflections.adapters.MetadataAdapter;
-import org.reflections.scanners.Scanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.serializers.Serializer;
-import org.reflections.serializers.XmlSerializer;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +7,23 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Predicate;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.reflections.Configuration;
+import org.reflections.Reflections;
+import org.reflections.ReflectionsException;
+import org.reflections.adapters.JavaReflectionAdapter;
+import org.reflections.adapters.JavassistAdapter;
+import org.reflections.adapters.MetadataAdapter;
+import org.reflections.concurrent.ThreadFactoryBuilder;
+import org.reflections.scanners.Scanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.serializers.Serializer;
+import org.reflections.serializers.XmlSerializer;
 
 /**
  * a fluent builder for {@link org.reflections.Configuration}, to be used for constructing a {@link org.reflections.Reflections} instance
@@ -42,10 +40,11 @@ import java.util.concurrent.ThreadFactory;
  * {@link #executorService} is null,
  * {@link #serializer} is {@link org.reflections.serializers.XmlSerializer}
  */
+/*lazy*/ @SuppressWarnings("rawtypes")
 public class ConfigurationBuilder implements Configuration {
     @Nonnull private Set<Scanner> scanners;
     @Nonnull private Set<URL> urls;
-    /*lazy*/ protected MetadataAdapter metadataAdapter;
+	protected MetadataAdapter metadataAdapter;
     @Nullable private Predicate<String> inputsFilter;
     /*lazy*/ private Serializer serializer;
     @Nullable private ExecutorService executorService;

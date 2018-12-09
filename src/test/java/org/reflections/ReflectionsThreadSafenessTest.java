@@ -16,6 +16,7 @@ import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings("rawtypes")
 public class ReflectionsThreadSafenessTest {
 
     /**
@@ -24,7 +25,7 @@ public class ReflectionsThreadSafenessTest {
     @Test
     public void reflections_scan_is_thread_safe() throws Exception {
 
-        Callable<Set<Class<? extends ImmutableMap>>> callable = new Callable<Set<Class<? extends ImmutableMap>>>() {
+		Callable<Set<Class<? extends ImmutableMap>>> callable = new Callable<Set<Class<? extends ImmutableMap>>>() {
             @Override
             public Set<Class<? extends ImmutableMap>> call() throws Exception {
                 final Reflections reflections = new Reflections(new ConfigurationBuilder()

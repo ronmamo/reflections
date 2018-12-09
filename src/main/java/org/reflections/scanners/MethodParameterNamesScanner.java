@@ -1,17 +1,16 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import javassist.bytecode.LocalVariableAttribute;
 import javassist.bytecode.MethodInfo;
 import org.reflections.adapters.MetadataAdapter;
+import org.reflections.util.Joiner;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
 /** scans methods/constructors and indexes parameter names */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class MethodParameterNamesScanner extends AbstractScanner {
 
     @Override

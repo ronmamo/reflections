@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.function.Predicate;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,8 +13,6 @@ import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.vfs.Vfs.Dir;
 import org.reflections.vfs.Vfs.UrlType;
-
-import com.google.common.base.Predicate;
 
 /**
  * UrlType to be used by Reflections library.
@@ -68,7 +67,7 @@ public class UrlTypeVFS implements UrlType {
 
             if (pos > 0) {
                 File file = new File(path.substring(0, pos - 1));
-                if (acceptFile.apply(file)) { return replaceZipSeparatorStartingFrom(path, pos); }
+                if (acceptFile.test(file)) { return replaceZipSeparatorStartingFrom(path, pos); }
             }
         }
 
@@ -86,7 +85,7 @@ public class UrlTypeVFS implements UrlType {
     }
 
     Predicate<File> realFile = new Predicate<File>() {
-        public boolean apply(File file) {
+        public boolean test(File file) {
             return file.exists() && file.isFile();
         }
     };

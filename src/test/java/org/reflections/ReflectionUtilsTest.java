@@ -1,11 +1,10 @@
 package org.reflections;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Sets;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Test;
 import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.util.Sets;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
@@ -17,8 +16,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
 
-import static com.google.common.collect.Collections2.transform;
+import static org.reflections.Collections2.transform;
 import static org.junit.Assert.*;
 import static org.reflections.ReflectionUtils.*;
 import static org.reflections.ReflectionsTest.are;
@@ -59,7 +59,8 @@ public class ReflectionUtilsTest {
         assertTrue(getAnnotations(m4).isEmpty());
     }
 
-    @Test public void withParameter() throws Exception {
+    @SuppressWarnings({ "unused", "rawtypes" })
+	@Test public void withParameter() throws Exception {
         Class target = Collections.class;
         Object arg1 = Arrays.asList(1, 2, 3);
 
@@ -78,7 +79,8 @@ public class ReflectionUtilsTest {
         }
     }
 
-    @Test
+    @SuppressWarnings({ "unused", "rawtypes" })
+	@Test
     public void withParametersAssignableFromTest() throws Exception {
         //Check for null safe
         getAllMethods(Collections.class, withModifier(Modifier.STATIC), withParametersAssignableFrom());

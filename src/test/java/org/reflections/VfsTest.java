@@ -20,20 +20,19 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.reflections.adapters.JavassistAdapter;
 import org.reflections.util.ClasspathHelper;
+import org.reflections.util.Predicates;
 import org.reflections.vfs.JarInputDir;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
-
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
 
 import javassist.bytecode.ClassFile;
 
 /** */
 public class VfsTest {
 
-    @Test
+    @SuppressWarnings({ "unused", "deprecation" })
+	@Test
     public void allKindsOfShittyUrls() throws Exception {
         JavassistAdapter mdAdapter = new JavassistAdapter();
 
@@ -169,10 +168,11 @@ public class VfsTest {
         testVfsDir(new URL("jar:file:" + getSomeJar().getPath() + "!/"));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void findFilesFromEmptyMatch() throws MalformedURLException {
         final URL jar = getSomeJar();
-        final Iterable<Vfs.File> files = Vfs.findFiles(java.util.Arrays.asList(jar), Predicates.<Vfs.File>alwaysTrue());
+        final Iterable<Vfs.File> files = Vfs.findFiles(java.util.Arrays.asList(jar), Predicates.alwaysTrue());
         assertNotNull(files);
         assertTrue(files.iterator().hasNext());
     }
@@ -225,7 +225,8 @@ public class VfsTest {
         public Iterable<Vfs.File> getFiles() {return zipDir.getFiles();}
         public void close() {file.delete();}
 
-        private static java.io.File downloadTempLocally(URL url) throws IOException {
+        @SuppressWarnings("resource")
+		private static java.io.File downloadTempLocally(URL url) throws IOException {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             if (connection.getResponseCode() == 200) {
                 java.io.File temp = java.io.File.createTempFile("urlToVfs", "tmp");
@@ -248,13 +249,14 @@ public class VfsTest {
         //todo?
     }
 
-    @Test
+    @SuppressWarnings("unused")
+	@Test
     public void jarInputStream() {
         JavassistAdapter javassistAdapter = new JavassistAdapter();
 
         for (URL jar : ClasspathHelper.forClassLoader()) {
             try {
-                for (Vfs.File file : Iterables.limit(new JarInputDir(jar).getFiles(), 5)) {
+                for (Vfs.File file : TsIterables.limit(new JarInputDir(jar).getFiles(), 5)) {
                     if (file.getName().endsWith(".class")) {
                         String className = javassistAdapter.getClassName(javassistAdapter.getOrCreateClassObject(file));
                     }

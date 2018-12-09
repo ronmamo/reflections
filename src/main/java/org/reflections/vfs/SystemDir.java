@@ -1,13 +1,13 @@
 package org.reflections.vfs;
 
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Lists;
-
+import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Stack;
 import java.util.List;
-import java.io.File;
+import java.util.Stack;
+
+import org.reflections.util.AbstractIterator;
+import org.reflections.util.Lists;
 
 /*
  * An implementation of {@link org.reflections.vfs.Vfs.Dir} for directory {@link java.io.File}.

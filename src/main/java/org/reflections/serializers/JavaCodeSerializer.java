@@ -1,16 +1,15 @@
 package org.reflections.serializers;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
+import org.reflections.io.Files;
 import org.reflections.scanners.TypeElementsScanner;
+import org.reflections.util.Joiner;
+import org.reflections.util.Lists;
+import org.reflections.util.Multimap;
+import org.reflections.util.Multimaps;
+import org.reflections.util.Sets;
 import org.reflections.util.Utils;
 
 import java.io.File;
@@ -28,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.reflections.Reflections.log;
 import static org.reflections.util.Utils.index;
@@ -65,6 +65,7 @@ import static org.reflections.util.Utils.repeat;
  * <p>The {@link #save(org.reflections.Reflections, String)} method filename should be in the pattern: path/path/path/package.package.classname
  * <p>depends on Reflections configured with {@link org.reflections.scanners.TypeElementsScanner}
  * */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class JavaCodeSerializer implements Serializer {
 
     private static final String pathSeparator = "_";
@@ -116,7 +117,6 @@ public class JavaCodeSerializer implements Serializer {
             sb.append("public interface ").append(className).append(" {\n\n");
             sb.append(toString(reflections));
             sb.append("}\n");
-
             Files.write(sb.toString(), new File(filename), Charset.defaultCharset());
 
         } catch (IOException e) {
@@ -294,7 +294,7 @@ public class JavaCodeSerializer implements Serializer {
         }
     }
 
-    public static Annotation resolveAnnotation(Class annotation) {
+	public static Annotation resolveAnnotation(Class annotation) {
         try {
             String name = annotation.getSimpleName().replace(pathSeparator, dotSeparator);
             Class<?> declaringClass = annotation.getDeclaringClass().getDeclaringClass();

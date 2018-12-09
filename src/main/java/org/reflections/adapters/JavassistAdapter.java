@@ -1,10 +1,10 @@
 package org.reflections.adapters;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import javassist.bytecode.*;
 import javassist.bytecode.annotation.Annotation;
 import org.reflections.ReflectionsException;
+import org.reflections.util.Joiner;
+import org.reflections.util.Lists;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
 
@@ -21,12 +21,13 @@ import static javassist.bytecode.AccessFlag.isProtected;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, MethodInfo> {
 
     /**setting this to false will result in returning only visible annotations from the relevant methods here (only {@link java.lang.annotation.RetentionPolicy#RUNTIME})*/
     public static boolean includeInvisibleTag = true;
 
-    public List<FieldInfo> getFields(final ClassFile cls) {
+	public List<FieldInfo> getFields(final ClassFile cls) {
         //noinspection unchecked
         return cls.getFields();
     }

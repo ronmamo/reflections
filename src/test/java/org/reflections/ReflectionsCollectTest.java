@@ -1,6 +1,5 @@
 package org.reflections;
 
-import com.google.common.base.Predicate;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.reflections.scanners.*;
@@ -10,6 +9,7 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;

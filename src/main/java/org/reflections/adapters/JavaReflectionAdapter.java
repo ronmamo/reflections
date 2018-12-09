@@ -1,20 +1,24 @@
 package org.reflections.adapters;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import org.reflections.util.Utils;
-import org.reflections.vfs.Vfs;
+import static org.reflections.ReflectionUtils.forName;
 
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.reflections.ReflectionUtils.forName;
+import org.reflections.util.Joiner;
+import org.reflections.util.Lists;
+import org.reflections.util.Utils;
+import org.reflections.vfs.Vfs;
 
 /** */
+@SuppressWarnings("rawtypes")
 public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Member> {
 
     public List<Field> getFields(Class cls) {
@@ -81,10 +85,10 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
     }
 
     public Class getOrCreateClassObject(Vfs.File file) throws Exception {
-        return getOrCreateClassObject(file, null);
+        return getOrCreateClassObject(file, new ClassLoader[0]);
     }
 
-    public Class getOrCreateClassObject(Vfs.File file, @Nullable ClassLoader... loaders) throws Exception {
+    public Class getOrCreateClassObject(Vfs.File file, ClassLoader... loaders) throws Exception {
         String name = file.getRelativePath().replace("/", ".").replace(".class", "");
         return forName(name, loaders);
     }

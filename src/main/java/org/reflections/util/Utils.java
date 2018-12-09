@@ -1,7 +1,5 @@
 package org.reflections.util;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.scanners.Scanner;
@@ -26,6 +24,7 @@ import static org.reflections.ReflectionUtils.forName;
 /**
  * a garbage can of convenient methods
  */
+@SuppressWarnings("rawtypes")
 public abstract class Utils {
 
     public static String repeat(String string, int times) {
@@ -106,7 +105,7 @@ public abstract class Utils {
         return result;
     }
 
-    public static Set<Constructor> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
+	public static Set<Constructor> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
         Set<Constructor> result = Sets.newHashSet();
         for (String annotated : annotatedWith) {
             if (isConstructor(annotated)) {

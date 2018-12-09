@@ -1,13 +1,11 @@
 package org.reflections.util;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import org.reflections.ReflectionsException;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+
+import org.reflections.ReflectionsException;
 
 /**
  * Builds include/exclude filters for Reflections.
@@ -18,10 +16,11 @@ import java.util.regex.Pattern;
  * Predicate<String> filter2 = new FilterBuilder().include(".*").exclude("java.*");
  * </pre>
  */
+@SuppressWarnings("unchecked")
 public class FilterBuilder implements Predicate<String> {
     private final List<Predicate<String>> chain;
 
-    public FilterBuilder() {chain = Lists.newArrayList();}
+	public FilterBuilder() {chain = Lists.newArrayList();}
     private FilterBuilder(final Iterable<Predicate<String>> filters) {chain = Lists.newArrayList(filters);}
 
     /** include a regular expression */
@@ -56,14 +55,14 @@ public class FilterBuilder implements Predicate<String> {
 
     @Override public String toString() {return Joiner.on(", ").join(chain);}
 
-    public boolean apply(String regex) {
+    public boolean test(String regex) {
         boolean accept = chain == null || chain.isEmpty() || chain.get(0) instanceof Exclude;
 
         if (chain != null) {
             for (Predicate<String> filter : chain) {
                 if (accept && filter instanceof Include) {continue;} //skip if this filter won't change
                 if (!accept && filter instanceof Exclude) {continue;}
-                accept = filter.apply(regex);
+                accept = filter.test(regex);
                 if (!accept && filter instanceof Exclude) {break;} //break on first exclusion
             }
         }
@@ -73,19 +72,19 @@ public class FilterBuilder implements Predicate<String> {
     public abstract static class Matcher implements Predicate<String> {
         final Pattern pattern;
         public Matcher(final String regex) {pattern = Pattern.compile(regex);}
-        public abstract boolean apply(String regex);
+        public abstract boolean test(String regex);
         @Override public String toString() {return pattern.pattern();}
     }
 
     public static class Include extends Matcher {
         public Include(final String patternString) {super(patternString);}
-        @Override public boolean apply(final String regex) {return pattern.matcher(regex).matches();}
+        @Override public boolean test(final String regex) {return pattern.matcher(regex).matches();}
         @Override public String toString() {return "+" + super.toString();}
     }
 
     public static class Exclude extends Matcher {
         public Exclude(final String patternString) {super(patternString);}
-        @Override public boolean apply(final String regex) {return !pattern.matcher(regex).matches();}
+        @Override public boolean test(final String regex) {return !pattern.matcher(regex).matches();}
         @Override public String toString() {return "-" + super.toString();}
     }
 

@@ -1,8 +1,5 @@
 package org.reflections;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.collect.*;
 import org.reflections.scanners.*;
 import org.reflections.scanners.Scanner;
 import org.reflections.serializers.Serializer;
@@ -24,14 +21,14 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Predicates.in;
-import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Iterables.concat;
 import static java.lang.String.format;
 import static org.reflections.ReflectionUtils.*;
+import static org.reflections.util.Iterables.*;
 import static org.reflections.util.Utils.*;
+import static org.reflections.util.Predicates.*;
 
 /**
  * Reflections one-stop-shop object
@@ -99,6 +96,7 @@ import static org.reflections.util.Utils.*;
  * In that case make sure to scan all relevant packages a priori.</i>
  * <p><p><p>For Javadoc, source code, and more information about Reflections Library, see http://github.com/ronmamo/reflections/
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class Reflections {
     @Nullable public static Logger log = findLogger(Reflections.class);
 
@@ -242,14 +240,13 @@ public class Reflections {
 
     protected void scan(URL url) {
         Vfs.Dir dir = Vfs.fromURL(url);
-
         try {
             for (final Vfs.File file : dir.getFiles()) {
                 // scan if inputs filter accepts file relative path or fqn
                 Predicate<String> inputsFilter = configuration.getInputsFilter();
                 String path = file.getRelativePath();
                 String fqn = path.replace('/', '.');
-                if (inputsFilter == null || inputsFilter.apply(path) || inputsFilter.apply(fqn)) {
+                if (inputsFilter == null || inputsFilter.test(path) || inputsFilter.test(fqn)) {
                     Object classObject = null;
                     for (Scanner scanner : configuration.getScanners()) {
                         try {
@@ -408,8 +405,12 @@ public class Reflections {
      * <p/>depends on SubTypesScanner configured
      */
     public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type) {
-        return Sets.newHashSet(ReflectionUtils.<T>forNames(
-                store.getAll(index(SubTypesScanner.class), Arrays.asList(type.getName())), loaders()));
+    		String index = index(SubTypesScanner.class);
+    		List<String> typeNames = Arrays.asList(type.getName());
+    		Iterable<String> all = store.getAll(index, typeNames);
+    		ClassLoader[] loaders = loaders();
+    		List<Class<? extends T>> classes = ReflectionUtils.<T>forNames(all, loaders);
+        return Sets.newHashSet(classes);
     }
 
     /**
@@ -436,7 +437,7 @@ public class Reflections {
     public Set<Class<?>> getTypesAnnotatedWith(final Class<? extends Annotation> annotation, boolean honorInherited) {
         Iterable<String> annotated = store.get(index(TypeAnnotationsScanner.class), annotation.getName());
         Iterable<String> classes = getAllAnnotated(annotated, annotation.isAnnotationPresent(Inherited.class), honorInherited);
-        return Sets.newHashSet(concat(forNames(annotated, loaders()), forNames(classes, loaders())));
+        return Sets.newHashSet(Iterables.concat(forNames(annotated, loaders()), forNames(classes, loaders())));
     }
 
     /**
@@ -455,7 +456,7 @@ public class Reflections {
      */
     public Set<Class<?>> getTypesAnnotatedWith(final Annotation annotation, boolean honorInherited) {
         Iterable<String> annotated = store.get(index(TypeAnnotationsScanner.class), annotation.annotationType().getName());
-        Iterable<Class<?>> filter = filter(forNames(annotated, loaders()), withAnnotation(annotation));
+        Iterable<Class<?>> filter = Iterables.filter(forNames(annotated, loaders()), withAnnotation(annotation));
         Iterable<String> classes = getAllAnnotated(names(filter), annotation.annotationType().isAnnotationPresent(Inherited.class), honorInherited);
         return Sets.newHashSet(concat(filter, forNames(filter(classes, not(in(Sets.newHashSet(annotated)))), loaders())));
     }
@@ -464,18 +465,18 @@ public class Reflections {
         if (honorInherited) {
             if (inherited) {
                 Iterable<String> subTypes = store.get(index(SubTypesScanner.class), filter(annotated, new Predicate<String>() {
-                    public boolean apply(@Nullable String input) {
+                    public boolean test(@Nullable String input) {
                         final Class<?> type = forName(input, loaders());
                         return type != null && !type.isInterface();
                     }
                 }));
-                return concat(subTypes, store.getAll(index(SubTypesScanner.class), subTypes));
+                return Iterables.concat(subTypes, store.getAll(index(SubTypesScanner.class), subTypes));
             } else {
                 return annotated;
             }
         } else {
-            Iterable<String> subTypes = concat(annotated, store.getAll(index(TypeAnnotationsScanner.class), annotated));
-            return concat(subTypes, store.getAll(index(SubTypesScanner.class), subTypes));
+            Iterable<String> subTypes = Iterables.concat(annotated, store.getAll(index(TypeAnnotationsScanner.class), annotated));
+            return Iterables.concat(subTypes, store.getAll(index(SubTypesScanner.class), subTypes));
         }
     }
 
@@ -583,7 +584,7 @@ public class Reflections {
      */
     public Set<String> getResources(final Pattern pattern) {
         return getResources(new Predicate<String>() {
-            public boolean apply(String input) {
+            public boolean test(String input) {
                 return pattern.matcher(input).matches();
             }
         });

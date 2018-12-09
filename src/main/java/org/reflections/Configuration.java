@@ -1,14 +1,15 @@
 package org.reflections;
 
-import com.google.common.base.Predicate;
-import org.reflections.adapters.MetadataAdapter;
-import org.reflections.scanners.Scanner;
-import org.reflections.serializers.Serializer;
-
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.reflections.adapters.MetadataAdapter;
+import org.reflections.scanners.Scanner;
+import org.reflections.serializers.Serializer;
 
 /**
  * Configuration is used to create a configured instance of {@link Reflections}
@@ -22,7 +23,7 @@ public interface Configuration {
     Set<URL> getUrls();
 
     /** the metadata adapter used to fetch metadata from classes */
-    @SuppressWarnings({"RawUseOfParameterizedType"})
+    @SuppressWarnings({"rawtypes"})
     MetadataAdapter getMetadataAdapter();
 
     /** get the fully qualified name filter used to filter types to be scanned */

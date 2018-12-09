@@ -1,33 +1,62 @@
 package org.reflections;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.reflections.scanners.*;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.reflections.util.Utils.index;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.reflections.TestModel.*;
-import static org.reflections.util.Utils.index;
+import javax.annotation.Nullable;
+
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.reflections.TestModel.AC1;
+import org.reflections.TestModel.AC1n;
+import org.reflections.TestModel.AC2;
+import org.reflections.TestModel.AC3;
+import org.reflections.TestModel.AF1;
+import org.reflections.TestModel.AI1;
+import org.reflections.TestModel.AI2;
+import org.reflections.TestModel.AM1;
+import org.reflections.TestModel.C1;
+import org.reflections.TestModel.C2;
+import org.reflections.TestModel.C3;
+import org.reflections.TestModel.C4;
+import org.reflections.TestModel.C5;
+import org.reflections.TestModel.C6;
+import org.reflections.TestModel.C7;
+import org.reflections.TestModel.I1;
+import org.reflections.TestModel.I2;
+import org.reflections.TestModel.I3;
+import org.reflections.TestModel.MAI1;
+import org.reflections.TestModel.Usage;
+import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.scanners.MemberUsageScanner;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.MethodParameterNamesScanner;
+import org.reflections.scanners.MethodParameterScanner;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
+import org.reflections.util.Lists;
+import org.reflections.util.Sets;
 
 /**
  *
@@ -54,7 +83,8 @@ public class ReflectionsTest {
 
     @Test
     public void testSubTypesOf() {
-        assertThat(reflections.getSubTypesOf(I1.class), are(I2.class, C1.class, C2.class, C3.class, C5.class));
+    		Set<Class<? extends I1>> subTypesOf = reflections.getSubTypesOf(I1.class);
+        assertThat(subTypesOf, are(I2.class, C1.class, C2.class, C3.class, C5.class));
         assertThat(reflections.getSubTypesOf(C1.class), are(C2.class, C3.class, C5.class));
 
         assertFalse("getAllTypes should not be empty when Reflections is configured with SubTypesScanner(false)",
@@ -316,7 +346,7 @@ public class ReflectionsTest {
         return new Match<Set<Class<?>>>() {
             public boolean matches(Object o) {
                 for (Class<?> c : (Iterable<Class<?>>) o) {
-                    if (!Iterables.contains(annotationTypes(Arrays.asList(c.getAnnotations())), annotation)) return false;
+                    if (!TsIterables.contains(annotationTypes(Arrays.asList(c.getAnnotations())), annotation)) return false;
                 }
                 return true;
             }
@@ -325,10 +355,12 @@ public class ReflectionsTest {
 
     private Matcher<Set<Class<?>>> metaAnnotatedWith(final Class<? extends Annotation> annotation) {
         return new Match<Set<Class<?>>>() {
-            public boolean matches(Object o) {
+            @SuppressWarnings("rawtypes")
+			public boolean matches(Object o) {
                 for (Class<?> c : (Iterable<Class<?>>) o) {
                     Set<Class> result = Sets.newHashSet();
-                    List<Class> stack = Lists.<Class>newArrayList(ReflectionUtils.getAllSuperTypes(c));
+                    Set allSuperTypes = ReflectionUtils.getAllSuperTypes(c);
+                    List<Class> stack = Lists.newArrayList(allSuperTypes);
                     while (!stack.isEmpty()) {
                         Class next = stack.remove(0);
                         if (result.add(next)) {
@@ -345,7 +377,7 @@ public class ReflectionsTest {
     }
 
     private Iterable<Class<? extends Annotation>> annotationTypes(Iterable<Annotation> annotations) {
-        return Iterables.transform(annotations, new Function<Annotation, Class<? extends Annotation>>() {
+        return TsIterables.transform(annotations, new Function<Annotation, Class<? extends Annotation>>() {
             @Nullable
             public Class<? extends Annotation> apply(@Nullable Annotation input) {
                 return input != null ? input.annotationType() : null;

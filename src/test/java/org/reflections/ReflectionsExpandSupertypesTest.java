@@ -1,6 +1,6 @@
 package org.reflections;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;

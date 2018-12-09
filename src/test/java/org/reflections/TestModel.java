@@ -7,7 +7,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  *
  */
-@SuppressWarnings({"ALL"})
 public interface TestModel {
     public @Retention(RUNTIME) @Inherited @interface MAI1 {}
     public @Retention(RUNTIME) @MAI1 @interface AI1 {}

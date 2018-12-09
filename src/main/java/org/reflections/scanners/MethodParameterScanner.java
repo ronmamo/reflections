@@ -5,7 +5,7 @@ import org.reflections.adapters.MetadataAdapter;
 import java.util.List;
 
 /** scans methods/constructors and indexes parameters, return type and parameter annotations */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class MethodParameterScanner extends AbstractScanner {
 
     @Override

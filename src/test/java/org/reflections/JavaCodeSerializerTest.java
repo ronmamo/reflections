@@ -1,6 +1,5 @@
 package org.reflections;
 
-import com.google.common.base.Predicate;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.reflections.scanners.TypeElementsScanner;
@@ -15,6 +14,8 @@ import static org.reflections.TestModel.AC2;
 import static org.reflections.TestModel.C1;
 import static org.reflections.TestModel.C2;
 import static org.reflections.TestModel.C4;
+
+import java.util.function.Predicate;
 
 /** */
 public class JavaCodeSerializerTest {

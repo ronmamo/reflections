@@ -1,9 +1,10 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Multimap;
 import org.reflections.Configuration;
+import org.reflections.util.Multimap;
 import org.reflections.vfs.Vfs;
+
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 

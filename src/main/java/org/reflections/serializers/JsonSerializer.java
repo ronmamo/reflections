@@ -1,10 +1,12 @@
 package org.reflections.serializers;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.*;
-import com.google.common.io.Files;
 import com.google.gson.*;
 import org.reflections.Reflections;
+import org.reflections.io.Files;
+import org.reflections.util.Multimap;
+import org.reflections.util.Multimaps;
+import org.reflections.util.SetMultimap;
+import org.reflections.util.Sets;
 import org.reflections.util.Utils;
 
 import java.io.*;
@@ -14,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /** serialization of Reflections to json
  *
@@ -26,6 +29,7 @@ import java.util.Set;
  * ...
  * </pre>
  * */
+@SuppressWarnings("rawtypes")
 public class JsonSerializer implements Serializer {
     private Gson gson;
 
@@ -51,7 +55,7 @@ public class JsonSerializer implements Serializer {
         if (gson == null) {
             gson = new GsonBuilder()
                     .registerTypeAdapter(Multimap.class, new com.google.gson.JsonSerializer<Multimap>() {
-                        public JsonElement serialize(Multimap multimap, Type type, JsonSerializationContext jsonSerializationContext) {
+						public JsonElement serialize(Multimap multimap, Type type, JsonSerializationContext jsonSerializationContext) {
                             return jsonSerializationContext.serialize(multimap.asMap());
                         }
                     })
