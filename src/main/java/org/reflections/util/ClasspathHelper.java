@@ -51,13 +51,13 @@ public abstract class ClasspathHelper {
         if (classLoaders != null && classLoaders.length != 0) {
             return classLoaders;
         } else {
-            ClassLoader contextClassLoader = contextClassLoader(), staticClassLoader = staticClassLoader();
-            return contextClassLoader != null ?
-                    staticClassLoader != null && contextClassLoader != staticClassLoader ?
-                            new ClassLoader[]{contextClassLoader, staticClassLoader} :
-                            new ClassLoader[]{contextClassLoader} :
-                    new ClassLoader[] {};
-
+            ClassLoader contextClassLoader = contextClassLoader();
+            if(contextClassLoader == null)
+            		return new ClassLoader[0];
+            ClassLoader staticClassLoader = staticClassLoader();
+            if(staticClassLoader != null && contextClassLoader != staticClassLoader)
+            		return new ClassLoader[]{contextClassLoader, staticClassLoader};
+            	return new ClassLoader[]{contextClassLoader};
         }
     }
 
