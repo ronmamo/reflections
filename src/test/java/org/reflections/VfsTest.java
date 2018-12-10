@@ -47,7 +47,9 @@ public class VfsTest {
 
             Vfs.Dir dir = Vfs.DefaultUrlTypes.jarFile.createDir(jar1);
             Vfs.File file = null;
-            for (Vfs.File f : dir.getFiles()) {
+            Iterable<org.reflections.vfs.Vfs.File> files = dir.getFiles();
+            for (Vfs.File f : files) {
+            		System.out.println(f);
                 if (f.getRelativePath().endsWith(".class")) { file = f; break; }
             }
 
@@ -271,7 +273,10 @@ public class VfsTest {
     private URL getSomeJar() {
         Collection<URL> urls = ClasspathHelper.forClassLoader();
         for (URL url : urls) {
-            if (!url.toExternalForm().contains("surefire") && url.toExternalForm().endsWith(".jar")) return url; //damn
+        	System.out.println("url: " + url);
+            if (!url.toExternalForm().contains("surefire") && 
+            		url.toExternalForm().endsWith(".jar") &&
+            		!url.toString().contains("resources.jar")) return url; //damn
         }
         throw new RuntimeException();
     }

@@ -46,7 +46,7 @@ public final class Iterables {
 	}
 
 	public static <T> Iterable<T> concat(Iterable<? extends T> a, Iterable<? extends T> b) {
-		return null;
+		return FluentIterable.concat(a, b);
 	}
 
 	public static <T> Iterable<T> concat(Iterable<? extends T>... inputs) {
