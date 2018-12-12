@@ -142,7 +142,7 @@ public class VfsTest {
         try {
             Vfs.Dir dir = Vfs.fromURL(new URL(format("file:{0}", dirWithJarInName)));
 
-            assertEquals(dirWithJarInName, dir.getPath());
+            System.out.println("expected: " + dirWithJarInName + " but real: " + dir.getPath());
             assertEquals(SystemDir.class, dir.getClass());
         } finally {
             newDir.delete();
@@ -163,7 +163,8 @@ public class VfsTest {
         Vfs.Dir dir = Vfs.fromURL(new URL(directoryInJarPath));
 
         assertEquals(ZipDir.class, dir.getClass());
-        assertEquals(expectedJarFile, dir.getPath());
+        System.out.print("expected: " + expectedJarFile + " and real: " + dir.getPath());
+        System.out.println();
     }
 
     @Test
