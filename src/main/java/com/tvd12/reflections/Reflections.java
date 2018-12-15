@@ -206,7 +206,7 @@ public class Reflections {
                 scannedUrls++;
             } catch (ReflectionsException e) {
                 if (log != null) {
-                    log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
+                    log.debug("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
                 }
             }
         }
