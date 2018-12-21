@@ -12,15 +12,15 @@ Using Reflections you can query your metadata such as:
   * get all resources matching a regular expression
   * get all methods with specific signature including parameters, parameter annotations and return type
 
-[![Build Status](https://travis-ci.org/ronmamo/reflections.svg?branch=master)](https://travis-ci.org/ronmamo/reflections)
+[![Build Status](https://travis-ci.org/tvd12/reflections.svg?branch=master)](https://travis-ci.org/tvd12/reflections)
 
 ### Intro
 Add Reflections to your project. for maven projects just add this dependency:
 ```xml
 <dependency>
-    <groupId>org.reflections</groupId>
+    <groupId>com.tvd12</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.11</version>
+    <version>0.9.12</version>
 </dependency>
 ```
 
@@ -101,9 +101,9 @@ Set<Member> usages =
   * Classloader can also be configured, which will be used for resolving runtime classes from names.
   * Reflections [expands super types](http://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes()) by default. This solves some [problems](https://github.com/ronmamo/reflections/issues/65#issuecomment-95036047) with transitive urls are not scanned. 
 
-*Checkout the [javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/Reflections.html) for more info.* 
+*Checkout the [javadoc](http://www.javadoc.io/doc/com.tvd12/reflections) for more info.* 
 
-*Also, browse the [tests directory](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections) to see some more examples.*
+*Also, browse the [tests directory](https://github.com/tvd12/reflections/tree/master/src/test/java/org/reflections) to see some more examples.*
 
 ### ReflectionUtils
 ReflectionsUtils contains some convenient Java reflection helper methods for getting types/constructors/methods/fields/annotations matching some predicates, generally in the form of *getAllXXX(type, withYYY)
@@ -124,7 +124,7 @@ Set<Method> listMethodsFromCollectionToBoolean =
 Set<Field> fields = getAllFields(SomeClass.class, withAnnotation(annotation), withTypeAssignableTo(type));
 ```
 
-*See more in the [ReflectionUtils javadoc](http://ronmamo.github.io/reflections/index.html?org/reflections/ReflectionUtils.html)*
+*See more in the [Reflection Tutorial](https://tvd12.com/tutorials/reflections)*
 
 ### Integrating into your build lifecycle
 Although scanning can be easily done on bootstrap time of your application - and shouldn't take long, it is sometime a good idea to integrate Reflections into your build lifecyle.
