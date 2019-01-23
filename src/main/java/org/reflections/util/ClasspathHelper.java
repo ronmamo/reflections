@@ -188,6 +188,19 @@ public abstract class ClasspathHelper {
                 classLoader = classLoader.getParent();
             }
         }
+        if (result.isEmpty()) {
+            String[] classPathEntries = System
+                    .getProperty("java.class.path")
+                    .split(File.pathSeparator);
+            for (String entry : classPathEntries) {
+                try {
+                    result.add(new URL("file://" + entry));
+                } catch (MalformedURLException ex) {
+                    Reflections.log.warn("Could not convert {} to url.", entry);
+                    Reflections.log.trace("Exception:", ex);
+                }
+            }
+        }
         return distinctUrls(result);
     }
 

@@ -58,7 +58,7 @@ public class VfsTest {
         }
 
         {
-            URL rtJarUrl = ClasspathHelper.forClass(String.class);
+            URL rtJarUrl = ClasspathHelper.forClass(Predicates.class);
             assertTrue(rtJarUrl.toString().startsWith("jar:file:"));
             assertTrue(rtJarUrl.toString().contains(".jar!"));
 
@@ -69,12 +69,15 @@ public class VfsTest {
             Vfs.Dir dir = Vfs.DefaultUrlTypes.jarUrl.createDir(rtJarUrl);
             Vfs.File file = null;
             for (Vfs.File f : dir.getFiles()) {
-                if (f.getRelativePath().equals("java/lang/String.class")) { file = f; break; }
+                if (f.getRelativePath().equals("com/google/common/base/Predicates.class")) {
+                    file = f;
+                    break;
+                }
             }
 
             ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
             String className = mdAdapter.getClassName(stringCF);
-            assertTrue(className.equals("java.lang.String"));
+            assertTrue(className.equals("com.google.common.base.Predicates"));
         }
 
         {
@@ -149,7 +152,7 @@ public class VfsTest {
     
     @Test
     public void vfsFromDirWithinAJarUrl() throws MalformedURLException {
-    	URL directoryInJarUrl = ClasspathHelper.forClass(String.class);
+        URL directoryInJarUrl = ClasspathHelper.forClass(Predicates.class);
         assertTrue(directoryInJarUrl.toString().startsWith("jar:file:"));
         assertTrue(directoryInJarUrl.toString().contains(".jar!"));
         
