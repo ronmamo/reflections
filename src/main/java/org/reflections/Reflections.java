@@ -233,7 +233,7 @@ public class Reflections {
                 values += store.get(index).size();
             }
 
-            log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
+            log.trace(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
                     time, scannedUrls, keys, values,
                     executorService != null && executorService instanceof ThreadPoolExecutor ?
                             format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
