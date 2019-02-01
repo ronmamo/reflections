@@ -98,10 +98,24 @@ public abstract class ReflectionUtils {
         }
         return result;
     }
+    
+    /** get all methods of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */
+    public static List<Method> getAllMethodList(final Class<?> type, Predicate<? super Method>... predicates) {
+    		List<Method> result = Lists.newArrayList();
+        for (Class<?> t : getAllSuperTypes(type)) {
+            result.addAll(getMethodList(t, predicates));
+        }
+        return result;
+    }
 
     /** get methods of given {@code type}, optionally filtered by {@code predicates} */
     public static Set<Method> getMethods(Class<?> t, Predicate<? super Method>... predicates) {
         return filter(t.isInterface() ? t.getMethods() : t.getDeclaredMethods(), predicates);
+    }
+    
+    /** get methods of given {@code type}, optionally filtered by {@code predicates} */
+    public static List<Method> getMethodList(Class<?> t, Predicate<? super Method>... predicates) {
+        return filterToList(t.isInterface() ? t.getMethods() : t.getDeclaredMethods(), predicates);
     }
 
     /** get all constructors of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */
@@ -472,6 +486,11 @@ public abstract class ReflectionUtils {
     static <T> Set<T> filter(final Iterable<T> elements, Predicate<? super T>... predicates) {
         return isEmpty(predicates) ? Sets.newHashSet(elements) :
                 Sets.newHashSet(Iterables.<T>filter(elements, Predicates.and(predicates)));
+    }
+    
+    static <T> List<T> filterToList(final T[] elements, Predicate<? super T>... predicates) {
+        return isEmpty(predicates) ? Lists.newArrayList(elements) :
+                Lists.newArrayList(Iterables.filter(Arrays.asList(elements), Predicates.and(predicates)));
     }
 
     private static boolean areAnnotationMembersMatching(Annotation annotation1, Annotation annotation2) {
