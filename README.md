@@ -1,7 +1,3 @@
-[#movingtogitlab](https://twitter.com/movingtogitlab) because Microsoft is acquiring GitHub.
-
-----
-
 ## Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
 
 Reflections scans your classpath, indexes the metadata, allows you to query it on runtime and may save and collect that information for many modules within your project.
