@@ -4,7 +4,7 @@
 
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.12-SNAPSHOT</version>
+    <version>0.9.12-jdk8</version>
 
     <name>Reflections</name>
     <description>Reflections - a Java runtime metadata analysis</description>
@@ -54,7 +54,7 @@
     <properties>
         <guava.version>20.0</guava.version>
         <javassist.version>3.21.0-GA</javassist.version>
-        <jdk.version>1.7</jdk.version>
+        <jdk.version>1.8</jdk.version>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
