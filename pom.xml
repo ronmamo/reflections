@@ -4,7 +4,7 @@
 
 	<groupId>com.tvd12</groupId>
 	<artifactId>reflections</artifactId>
-	<version>0.9.12</version>
+	<version>0.9.13</version>
 
 	<name>Reflections</name>
 	<description>Reflections - a Java runtime metadata analysis</description>
