@@ -23,6 +23,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.vfs.JarInputDir;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
+import org.reflections.vfs.Vfs.Dir;
 import org.reflections.vfs.ZipDir;
 
 import com.google.common.base.Predicates;
@@ -140,7 +141,8 @@ public class VfsTest {
         try {
             Vfs.Dir dir = Vfs.fromURL(new URL(format("file:{0}", dirWithJarInName)));
 
-            assertEquals(dirWithJarInName, dir.getPath());
+            // SystemDir explicitly replaces \ with / so adjust expected result 
+            assertEquals(dirWithJarInName.replace("\\", "/"), dir.getPath());
             assertEquals(SystemDir.class, dir.getClass());
         } finally {
             newDir.delete();
@@ -157,7 +159,15 @@ public class VfsTest {
         int start = directoryInJarPath.indexOf(":") + 1;
 		int end = directoryInJarPath.indexOf(".jar!") + 4;
 		String expectedJarFile = directoryInJarPath.substring(start, end);
-        
+		
+		String os = System.getProperty("os.name");
+		if ((os != null) && os.startsWith("Windows")) {
+			// handle Windows space fun
+			expectedJarFile = expectedJarFile.replaceAll("%20", " ");
+			// handle Windows path start
+			expectedJarFile = expectedJarFile.startsWith("/") ? expectedJarFile.substring(1) : expectedJarFile;
+		}
+
         Vfs.Dir dir = Vfs.fromURL(new URL(directoryInJarPath));
 
         assertEquals(ZipDir.class, dir.getClass());
