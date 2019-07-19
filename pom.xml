@@ -4,7 +4,7 @@
 
 	<groupId>com.tvd12</groupId>
 	<artifactId>reflections</artifactId>
-	<version>0.9.13</version>
+	<version>0.9.15</version>
 
 	<name>Reflections</name>
 	<description>Reflections - a Java runtime metadata analysis</description>
@@ -54,7 +54,7 @@
 	<properties>
 		<jdk.version>1.8</jdk.version>
 		<javassist.version>3.21.0-GA</javassist.version>
-		<slf4j.version>1.7.25</slf4j.version>
+		<slf4j.version>1.7.26</slf4j.version>
 		<dom4j.version>1.6.1</dom4j.version>
 		<gson.version>2.8.5</gson.version>
 		<servlet-api.version>4.0.1</servlet-api.version>
@@ -101,14 +101,6 @@
 			<optional>true</optional> <!-- case: when logging is not needed -->
 		</dependency>
 
-		<!-- use any implementation you like -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>${slf4j.version}</version>
-			<optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
-		</dependency>
-
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>jsr305</artifactId>
@@ -120,6 +112,13 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>${guava.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -148,57 +147,37 @@
 		<profile>
 			<id>release-local</id>
 			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<artifactId>maven-deploy-plugin</artifactId>
-							<version>2.8.2</version>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</plugin>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-release-plugin</artifactId>
-							<version>2.5.3</version>
-						</plugin>
-						<plugin>
-							<artifactId>maven-install-plugin</artifactId>
-							<version>2.5.2</version>
-							<configuration>
-								<createChecksum>true</createChecksum>
-							</configuration>
-						</plugin>
-						<plugin>
-							<artifactId>maven-jar-plugin</artifactId>
-							<version>2.6</version>
-							<configuration>
-								<archive>
-									<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-								</archive>
-							</configuration>
-						</plugin>
-						<plugin>
-							<artifactId>maven-javadoc-plugin</artifactId>
-							<version>2.10.3</version>
-						</plugin>
-						<plugin>
-							<artifactId>maven-source-plugin</artifactId>
-							<version>2.4</version>
-						</plugin>
-					</plugins>
-				</pluginManagement>
 				<plugins>
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>versions-maven-plugin</artifactId>
-						<version>2.1</version>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<version>2.8.2</version>
 						<configuration>
-							<generateBackupPoms>false</generateBackupPoms>
+							<skip>true</skip>
 						</configuration>
 					</plugin>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>2.5.3</version>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-install-plugin</artifactId>
+						<version>2.5.2</version>
+						<configuration>
+							<createChecksum>true</createChecksum>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>3.1.2</version>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<id>esa-sources</id>
@@ -209,7 +188,9 @@
 						</executions>
 					</plugin>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<id>esa-javadoc</id>
@@ -217,6 +198,9 @@
 								<goals>
 									<goal>jar</goal>
 								</goals>
+								<configuration>
+									<doclint>none</doclint>
+								</configuration>
 							</execution>
 						</executions>
 					</plugin>
@@ -262,53 +246,37 @@
 				</site>
 			</distributionManagement>
 			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<artifactId>maven-deploy-plugin</artifactId>
-							<version>2.8.2</version>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</plugin>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-release-plugin</artifactId>
-							<version>2.5.3</version>
-						</plugin>
-						<plugin>
-							<artifactId>maven-install-plugin</artifactId>
-							<version>2.5.2</version>
-							<configuration>
-								<createChecksum>true</createChecksum>
-							</configuration>
-						</plugin>
-						<plugin>
-							<artifactId>maven-jar-plugin</artifactId>
-							<version>2.6</version>
-						</plugin>
-						<plugin>
-							<artifactId>maven-javadoc-plugin</artifactId>
-							<version>2.10.3</version>
-						</plugin>
-						<plugin>
-							<artifactId>maven-source-plugin</artifactId>
-							<version>2.4</version>
-						</plugin>
-					</plugins>
-				</pluginManagement>
 				<plugins>
 					<plugin>
-						<artifactId>maven-jar-plugin</artifactId>
-						<version>2.6</version>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<version>2.8.2</version>
 						<configuration>
-							<archive>
-								<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-							</archive>
+							<skip>true</skip>
 						</configuration>
 					</plugin>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>2.5.3</version>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-install-plugin</artifactId>
+						<version>2.5.2</version>
+						<configuration>
+							<createChecksum>true</createChecksum>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>3.1.2</version>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<id>esa-sources</id>
@@ -319,13 +287,53 @@
 						</executions>
 					</plugin>
 					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<id>esa-javadoc</id>
 								<phase>package</phase>
 								<goals>
 									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<doclint>none</doclint>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.8</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>oss.sonatype.org</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<description>${project.version}</description>
+						</configuration>
+						<executions>
+							<execution>
+								<id>deploy-to-sonatype</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>deploy</goal>
+									<goal>release</goal>
 								</goals>
 							</execution>
 						</executions>
@@ -350,49 +358,6 @@
 								<Bundle-SymbolicName>com.tvd12.reflections</Bundle-SymbolicName>
 							</instructions>
 						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>versions-maven-plugin</artifactId>
-						<version>2.1</version>
-						<configuration>
-							<generateBackupPoms>false</generateBackupPoms>
-						</configuration>
-					</plugin>
-					<plugin>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.5</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<!-- @see http://www.sonatype.com/books/nexus-book/reference/staging-sect-deployment.html -->
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.7</version>
-						<extensions>true</extensions>
-						<configuration>
-							<serverId>oss.sonatype.org</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-							<description>${project.version}</description>
-						</configuration>
-						<executions>
-							<execution>
-								<id>deploy-to-sonatype</id>
-								<phase>deploy</phase>
-								<goals>
-									<goal>deploy</goal>
-									<goal>release</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>

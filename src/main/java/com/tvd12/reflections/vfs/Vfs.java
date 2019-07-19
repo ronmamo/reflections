@@ -155,7 +155,7 @@ public abstract class Vfs {
                         }, filePredicate));
             } catch (Throwable e) {
                 if (Reflections.log != null) {
-                    Reflections.log.error("could not findFiles for url. continuing. [" + url + "]", e);
+                    Reflections.log.warn("could not findFiles for url. continuing. [" + url + "]", e);
                 }
             }
         }
