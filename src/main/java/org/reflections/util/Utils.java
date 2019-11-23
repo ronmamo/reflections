@@ -1,7 +1,5 @@
 package org.reflections.util;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.scanners.Scanner;
@@ -18,8 +16,13 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static org.reflections.ReflectionUtils.forName;
 
@@ -96,7 +99,7 @@ public abstract class Utils {
     }
 
     public static Set<Method> getMethodsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
-        Set<Method> result = Sets.newHashSet();
+        Set<Method> result = new HashSet<>();
         for (String annotated : annotatedWith) {
             if (!isConstructor(annotated)) {
                 Method member = (Method) getMemberFromDescriptor(annotated, classLoaders);
@@ -107,7 +110,7 @@ public abstract class Utils {
     }
 
     public static Set<Constructor> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
-        Set<Constructor> result = Sets.newHashSet();
+        Set<Constructor> result = new HashSet<>();
         for (String annotated : annotatedWith) {
             if (isConstructor(annotated)) {
                 Constructor member = (Constructor) getMemberFromDescriptor(annotated, classLoaders);
@@ -118,7 +121,7 @@ public abstract class Utils {
     }
 
     public static Set<Member> getMembersFromDescriptors(Iterable<String> values, ClassLoader... classLoaders) {
-        Set<Member> result = Sets.newHashSet();
+        Set<Member> result = new HashSet<>();
         for (String value : values) {
             try {
                 result.add(Utils.getMemberFromDescriptor(value, classLoaders));
@@ -192,11 +195,11 @@ public abstract class Utils {
     }
 
     public static String name(Constructor constructor) {
-        return constructor.getName() + "." + "<init>" + "(" + Joiner.on(", ").join(names(constructor.getParameterTypes())) + ")";
+        return constructor.getName() + "." + "<init>" + "(" + String.join(", ", names(constructor.getParameterTypes())) + ")";
     }
 
     public static String name(Method method) {
-        return method.getDeclaringClass().getName() + "." + method.getName() + "(" + Joiner.on(", ").join(names(method.getParameterTypes())) + ")";
+        return method.getDeclaringClass().getName() + "." + method.getName() + "(" + String.join(", ", names(method.getParameterTypes())) + ")";
     }
 
     public static String name(Field field) {
@@ -204,4 +207,33 @@ public abstract class Utils {
     }
 
     public static String index(Class<? extends Scanner> scannerClass) { return scannerClass.getSimpleName(); }
+
+    public static <T> T[] concatArrays(T[] first, T[] second, T[] target) {
+        System.arraycopy(first, 0, target, 0, first.length);
+        System.arraycopy(second, 0, target, first.length, second.length);
+        return target;
+    }
+
+    public static <T> Iterable<T> concat(final List<Iterable<T>> chain) {
+        return chain.stream().map(el -> StreamSupport.stream(el.spliterator(), false))
+                .flatMap(s->s).collect(Collectors.toList());
+    }
+
+    public static <T> List<T> concat(final List<T> elements1, final Collection<T> elements2) {
+        final ArrayList<T> list = new ArrayList<>(elements1);
+        list.addAll(elements2);
+        return list;
+    }
+
+    public static <T> Stream<T> asStream(Iterable<T> iterable) {
+        return StreamSupport.stream(iterable.spliterator(), false);
+    }
+
+    public static <T> List<T> asList(final Iterable<T> iterable) {
+        return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+    }
+
+    public static <T> List<T> concatIterables(final Iterable<T> elements1, final Iterable<T> elements2) {
+        return concat(asList(elements1) , asList(elements2));
+    }
 }

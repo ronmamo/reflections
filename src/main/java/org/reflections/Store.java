@@ -1,10 +1,17 @@
 package org.reflections;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.*;
+import org.reflections.util.Multimap;
+import org.reflections.util.SetMultimap;
+import org.reflections.util.SynchronizedSetMultimap;
+import org.reflections.util.Utils;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * stores metadata information in multimaps
@@ -39,13 +46,8 @@ public class Store {
         Multimap<String, String> mmap = storeMap.get(index);
         if (mmap == null) {
             SetMultimap<String, String> multimap =
-                    Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(),
-                            new Supplier<Set<String>>() {
-                                public Set<String> get() {
-                                    return Sets.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-                                }
-                            });
-            mmap = concurrent ? Multimaps.synchronizedSetMultimap(multimap) : multimap;
+                    new SetMultimap<>();
+            mmap = concurrent ? new SynchronizedSetMultimap<>(multimap) : multimap;
             storeMap.put(index,mmap);
         }
         return mmap;
@@ -97,11 +99,19 @@ public class Store {
         return getAllIncluding(index, get(index, keys), new IterableChain<String>());
     }
 
+    public int getKeySize() {
+        return 0;//TODO
+    }
+
+    public int getValueSize() {
+        return 0;//TODO
+    }
+
     private static class IterableChain<T> implements Iterable<T> {
-        private final List<Iterable<T>> chain = Lists.newArrayList();
+        private final List<Iterable<T>> chain = new ArrayList<>();
 
         private void addAll(Iterable<T> iterable) { chain.add(iterable); }
 
-        public Iterator<T> iterator() { return Iterables.concat(chain).iterator(); }
+        public Iterator<T> iterator() { return Utils.concat(chain).iterator(); }
     }
 }

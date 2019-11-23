@@ -1,6 +1,6 @@
 package org.reflections;
 
-import com.google.common.base.Predicate;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.reflections.scanners.TypeElementsScanner;
@@ -9,12 +9,11 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
+import java.util.function.Predicate;
+
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.reflections.TestModel.AC2;
-import static org.reflections.TestModel.C1;
-import static org.reflections.TestModel.C2;
-import static org.reflections.TestModel.C4;
+import static org.reflections.TestModel.*;
 
 /** */
 public class JavaCodeSerializerTest {

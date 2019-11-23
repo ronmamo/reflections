@@ -1,6 +1,5 @@
 package org.reflections.scanners;
 
-import org.reflections.ReflectionsException;
 import org.reflections.vfs.Vfs;
 
 /** scans classes and stores fqn as key and full path as value.

@@ -1,10 +1,16 @@
 package org.reflections.adapters;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import javassist.bytecode.*;
+
+import javassist.bytecode.AccessFlag;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.Descriptor;
+import javassist.bytecode.FieldInfo;
+import javassist.bytecode.MethodInfo;
+import javassist.bytecode.ParameterAnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
 import org.reflections.ReflectionsException;
+import org.reflections.util.Joiner;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
 
@@ -12,6 +18,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -62,9 +69,9 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     }
 
     public List<String> getParameterAnnotationNames(final MethodInfo method, final int parameterIndex) {
-        List<String> result = Lists.newArrayList();
+        List<String> result = new ArrayList<>();
 
-        List<ParameterAnnotationsAttribute> parameterAnnotationsAttributes = Lists.newArrayList((ParameterAnnotationsAttribute) method.getAttribute(ParameterAnnotationsAttribute.visibleTag),
+        List<ParameterAnnotationsAttribute> parameterAnnotationsAttributes = Arrays.asList((ParameterAnnotationsAttribute) method.getAttribute(ParameterAnnotationsAttribute.visibleTag),
                 (ParameterAnnotationsAttribute) method.getAttribute(ParameterAnnotationsAttribute.invisibleTag));
 
         if (parameterAnnotationsAttributes != null) {
@@ -148,7 +155,7 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     
     //
     private List<String> getAnnotationNames(final AnnotationsAttribute... annotationsAttributes) {
-        List<String> result = Lists.newArrayList();
+        List<String> result = new ArrayList<>();
 
         if (annotationsAttributes != null) {
             for (AnnotationsAttribute annotationsAttribute : annotationsAttributes) {
@@ -164,7 +171,7 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     }
 
     private List<String> getAnnotationNames(final Annotation[] annotations) {
-        List<String> result = Lists.newArrayList();
+        List<String> result = new ArrayList<>();
 
         for (Annotation annotation : annotations) {
             result.add(annotation.getTypeName());
@@ -174,11 +181,11 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     }
 
     private List<String> splitDescriptorToTypeNames(final String descriptors) {
-        List<String> result = Lists.newArrayList();
+        final List<String> result = new ArrayList<>();
 
         if (descriptors != null && descriptors.length() != 0) {
 
-            List<Integer> indices = Lists.newArrayList();
+            List<Integer> indices = new ArrayList<>();
             Descriptor.Iterator iterator = new Descriptor.Iterator(descriptors);
             while (iterator.hasNext()) {
                 indices.add(iterator.next());

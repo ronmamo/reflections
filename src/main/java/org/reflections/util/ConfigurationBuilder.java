@@ -1,10 +1,11 @@
 package org.reflections.util;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.google.common.collect.ObjectArrays;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+//import com.google.common.base.Predicate;
+//import com.google.common.collect.Lists;
+//import com.google.common.collect.ObjectArrays;
+//import com.google.common.collect.Sets;
+//import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
@@ -20,12 +21,17 @@ import org.reflections.serializers.XmlSerializer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * a fluent builder for {@link org.reflections.Configuration}, to be used for constructing a {@link org.reflections.Reflections} instance
@@ -53,8 +59,8 @@ public class ConfigurationBuilder implements Configuration {
     private boolean expandSuperTypes = true;
 
     public ConfigurationBuilder() {
-        scanners = Sets.<Scanner>newHashSet(new TypeAnnotationsScanner(), new SubTypesScanner());
-        urls = Sets.newHashSet();
+        scanners = Stream.of(new TypeAnnotationsScanner(), new SubTypesScanner()).collect(Collectors.toSet());
+        urls = new HashSet<>();
     }
 
     /** constructs a {@link ConfigurationBuilder} using the given parameters, in a non statically typed way.
@@ -76,7 +82,7 @@ public class ConfigurationBuilder implements Configuration {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
         //flatten
-        List<Object> parameters = Lists.newArrayList();
+        List<Object> parameters = new ArrayList<>();
         if (params != null) {
             for (Object param : params) {
                 if (param != null) {
@@ -87,12 +93,12 @@ public class ConfigurationBuilder implements Configuration {
             }
         }
 
-        List<ClassLoader> loaders = Lists.newArrayList();
+        List<ClassLoader> loaders = new ArrayList<>();
         for (Object param : parameters) if (param instanceof ClassLoader) loaders.add((ClassLoader) param);
 
         ClassLoader[] classLoaders = loaders.isEmpty() ? null : loaders.toArray(new ClassLoader[loaders.size()]);
         FilterBuilder filter = new FilterBuilder();
-        List<Scanner> scanners = Lists.newArrayList();
+        List<Scanner> scanners = new ArrayList<>();
 
         for (Object param : parameters) {
             if (param instanceof String) {
@@ -149,7 +155,7 @@ public class ConfigurationBuilder implements Configuration {
 
     /** set the scanners instances for scanning different metadata */
     public ConfigurationBuilder addScanners(final Scanner... scanners) {
-        this.scanners.addAll(Sets.newHashSet(scanners));
+        this.scanners.addAll(Arrays.stream(scanners).collect(Collectors.toSet()));
         return this;
     }
 
@@ -162,7 +168,7 @@ public class ConfigurationBuilder implements Configuration {
      * <p>use {@link org.reflections.util.ClasspathHelper} convenient methods to get the relevant urls
      * */
     public ConfigurationBuilder setUrls(@Nonnull final Collection<URL> urls) {
-		this.urls = Sets.newHashSet(urls);
+		this.urls = new HashSet<>(urls);
         return this;
 	}
 
@@ -170,7 +176,7 @@ public class ConfigurationBuilder implements Configuration {
      * <p>use {@link org.reflections.util.ClasspathHelper} convenient methods to get the relevant urls
      * */
     public ConfigurationBuilder setUrls(final URL... urls) {
-		this.urls = Sets.newHashSet(urls);
+		this.urls = Arrays.stream(urls).collect(Collectors.toSet());
         return this;
 	}
 
@@ -186,7 +192,7 @@ public class ConfigurationBuilder implements Configuration {
      * <p>use {@link org.reflections.util.ClasspathHelper} convenient methods to get the relevant urls
      * */
     public ConfigurationBuilder addUrls(final URL... urls) {
-        this.urls.addAll(Sets.newHashSet(urls));
+        this.urls.addAll(Arrays.stream(urls).collect(Collectors.toSet()));
         return this;
     }
 
@@ -218,13 +224,13 @@ public class ConfigurationBuilder implements Configuration {
     }
 
     /** sets the input filter for all resources to be scanned.
-     * <p> supply a {@link com.google.common.base.Predicate} or use the {@link FilterBuilder}*/
+     * <p> supply a {@link java.util.function.Predicate} or use the {@link FilterBuilder}*/
     public void setInputsFilter(@Nullable Predicate<String> inputsFilter) {
         this.inputsFilter = inputsFilter;
     }
 
     /** sets the input filter for all resources to be scanned.
-     * <p> supply a {@link com.google.common.base.Predicate} or use the {@link FilterBuilder}*/
+     * <p> supply a {@link java.util.function.Predicate} or use the {@link FilterBuilder}*/
     public ConfigurationBuilder filterInputsBy(Predicate<String> inputsFilter) {
         this.inputsFilter = inputsFilter;
         return this;
@@ -251,8 +257,8 @@ public class ConfigurationBuilder implements Configuration {
      * the executor service spawns daemon threads by default.
      * <p>default is ThreadPoolExecutor with a single core */
     public ConfigurationBuilder useParallelExecutor(final int availableProcessors) {
-        ThreadFactory factory = new ThreadFactoryBuilder().setDaemon(true).setNameFormat("org.reflections-scanner-%d").build();
-        setExecutorService(Executors.newFixedThreadPool(availableProcessors, factory));
+        setExecutorService(Executors.newFixedThreadPool(availableProcessors,
+                new NamedThreadFactory("org.reflections-scanner-%d", true)));
         return this;
     }
 
@@ -298,10 +304,20 @@ public class ConfigurationBuilder implements Configuration {
 
     /** add class loader, might be used for resolving methods/fields */
     public ConfigurationBuilder addClassLoaders(ClassLoader... classLoaders) {
-        this.classLoaders = this.classLoaders == null ? classLoaders : ObjectArrays.concat(this.classLoaders, classLoaders, ClassLoader.class);
+        if(this.classLoaders == null) {
+            this.classLoaders = classLoaders;
+        } else {
+            final ClassLoader[] result = new ClassLoader[this.classLoaders.length + classLoaders.length];
+            this.classLoaders = concatArrays(this.classLoaders, classLoaders, result);
+        }
         return this;
     }
 
+    public <T> T[] concatArrays(T[] first, T[] second, T[] target) {
+        System.arraycopy(first, 0, target, 0, first.length);
+        System.arraycopy(second, 0, target, first.length, second.length);
+        return target;
+    }
     /** add class loader, might be used for resolving methods/fields */
     public ConfigurationBuilder addClassLoaders(Collection<ClassLoader> classLoaders) {
         return addClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]));

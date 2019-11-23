@@ -1,13 +1,15 @@
 package org.reflections.adapters;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,24 +19,24 @@ import static org.reflections.ReflectionUtils.forName;
 /** */
 public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Member> {
 
-    public List<Field> getFields(Class cls) {
-        return Lists.newArrayList(cls.getDeclaredFields());
+    public List<Field> getFields(final Class cls) {
+        return Arrays.asList(cls.getDeclaredFields());
     }
 
-    public List<Member> getMethods(Class cls) {
-        List<Member> methods = Lists.newArrayList();
+    public List<Member> getMethods(final Class cls) {
+        final List<Member> methods = new ArrayList<>();
         methods.addAll(Arrays.asList(cls.getDeclaredMethods()));
         methods.addAll(Arrays.asList(cls.getDeclaredConstructors()));
         return methods;
     }
 
-    public String getMethodName(Member method) {
+    public String getMethodName(final Member method) {
         return method instanceof Method ? method.getName() :
                 method instanceof Constructor ? "<init>" : null;
     }
 
     public List<String> getParameterNames(final Member member) {
-        List<String> result = Lists.newArrayList();
+        final List<String> result = new ArrayList<>();
 
         Class<?>[] parameterTypes = member instanceof Method ? ((Method) member).getParameterTypes() :
                 member instanceof Constructor ? ((Constructor) member).getParameterTypes() : null;
@@ -94,7 +96,8 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
     }
 
     public String getMethodKey(Class cls, Member method) {
-        return getMethodName(method) + "(" + Joiner.on(", ").join(getParameterNames(method)) + ")";
+
+        return getMethodName(method) + "(" +  String.join(", ", getParameterNames(method)) + ")";
     }
 
     public String getMethodFullKey(Class cls, Member method) {

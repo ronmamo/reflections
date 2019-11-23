@@ -1,6 +1,7 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Joiner;
+
+import org.reflections.util.Joiner;
 
 /** scans fields and methods and stores fqn as key and elements as values */
 @SuppressWarnings({"unchecked"})

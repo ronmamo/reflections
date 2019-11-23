@@ -52,18 +52,20 @@
     </distributionManagement>
 
     <properties>
-        <guava.version>20.0</guava.version>
+<!--        <guava.version>20.0</guava.version>-->
         <javassist.version>3.21.0-GA</javassist.version>
-        <jdk.version>1.7</jdk.version>
+        <jdk.version>1.8</jdk.version>
         <additionalparam>-Xdoclint:none</additionalparam>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.guava</groupId>-->
+<!--            <artifactId>guava</artifactId>-->
+<!--            <version>${guava.version}</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.javassist</groupId>

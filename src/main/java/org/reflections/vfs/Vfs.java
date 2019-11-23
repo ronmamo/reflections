@@ -1,8 +1,5 @@
 package org.reflections.vfs;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.util.ClasspathHelper;
@@ -12,12 +9,18 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.*;
-import java.util.ArrayList;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * a simple virtual file system bridge
@@ -47,16 +50,16 @@ import java.util.jar.JarFile;
  *
  *      Vfs.Dir dir = Vfs.fromURL(new URL("http://mirrors.ibiblio.org/pub/mirrors/maven2/org/slf4j/slf4j-api/1.5.6/slf4j-api-1.5.6.jar"));
  * </pre>
- * <p>use {@link org.reflections.vfs.Vfs#findFiles(java.util.Collection, com.google.common.base.Predicate)} to get an
+ * <p>use {@link org.reflections.vfs.Vfs#findFiles(java.util.Collection, java.util.function.Predicate)} to get an
  * iteration of files matching given name predicate over given list of urls
  */
 public abstract class Vfs {
-    private static List<UrlType> defaultUrlTypes = Lists.<UrlType>newArrayList(DefaultUrlTypes.values());
+    private static List<UrlType> defaultUrlTypes = Arrays.stream(DefaultUrlTypes.values()).collect(Collectors.toList());
 
     /** an abstract vfs dir */
     public interface Dir {
         String getPath();
-        Iterable<File> getFiles();
+        Stream<File> getFiles();
         void close();
     }
 
@@ -116,17 +119,17 @@ public abstract class Vfs {
 
     /** tries to create a Dir from the given url, using the given urlTypes*/
     public static Dir fromURL(final URL url, final UrlType... urlTypes) {
-        return fromURL(url, Lists.<UrlType>newArrayList(urlTypes));
+        return fromURL(url, Arrays.stream(urlTypes).collect(Collectors.toList()));
     }
 
     /** return an iterable of all {@link org.reflections.vfs.Vfs.File} in given urls, starting with given packagePrefix and matching nameFilter */
     public static Iterable<File> findFiles(final Collection<URL> inUrls, final String packagePrefix, final Predicate<String> nameFilter) {
         Predicate<File> fileNamePredicate = new Predicate<File>() {
-            public boolean apply(File file) {
+            public boolean test(File file) {
                 String path = file.getRelativePath();
                 if (path.startsWith(packagePrefix)) {
                     String filename = path.substring(path.indexOf(packagePrefix) + packagePrefix.length());
-                    return !Utils.isEmpty(filename) && nameFilter.apply(filename.substring(1));
+                    return !Utils.isEmpty(filename) && nameFilter.test(filename.substring(1));
                 } else {
                     return false;
                 }
@@ -138,24 +141,23 @@ public abstract class Vfs {
 
     /** return an iterable of all {@link org.reflections.vfs.Vfs.File} in given urls, matching filePredicate */
     public static Iterable<File> findFiles(final Collection<URL> inUrls, final Predicate<File> filePredicate) {
-        Iterable<File> result = new ArrayList<File>();
 
-        for (final URL url : inUrls) {
-            try {
-                result = Iterables.concat(result,
-                        Iterables.filter(new Iterable<File>() {
-                            public Iterator<File> iterator() {
-                                return fromURL(url).getFiles().iterator();
-                            }
-                        }, filePredicate));
-            } catch (Throwable e) {
-                if (Reflections.log != null) {
-                    Reflections.log.error("could not findFiles for url. continuing. [" + url + "]", e);
-                }
+        return inUrls.stream()
+                .map(Vfs::filesForUrl)
+                .flatMap(s->s)
+                .filter(filePredicate)
+                .collect(Collectors.toList());
+    }
+
+    private static Stream<File> filesForUrl(final URL url) {
+        try {
+            return fromURL(url).getFiles();
+        } catch (final Throwable e) {
+            if (Reflections.log != null) {
+                Reflections.log.error("could not findFiles for url. continuing. [" + url + "]", e);
             }
         }
-
-        return result;
+        return Stream.empty();
     }
 
     /**try to get {@link java.io.File} from url*/

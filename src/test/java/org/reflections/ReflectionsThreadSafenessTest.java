@@ -1,11 +1,11 @@
 package org.reflections;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -24,14 +24,14 @@ public class ReflectionsThreadSafenessTest {
     @Test
     public void reflections_scan_is_thread_safe() throws Exception {
 
-        Callable<Set<Class<? extends ImmutableMap>>> callable = new Callable<Set<Class<? extends ImmutableMap>>>() {
+        Callable<Set<Class<? extends Map>>> callable = new Callable<Set<Class<? extends Map>>>() {
             @Override
-            public Set<Class<? extends ImmutableMap>> call() throws Exception {
+            public Set<Class<? extends Map>> call() throws Exception {
                 final Reflections reflections = new Reflections(new ConfigurationBuilder()
-                        .setUrls(singletonList(ClasspathHelper.forClass(ImmutableMap.class)))
+                        .setUrls(singletonList(ClasspathHelper.forClass(Map.class)))
                         .setScanners(new SubTypesScanner(false)));
 
-                return reflections.getSubTypesOf(ImmutableMap.class);
+                return reflections.getSubTypesOf(Map.class);
             }
         };
 

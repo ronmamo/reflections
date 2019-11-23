@@ -1,10 +1,15 @@
 package org.reflections;
 
-import static java.text.MessageFormat.format;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import javassist.bytecode.ClassFile;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.reflections.adapters.JavassistAdapter;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.vfs.JarInputDir;
+import org.reflections.vfs.SystemDir;
+import org.reflections.vfs.Vfs;
+import org.reflections.vfs.ZipDir;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -15,20 +20,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.reflections.adapters.JavassistAdapter;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.vfs.JarInputDir;
-import org.reflections.vfs.SystemDir;
-import org.reflections.vfs.Vfs;
-import org.reflections.vfs.ZipDir;
-
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
-
-import javassist.bytecode.ClassFile;
+import static java.text.MessageFormat.format;
+import static org.junit.Assert.*;
 
 /** */
 public class VfsTest {
@@ -47,11 +42,7 @@ public class VfsTest {
             assertFalse(Vfs.DefaultUrlTypes.directory.matches(jar1));
 
             Vfs.Dir dir = Vfs.DefaultUrlTypes.jarFile.createDir(jar1);
-            Vfs.File file = null;
-            for (Vfs.File f : dir.getFiles()) {
-                if (f.getRelativePath().endsWith(".class")) { file = f; break; }
-            }
-
+            Vfs.File file = dir.getFiles().filter(f -> f.getRelativePath().endsWith(".class")).findFirst().orElse(null);
             ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
             //noinspection UnusedDeclaration
             String className = mdAdapter.getClassName(stringCF);
@@ -67,10 +58,8 @@ public class VfsTest {
             assertFalse(Vfs.DefaultUrlTypes.directory.matches(rtJarUrl));
 
             Vfs.Dir dir = Vfs.DefaultUrlTypes.jarUrl.createDir(rtJarUrl);
-            Vfs.File file = null;
-            for (Vfs.File f : dir.getFiles()) {
-                if (f.getRelativePath().equals("java/lang/String.class")) { file = f; break; }
-            }
+            Vfs.File file = dir.getFiles().filter(f -> f.getRelativePath().equals("java/lang/String.class"))
+                    .findFirst().orElse(null);
 
             ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
             String className = mdAdapter.getClassName(stringCF);
@@ -87,10 +76,7 @@ public class VfsTest {
             assertTrue(Vfs.DefaultUrlTypes.directory.matches(thisUrl));
 
             Vfs.Dir dir = Vfs.DefaultUrlTypes.directory.createDir(thisUrl);
-            Vfs.File file = null;
-            for (Vfs.File f : dir.getFiles()) {
-                if (f.getRelativePath().equals("org/reflections/VfsTest.class")) { file = f; break; }
-            }
+            Vfs.File file = dir.getFiles().filter(f -> f.getRelativePath().equals("org/reflections/VfsTest.class")).findFirst().orElse(null);
 
             ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
             String className = mdAdapter.getClassName(stringCF);
@@ -172,7 +158,7 @@ public class VfsTest {
     @Test
     public void findFilesFromEmptyMatch() throws MalformedURLException {
         final URL jar = getSomeJar();
-        final Iterable<Vfs.File> files = Vfs.findFiles(java.util.Arrays.asList(jar), Predicates.<Vfs.File>alwaysTrue());
+        final Iterable<Vfs.File> files = Vfs.findFiles(java.util.Arrays.asList(jar), (f)->true);
         assertNotNull(files);
         assertTrue(files.iterator().hasNext());
     }
@@ -184,7 +170,7 @@ public class VfsTest {
         Vfs.Dir dir = Vfs.fromURL(url);
         assertNotNull(dir);
 
-        Iterable<Vfs.File> files = dir.getFiles();
+        Stream<Vfs.File> files = dir.getFiles();
         Vfs.File first = files.iterator().next();
         assertNotNull(first);
 
@@ -222,7 +208,7 @@ public class VfsTest {
         }
 
         public String getPath() {return path;}
-        public Iterable<Vfs.File> getFiles() {return zipDir.getFiles();}
+        public Stream<Vfs.File> getFiles() {return zipDir.getFiles();}
         public void close() {file.delete();}
 
         private static java.io.File downloadTempLocally(URL url) throws IOException {
@@ -250,16 +236,18 @@ public class VfsTest {
 
     @Test
     public void jarInputStream() {
-        JavassistAdapter javassistAdapter = new JavassistAdapter();
+        final JavassistAdapter javassistAdapter = new JavassistAdapter();
 
-        for (URL jar : ClasspathHelper.forClassLoader()) {
+        for (final URL jar : ClasspathHelper.forClassLoader()) {
             try {
-                for (Vfs.File file : Iterables.limit(new JarInputDir(jar).getFiles(), 5)) {
-                    if (file.getName().endsWith(".class")) {
-                        String className = javassistAdapter.getClassName(javassistAdapter.getOrCreateClassObject(file));
+                final Stream<Vfs.File> files = new JarInputDir(jar).getFiles();
+                files.limit(5).forEach(f -> {
+                    if (f.getName().endsWith(".class")) {
+                        final String className = javassistAdapter
+                                .getClassName(javassistAdapter.getOrCreateClassObject(f));
                     }
-                }
-            } catch (Exception e) {
+                });
+            } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
         }

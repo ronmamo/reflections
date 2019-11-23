@@ -1,11 +1,20 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Joiner;
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtBehavior;
+import javassist.CtClass;
+import javassist.LoaderClassPath;
+import javassist.NotFoundException;
 import javassist.bytecode.MethodInfo;
-import javassist.expr.*;
+import javassist.expr.ConstructorCall;
+import javassist.expr.ExprEditor;
+import javassist.expr.FieldAccess;
+import javassist.expr.MethodCall;
+import javassist.expr.NewExpr;
 import org.reflections.ReflectionsException;
 import org.reflections.util.ClasspathHelper;
+import org.reflections.util.Joiner;
 
 /** scans methods/constructors/fields usage
  * <p><i> depends on {@link org.reflections.adapters.JavassistAdapter} configured </i>*/

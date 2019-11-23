@@ -1,19 +1,23 @@
 package org.reflections.serializers;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.*;
-import com.google.common.io.Files;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.reflections.Reflections;
+import org.reflections.util.Multimap;
+import org.reflections.util.SetMultimap;
 import org.reflections.util.Utils;
 
-import java.io.*;
-import java.lang.reflect.Type;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.HashMap;
+import java.nio.file.Files;
 import java.util.Map;
-import java.util.Set;
 
 /** serialization of Reflections to json
  *
@@ -29,51 +33,52 @@ import java.util.Set;
 public class JsonSerializer implements Serializer {
     private Gson gson;
 
-    public Reflections read(InputStream inputStream) {
+    public Reflections read(final InputStream inputStream) {
         return getGson().fromJson(new InputStreamReader(inputStream), Reflections.class);
     }
 
-    public File save(Reflections reflections, String filename) {
+    public File save(final Reflections reflections, final String filename) {
         try {
-            File file = Utils.prepareFile(filename);
-            Files.write(toString(reflections), file, Charset.defaultCharset());
+            final File file = Utils.prepareFile(filename);
+            Files.write(file.toPath(), toString(reflections).getBytes(Charset.defaultCharset()));
             return file;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String toString(Reflections reflections) {
+    public String toString(final Reflections reflections) {
         return getGson().toJson(reflections);
     }
 
     private Gson getGson() {
         if (gson == null) {
             gson = new GsonBuilder()
-                    .registerTypeAdapter(Multimap.class, new com.google.gson.JsonSerializer<Multimap>() {
-                        public JsonElement serialize(Multimap multimap, Type type, JsonSerializationContext jsonSerializationContext) {
-                            return jsonSerializationContext.serialize(multimap.asMap());
-                        }
-                    })
-                    .registerTypeAdapter(Multimap.class, new JsonDeserializer<Multimap>() {
-                        public Multimap deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-                            final SetMultimap<String,String> map = Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(), new Supplier<Set<String>>() {
-                                public Set<String> get() {
-                                    return Sets.newHashSet();
-                                }
-                            });
-                            for (Map.Entry<String, JsonElement> entry : ((JsonObject) jsonElement).entrySet()) {
-                                for (JsonElement element : (JsonArray) entry.getValue()) {
-                                    map.get(entry.getKey()).add(element.getAsString());
-                                }
-                            }
-                            return map;
-                        }
-                    })
+                    .registerTypeAdapter(Multimap.class, this.serializer())
+                    .registerTypeAdapter(Multimap.class, this.deserializer())
                     .setPrettyPrinting()
                     .create();
 
         }
         return gson;
+    }
+
+    private JsonDeserializer<Multimap> deserializer() {
+        return  (jsonElement, type, jsonDeserializationContext) -> {
+
+            final SetMultimap<String,String> map = new SetMultimap<>();
+
+            for (Map.Entry<String, JsonElement> entry : ((JsonObject) jsonElement).entrySet()) {
+                for (final JsonElement element : (JsonArray) entry.getValue()) {
+                    map.get(entry.getKey()).add(element.getAsString());
+                }
+            }
+            return map;
+        };
+    }
+
+    private com.google.gson.JsonSerializer<Multimap> serializer() {
+        return (multimap, type, jsonSerializationContext) ->
+                jsonSerializationContext.serialize(multimap.asMap());
     }
 }

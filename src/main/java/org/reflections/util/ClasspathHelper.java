@@ -10,7 +10,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -253,7 +260,7 @@ public abstract class ClasspathHelper {
             if (path != null) {
                 final File file = new File(path);
                 if (file.exists())
-                    return file.toURL();
+                    return file.toPath().toUri().toURL();
             } else {
                 return servletContext.getResource("/WEB-INF/classes");
             }
