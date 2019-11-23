@@ -12,34 +12,33 @@ public class SynchronizedSetMultimap<K, V> extends SetMultimap<K,V> {
         this.map = map;
     }
 
-
     @Override
     public synchronized boolean put(final K key, final V value) {
-        return false;
+        return map.put(key, value);
     }
 
     @Override
     public synchronized Map<K, Collection<V>> asMap() {
-        return null;
+        return map.asMap();
     }
 
     @Override
     public synchronized Collection<V> get(final K key) {
-        return null;
+        return map.get(key);
     }
 
     @Override
     public synchronized Set<K> keySet() {
-        return null;
+        return map.keySet();
     }
 
     @Override
     public synchronized Collection<V> values() {
-        return null;
+        return map.values();
     }
 
     @Override
     public synchronized void putAll(final Multimap<K, V> expand) {
-
+        map.putAll(expand);
     }
 }

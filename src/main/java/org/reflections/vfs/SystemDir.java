@@ -3,10 +3,14 @@ package org.reflections.vfs;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /*
  * An implementation of {@link org.reflections.vfs.Vfs.Dir} for directory {@link java.io.File}.
@@ -38,18 +42,26 @@ public class SystemDir implements Vfs.Dir {
         final Stack<File> stack = new Stack<File>();
         {stack.addAll(listFiles(file));}
 
-        return Stream.generate(() -> {
-            while (!stack.isEmpty()) {
-                final File file = stack.pop();
-                if (file.isDirectory()) {
-                    stack.addAll(listFiles(file));
-                } else {
-                    return new SystemFile(SystemDir.this, file);
-                }
-            }
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<Vfs.File>() {
+                    @Override
+                    public boolean hasNext() {
+                        return !stack.isEmpty();
+                    }
 
-            return null;
-        });
+                    @Override
+                    public Vfs.File next() {
+                        while (!stack.isEmpty()) {
+                            final File file = stack.pop();
+                            if (file.isDirectory()) {
+                                stack.addAll(listFiles(file));
+                            } else {
+                                return new SystemFile(SystemDir.this, file);
+                            }
+                        }
+                        return null;
+                    }
+                }, Spliterator.DISTINCT),
+                false);
     }
 
     private static List<File> listFiles(final File file) {

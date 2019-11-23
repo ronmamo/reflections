@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
@@ -126,7 +128,7 @@ public class VfsTest {
         try {
             Vfs.Dir dir = Vfs.fromURL(new URL(format("file:{0}", dirWithJarInName)));
 
-            assertEquals(dirWithJarInName, dir.getPath());
+            assertEquals(Paths.get(dirWithJarInName), Paths.get(dir.getPath()));
             assertEquals(SystemDir.class, dir.getClass());
         } finally {
             newDir.delete();

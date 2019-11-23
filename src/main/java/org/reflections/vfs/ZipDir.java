@@ -21,17 +21,9 @@ public class ZipDir implements Vfs.Dir {
     }
 
     public Stream<Vfs.File> getFiles() {
-        final Enumeration<? extends ZipEntry> entries = jarFile.entries();
-        return Stream.generate(()->{
-            while (entries.hasMoreElements()) {
-                final ZipEntry entry = entries.nextElement();
-                if (!entry.isDirectory()) {
-                    return new ZipFile(ZipDir.this, entry);
-                }
-            }
-
-            return null;
-        });
+        return jarFile.stream()
+                .filter(e->!e.isDirectory())
+                .map(e -> new ZipFile(ZipDir.this, e));
     }
 
     public void close() {
