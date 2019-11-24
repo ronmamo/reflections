@@ -15,9 +15,13 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -136,20 +140,20 @@ public class VfsTest {
     }
     
     @Test
-    public void vfsFromDirWithinAJarUrl() throws MalformedURLException {
+    public void vfsFromDirWithinAJarUrl() throws MalformedURLException, URISyntaxException, UnsupportedEncodingException {
     	URL directoryInJarUrl = ClasspathHelper.forClass(String.class);
         assertTrue(directoryInJarUrl.toString().startsWith("jar:file:"));
         assertTrue(directoryInJarUrl.toString().contains(".jar!"));
         
         String directoryInJarPath = directoryInJarUrl.toExternalForm().replaceFirst("jar:", "");
-        int start = directoryInJarPath.indexOf(":") + 1;
+        int start = directoryInJarPath.indexOf(":") + 2;
 		int end = directoryInJarPath.indexOf(".jar!") + 4;
 		String expectedJarFile = directoryInJarPath.substring(start, end);
         
         Vfs.Dir dir = Vfs.fromURL(new URL(directoryInJarPath));
 
         assertEquals(ZipDir.class, dir.getClass());
-        assertEquals(expectedJarFile, dir.getPath());
+        assertEquals(Paths.get(URLDecoder.decode(expectedJarFile, Charset.defaultCharset().name())), Paths.get(dir.getPath()));
     }
 
     @Test

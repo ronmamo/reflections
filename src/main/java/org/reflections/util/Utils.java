@@ -17,8 +17,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -215,7 +217,10 @@ public abstract class Utils {
     }
 
     public static <T> Iterable<T> concat(final List<Iterable<T>> chain) {
-        return chain.stream().map(el -> StreamSupport.stream(el.spliterator(), false))
+        if(chain == null) {
+            return Collections.emptyList();
+        }
+        return chain.stream().filter(Objects::nonNull).map(el -> StreamSupport.stream(el.spliterator(), false))
                 .flatMap(s->s).collect(Collectors.toList());
     }
 

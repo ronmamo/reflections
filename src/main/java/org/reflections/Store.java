@@ -7,6 +7,7 @@ import org.reflections.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,12 +28,12 @@ public class Store {
     //used via reflection
     @SuppressWarnings("UnusedDeclaration")
     protected Store() {
-        storeMap = new HashMap<String, Multimap<String, String>>();
+        storeMap = new HashMap<>();
         concurrent = false;
     }
 
     public Store(Configuration configuration) {
-        storeMap = new HashMap<String, Multimap<String, String>>();
+        storeMap = new HashMap<>();
         concurrent = configuration.getExecutorService() != null;
     }
 
@@ -69,10 +70,13 @@ public class Store {
 
     /** get the values stored for the given {@code index} and {@code keys} */
     public Iterable<String> get(String index, Iterable<String> keys) {
-        Multimap<String, String> mmap = get(index);
-        IterableChain<String> result = new IterableChain<String>();
-        for (String key : keys) {
-            result.addAll(mmap.get(key));
+        final Multimap<String, String> mmap = get(index);
+        final IterableChain<String> result = new IterableChain<String>();
+        for (final String key : keys) {
+            final Collection<String> values = mmap.get(key);
+            if(values != null && !values.isEmpty()) {
+                result.addAll(values);
+            }
         }
         return result;
     }
@@ -110,7 +114,9 @@ public class Store {
     private static class IterableChain<T> implements Iterable<T> {
         private final List<Iterable<T>> chain = new ArrayList<>();
 
-        private void addAll(Iterable<T> iterable) { chain.add(iterable); }
+        private void addAll(Iterable<T> iterable) {
+            chain.add(iterable);
+        }
 
         public Iterator<T> iterator() { return Utils.concat(chain).iterator(); }
     }
