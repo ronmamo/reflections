@@ -104,11 +104,11 @@ public class Store {
     }
 
     public int getKeySize() {
-        return 0;//TODO
+        return this.storeMap.values().stream().mapToInt(m->m.keySet().size()).sum();
     }
 
     public int getValueSize() {
-        return 0;//TODO
+        return this.storeMap.values().stream().mapToInt(m->m.values().size()).sum();
     }
 
     private static class IterableChain<T> implements Iterable<T> {
