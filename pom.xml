@@ -52,7 +52,6 @@
     </distributionManagement>
 
     <properties>
-<!--        <guava.version>20.0</guava.version>-->
         <javassist.version>3.26.0-GA</javassist.version>
         <jdk.version>1.8</jdk.version>
         <additionalparam>-Xdoclint:none</additionalparam>
@@ -61,11 +60,6 @@
     </properties>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>com.google.guava</groupId>-->
-<!--            <artifactId>guava</artifactId>-->
-<!--            <version>${guava.version}</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.javassist</groupId>
