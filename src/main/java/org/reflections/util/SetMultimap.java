@@ -18,14 +18,7 @@ public class SetMultimap<K, V> implements Multimap<K, V> {
 
     @Override
     public boolean put(final K key, final V value) {
-        HashSet set;
-        if(internal.containsKey(key)) {
-            set = internal.get(key);
-        } else {
-            set = new HashSet<>();
-            internal.put(key, set);
-        }
-        return set.add(value);
+        return getValuesContainerForKey(key).add(value);
     }
 
     @Override
@@ -35,7 +28,18 @@ public class SetMultimap<K, V> implements Multimap<K, V> {
 
     @Override
     public Collection<V> get(final K key) {
-        return internal.get(key);
+        return getValuesContainerForKey(key);
+    }
+
+    private Set<V> getValuesContainerForKey(final K key) {
+        HashSet<V> set;
+        if(internal.containsKey(key)) {
+            set = internal.get(key);
+        } else {
+            set = new HashSet<>();
+            internal.put(key, set);
+        }
+        return set;
     }
 
     @Override

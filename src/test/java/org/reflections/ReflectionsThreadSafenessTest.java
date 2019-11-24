@@ -40,6 +40,6 @@ public class ReflectionsThreadSafenessTest {
         final Future<?> first = pool.submit(callable);
         final Future<?> second = pool.submit(callable);
 
-        assertEquals(first.get(5, SECONDS), second.get(5, SECONDS));
+        assertEquals(first.get(15, SECONDS), second.get(15, SECONDS));
     }
 }

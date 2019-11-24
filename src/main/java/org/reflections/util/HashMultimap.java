@@ -19,6 +19,10 @@ public class HashMultimap<K,V> implements Multimap<K, V> {
 
     @Override
     public boolean put(final K key, final V value) {
+        return getValuesContainerForKey(key).add(value);
+    }
+
+    private List<V> getValuesContainerForKey(final K key) {
         final ArrayList<V> list;
         if(internal.containsKey(key)) {
             list = internal.get(key);
@@ -26,7 +30,7 @@ public class HashMultimap<K,V> implements Multimap<K, V> {
             list = new ArrayList<>();
             internal.put(key, list);
         }
-        return list.add(value);
+        return list;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class HashMultimap<K,V> implements Multimap<K, V> {
 
     @Override
     public Collection<V> get(final K key) {
-        return internal.get(key);
+        return getValuesContainerForKey(key);
     }
 
     @Override
