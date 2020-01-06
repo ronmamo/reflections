@@ -1,12 +1,11 @@
 package org.reflections.util;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import org.reflections.ReflectionsException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 /**
@@ -21,8 +20,8 @@ import java.util.regex.Pattern;
 public class FilterBuilder implements Predicate<String> {
     private final List<Predicate<String>> chain;
 
-    public FilterBuilder() {chain = Lists.newArrayList();}
-    private FilterBuilder(final Iterable<Predicate<String>> filters) {chain = Lists.newArrayList(filters);}
+    public FilterBuilder() {chain = new ArrayList<>();}
+    private FilterBuilder(final Collection<Predicate<String>> filters) {chain = new ArrayList<>(filters);}
 
     /** include a regular expression */
     public FilterBuilder include(final String regex) {return add(new Include(regex));}
@@ -54,18 +53,16 @@ public class FilterBuilder implements Predicate<String> {
 
     public static String prefix(String qualifiedName) {return qualifiedName.replace(".","\\.") + ".*";}
 
-    @Override public String toString() {return Joiner.on(", ").join(chain);}
+    @Override public String toString() {return Utils.join(chain, ", ");}
 
-    public boolean apply(String regex) {
-        boolean accept = chain == null || chain.isEmpty() || chain.get(0) instanceof Exclude;
+    public boolean test(String regex) {
+        boolean accept = chain.isEmpty() || chain.get(0) instanceof Exclude;
 
-        if (chain != null) {
-            for (Predicate<String> filter : chain) {
-                if (accept && filter instanceof Include) {continue;} //skip if this filter won't change
-                if (!accept && filter instanceof Exclude) {continue;}
-                accept = filter.apply(regex);
-                if (!accept && filter instanceof Exclude) {break;} //break on first exclusion
-            }
+        for (Predicate<String> filter : chain) {
+            if (accept && filter instanceof Include) {continue;} //skip if this filter won't change
+            if (!accept && filter instanceof Exclude) {continue;}
+            accept = filter.test(regex);
+            if (!accept && filter instanceof Exclude) {break;} //break on first exclusion
         }
         return accept;
     }
@@ -73,19 +70,18 @@ public class FilterBuilder implements Predicate<String> {
     public abstract static class Matcher implements Predicate<String> {
         final Pattern pattern;
         public Matcher(final String regex) {pattern = Pattern.compile(regex);}
-        public abstract boolean apply(String regex);
         @Override public String toString() {return pattern.pattern();}
     }
 
     public static class Include extends Matcher {
         public Include(final String patternString) {super(patternString);}
-        @Override public boolean apply(final String regex) {return pattern.matcher(regex).matches();}
+        @Override public boolean test(final String regex) {return pattern.matcher(regex).matches();}
         @Override public String toString() {return "+" + super.toString();}
     }
 
     public static class Exclude extends Matcher {
         public Exclude(final String patternString) {super(patternString);}
-        @Override public boolean apply(final String regex) {return !pattern.matcher(regex).matches();}
+        @Override public boolean test(final String regex) {return !pattern.matcher(regex).matches();}
         @Override public String toString() {return "-" + super.toString();}
     }
 
@@ -102,7 +98,7 @@ public class FilterBuilder implements Predicate<String> {
      * See also the more useful {@link FilterBuilder#parsePackages(String)} method.
      */
     public static FilterBuilder parse(String includeExcludeString) {
-        List<Predicate<String>> filters = new ArrayList<Predicate<String>>();
+        List<Predicate<String>> filters = new ArrayList<>();
 
         if (!Utils.isEmpty(includeExcludeString)) {
             for (String string : includeExcludeString.split(",")) {
@@ -143,14 +139,14 @@ public class FilterBuilder implements Predicate<String> {
      * The input strings "-java" and "-java." are equivalent.
      */
     public static FilterBuilder parsePackages(String includeExcludeString) {
-        List<Predicate<String>> filters = new ArrayList<Predicate<String>>();
+        List<Predicate<String>> filters = new ArrayList<>();
 
         if (!Utils.isEmpty(includeExcludeString)) {
             for (String string : includeExcludeString.split(",")) {
                 String trimmed = string.trim();
                 char prefix = trimmed.charAt(0);
                 String pattern = trimmed.substring(1);
-                if (pattern.endsWith(".") == false) {
+                if (!pattern.endsWith(".")) {
                   pattern += ".";
                 }
                 pattern = prefix(pattern);

@@ -1,14 +1,10 @@
 package org.reflections.util;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
-import org.reflections.scanners.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +14,14 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static org.reflections.ReflectionUtils.forName;
 
@@ -71,7 +73,7 @@ public abstract class Utils {
         Class<?>[] parameterTypes = null;
         if (!isEmpty(methodParameters)) {
             String[] parameterNames = methodParameters.split(",");
-            List<Class<?>> result = new ArrayList<Class<?>>(parameterNames.length);
+            List<Class<?>> result = new ArrayList<>(parameterNames.length);
             for (String name : parameterNames) {
                 result.add(forName(name.trim(), classLoaders));
             }
@@ -96,7 +98,7 @@ public abstract class Utils {
     }
 
     public static Set<Method> getMethodsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
-        Set<Method> result = Sets.newHashSet();
+        Set<Method> result = new HashSet<>();
         for (String annotated : annotatedWith) {
             if (!isConstructor(annotated)) {
                 Method member = (Method) getMemberFromDescriptor(annotated, classLoaders);
@@ -107,7 +109,7 @@ public abstract class Utils {
     }
 
     public static Set<Constructor> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
-        Set<Constructor> result = Sets.newHashSet();
+        Set<Constructor> result = new HashSet<>();
         for (String annotated : annotatedWith) {
             if (isConstructor(annotated)) {
                 Constructor member = (Constructor) getMemberFromDescriptor(annotated, classLoaders);
@@ -118,7 +120,7 @@ public abstract class Utils {
     }
 
     public static Set<Member> getMembersFromDescriptors(Iterable<String> values, ClassLoader... classLoaders) {
-        Set<Member> result = Sets.newHashSet();
+        Set<Member> result = new HashSet<>();
         for (String value : values) {
             try {
                 result.add(Utils.getMemberFromDescriptor(value, classLoaders));
@@ -149,7 +151,6 @@ public abstract class Utils {
         }
     }
 
-    @Nullable
     public static Logger findLogger(Class<?> aClass) {
         try {
             // This is to check whether an optional SLF4J binding is available. While SLF4J recommends that libraries
@@ -182,7 +183,7 @@ public abstract class Utils {
 
 
     public static List<String> names(Iterable<Class<?>> types) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Class<?> type : types) result.add(name(type));
         return result;
     }
@@ -192,16 +193,41 @@ public abstract class Utils {
     }
 
     public static String name(Constructor constructor) {
-        return constructor.getName() + "." + "<init>" + "(" + Joiner.on(", ").join(names(constructor.getParameterTypes())) + ")";
+        return constructor.getName() + "." + "<init>" + "(" + join(names(constructor.getParameterTypes()), ", ") + ")";
     }
 
     public static String name(Method method) {
-        return method.getDeclaringClass().getName() + "." + method.getName() + "(" + Joiner.on(", ").join(names(method.getParameterTypes())) + ")";
+        return method.getDeclaringClass().getName() + "." + method.getName() + "(" + join(names(method.getParameterTypes()), ", ") + ")";
     }
 
     public static String name(Field field) {
         return field.getDeclaringClass().getName() + "." + field.getName();
     }
 
-    public static String index(Class<? extends Scanner> scannerClass) { return scannerClass.getSimpleName(); }
+    public static String index(Class<?> scannerClass) { return scannerClass.getSimpleName(); }
+
+    public static <T> Predicate<T> and(Predicate... predicates) {
+        return Arrays.stream(predicates).reduce(t -> true, Predicate::and);
+    }
+
+    public static <T> Stream<T> stream(Iterable<T> elements) {
+        return StreamSupport.stream(elements.spliterator(), false);
+    }
+
+    public static String join(Collection<?> elements, String delimiter) {
+        return elements.stream().map(Object::toString).collect(Collectors.joining(delimiter));
+    }
+
+    public static <T> Set<T> concat(Set<T> forNames, Set<T> forNames1) {
+        forNames.addAll(forNames1);
+        return forNames;
+    }
+
+    public static <T> Set<T> filter(Collection<T> result, Predicate<? super T>... predicates) {
+        return result.stream().filter(and(predicates)).collect(Collectors.toSet());
+    }
+
+    public static <T> Set<T> filter(T[] result, Predicate<? super T>... predicates) {
+        return Arrays.stream(result).filter(and(predicates)).collect(Collectors.toSet());
+    }
 }

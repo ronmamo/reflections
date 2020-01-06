@@ -1,6 +1,8 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Joiner;
+import org.reflections.Store;
+
+import static org.reflections.util.Utils.join;
 
 /** scans fields and methods and stores fqn as key and elements as values */
 @SuppressWarnings({"unchecked"})
@@ -10,16 +12,16 @@ public class TypeElementsScanner extends AbstractScanner {
     private boolean includeAnnotations = true;
     private boolean publicOnly = true;
 
-    public void scan(Object cls) {
+    public void scan(Object cls, Store store) {
         String className = getMetadataAdapter().getClassName(cls);
         if (!acceptResult(className)) return;
 
-        getStore().put(className, "");
+        put(store, className, "");
 
         if (includeFields) {
             for (Object field : getMetadataAdapter().getFields(cls)) {
                 String fieldName = getMetadataAdapter().getFieldName(field);
-                getStore().put(className, fieldName);
+                put(store, className, fieldName);
             }
         }
 
@@ -27,15 +29,15 @@ public class TypeElementsScanner extends AbstractScanner {
             for (Object method : getMetadataAdapter().getMethods(cls)) {
                 if (!publicOnly || getMetadataAdapter().isPublic(method)) {
                     String methodKey = getMetadataAdapter().getMethodName(method) + "(" +
-                            Joiner.on(", ").join(getMetadataAdapter().getParameterNames(method)) + ")";
-                    getStore().put(className, methodKey);
+                            join(getMetadataAdapter().getParameterNames(method), ", ") + ")";
+                    put(store, className, methodKey);
                 }
             }
         }
 
         if (includeAnnotations) {
             for (Object annotation : getMetadataAdapter().getClassAnnotationNames(cls)) {
-                getStore().put(className, "@" + annotation);
+                put(store, className, "@" + annotation);
             }
         }
     }

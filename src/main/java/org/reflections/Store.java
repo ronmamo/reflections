@@ -1,10 +1,17 @@
 package org.reflections;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.*;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import static org.reflections.util.Utils.index;
 
 /**
  * stores metadata information in multimaps
@@ -14,19 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Store {
 
-    private transient boolean concurrent;
-    private final Map<String, Multimap<String, String>> storeMap;
+    private final ConcurrentHashMap<String, Map<String, Collection<String>>> storeMap;
 
-    //used via reflection
-    @SuppressWarnings("UnusedDeclaration")
     protected Store() {
-        storeMap = new HashMap<String, Multimap<String, String>>();
-        concurrent = false;
-    }
-
-    public Store(Configuration configuration) {
-        storeMap = new HashMap<String, Multimap<String, String>>();
-        concurrent = configuration.getExecutorService() != null;
+        storeMap = new ConcurrentHashMap<>();
     }
 
     /** return all indices */
@@ -34,26 +32,9 @@ public class Store {
         return storeMap.keySet();
     }
 
-    /** get or create the multimap object for the given {@code index} */
-    public Multimap<String, String> getOrCreate(String index) {
-        Multimap<String, String> mmap = storeMap.get(index);
-        if (mmap == null) {
-            SetMultimap<String, String> multimap =
-                    Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(),
-                            new Supplier<Set<String>>() {
-                                public Set<String> get() {
-                                    return Sets.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-                                }
-                            });
-            mmap = concurrent ? Multimaps.synchronizedSetMultimap(multimap) : multimap;
-            storeMap.put(index,mmap);
-        }
-        return mmap;
-    }
-
     /** get the multimap object for the given {@code index}, otherwise throws a {@link org.reflections.ReflectionsException} */
-    public Multimap<String, String> get(String index) {
-        Multimap<String, String> mmap = storeMap.get(index);
+    private Map<String, Collection<String>> get(String index) {
+        Map<String, Collection<String>> mmap = storeMap.get(index);
         if (mmap == null) {
             throw new ReflectionsException("Scanner " + index + " was not configured");
         }
@@ -61,47 +42,104 @@ public class Store {
     }
 
     /** get the values stored for the given {@code index} and {@code keys} */
-    public Iterable<String> get(String index, String... keys) {
-        return get(index, Arrays.asList(keys));
+    public Set<String> get(Class<?> scannerClass, String keys) {
+        return get(index(scannerClass), keys);
     }
 
     /** get the values stored for the given {@code index} and {@code keys} */
-    public Iterable<String> get(String index, Iterable<String> keys) {
-        Multimap<String, String> mmap = get(index);
-        IterableChain<String> result = new IterableChain<String>();
+    public Set<String> get(String index, String keys) {
+        return get(index, Collections.singletonList(keys));
+    }
+
+    /** get the values stored for the given {@code index} and {@code keys} */
+    public Set<String> get(Class<?> scannerClass, Iterable<String> keys) {
+        return get(index(scannerClass), keys);
+    }
+
+    /** get the values stored for the given {@code index} and {@code keys} */
+    public Set<String> get(String index, Iterable<String> keys) {
+        Map<String, Collection<String>> mmap = get(index);
+        Set<String> result = new LinkedHashSet<>();
         for (String key : keys) {
-            result.addAll(mmap.get(key));
+            Collection<String> values = mmap.get(key);
+            if (values != null) {
+                result.addAll(values);
+            }
         }
         return result;
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, including keys */
-    private Iterable<String> getAllIncluding(String index, Iterable<String> keys, IterableChain<String> result) {
-        result.addAll(keys);
-        for (String key : keys) {
-            Iterable<String> values = get(index, key);
-            if (values.iterator().hasNext()) {
-                getAllIncluding(index, values, result);
+    private Set<String> getAllIncluding(String index, Set<String> keys) {
+        Map<String, Collection<String>> mmap = get(index);
+        List<String> workKeys = new ArrayList<>(keys);
+
+        Set<String> result = new HashSet<>();
+        for (int i = 0; i < workKeys.size(); i++) {
+            String key = workKeys.get(i);
+            if (result.add(key)) {
+                Collection<String> values = mmap.get(key);
+                if (values != null) {
+                    workKeys.addAll(values);
+                }
             }
         }
         return result;
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
-    public Iterable<String> getAll(String index, String key) {
-        return getAllIncluding(index, get(index, key), new IterableChain<String>());
+    public Set<String> getAll(Class<?> scannerClass, String key) {
+        return getAll(index(scannerClass), key);
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
-    public Iterable<String> getAll(String index, Iterable<String> keys) {
-        return getAllIncluding(index, get(index, keys), new IterableChain<String>());
+    public Set<String> getAll(String index, String key) {
+        return getAllIncluding(index, get(index, key));
     }
 
-    private static class IterableChain<T> implements Iterable<T> {
-        private final List<Iterable<T>> chain = Lists.newArrayList();
+    /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
+    public Set<String> getAll(Class<?> scannerClass, Iterable<String> keys) {
+        return getAll(index(scannerClass), keys);
+    }
 
-        private void addAll(Iterable<T> iterable) { chain.add(iterable); }
+    /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
+    public Set<String> getAll(String index, Iterable<String> keys) {
+        return getAllIncluding(index, get(index, keys));
+    }
 
-        public Iterator<T> iterator() { return Iterables.concat(chain).iterator(); }
+    public Set<String> keys(String index) {
+        Map<String, Collection<String>> map = storeMap.get(index);
+        return map != null ? new HashSet<>(map.keySet()) : Collections.emptySet();
+    }
+
+    public Set<String> values(String index) {
+        Map<String, Collection<String>> map = storeMap.get(index);
+        return map != null ? map.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()) : Collections.emptySet();
+    }
+
+    //
+    public boolean put(Class<?> scannerClass, String key, String value) {
+        return put(index(scannerClass), key, value);
+    }
+
+    public boolean put(String index, String key, String value) {
+        return storeMap.computeIfAbsent(index, s -> new ConcurrentHashMap<>())
+                .computeIfAbsent(key, s -> new ArrayList<>())
+                .add(value);
+    }
+
+    void merge(Store store) {
+        if (store != null) {
+            for (String indexName : store.keySet()) {
+                Map<String, Collection<String>> index = store.get(indexName);
+                if (index != null) {
+                    for (String key : index.keySet()) {
+                        for (String string : index.get(key)) {
+                            put(indexName, key, string);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

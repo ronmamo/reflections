@@ -1,30 +1,36 @@
 package org.reflections;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.reflections.scanners.*;
+import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.scanners.MemberUsageScanner;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.MethodParameterNamesScanner;
+import org.reflections.scanners.MethodParameterScanner;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.reflections.TestModel.*;
 import static org.reflections.util.Utils.index;
@@ -40,7 +46,7 @@ public class ReflectionsTest {
     @BeforeClass
     public static void init() {
         reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(asList(ClasspathHelper.forClass(TestModel.class)))
+                .setUrls(Collections.singletonList(ClasspathHelper.forClass(TestModel.class)))
                 .filterInputsBy(TestModelFilter)
                 .setScanners(
                         new SubTypesScanner(false),
@@ -219,28 +225,28 @@ public class ReflectionsTest {
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .filterInputsBy(filter)
                 .setScanners(new ResourcesScanner())
-                .setUrls(asList(ClasspathHelper.forClass(TestModel.class))));
+                .setUrls(Collections.singletonList(ClasspathHelper.forClass(TestModel.class))));
 
         Set<String> resolved = reflections.getResources(Pattern.compile(".*resource1-reflections\\.xml"));
         assertThat(resolved, are("META-INF/reflections/resource1-reflections.xml"));
 
-        Set<String> resources = reflections.getStore().get(index(ResourcesScanner.class)).keySet();
+        Set<String> resources = reflections.getStore().keys(index(ResourcesScanner.class));
         assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml"));
     }
 
     @Test
     public void testMethodParameterNames() throws NoSuchMethodException {
         assertEquals(reflections.getMethodParamNames(C4.class.getDeclaredMethod("m3")),
-                Lists.newArrayList());
+                Collections.emptyList());
 
         assertEquals(reflections.getMethodParamNames(C4.class.getDeclaredMethod("m4", String.class)),
-                Lists.newArrayList("string"));
+                Collections.singletonList("string"));
 
         assertEquals(reflections.getMethodParamNames(C4.class.getDeclaredMethod("add", int.class, int.class)),
-                Lists.newArrayList("i1", "i2"));
+                Arrays.asList("i1", "i2"));
 
         assertEquals(reflections.getConstructorParamNames(C4.class.getDeclaredConstructor(String.class)),
-                Lists.newArrayList("f1"));
+                Collections.singletonList("f1"));
     }
 
     @Test
@@ -282,7 +288,7 @@ public class ReflectionsTest {
     public static String getUserDir() {
         File file = new File(System.getProperty("user.dir"));
         //a hack to fix user.dir issue(?) in surfire
-        if (Lists.newArrayList(file.list()).contains("reflections")) {
+        if (Arrays.asList(file.list()).contains("reflections")) {
             file = new File(file, "reflections");
         }
         return file.getAbsolutePath();
@@ -309,6 +315,11 @@ public class ReflectionsTest {
                 Collection<?> c2 = (Collection<?>) o;
                 return c1.containsAll(c2) && c2.containsAll(c1);
             }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(Arrays.toString(ts));
+            }
         };
     }
 
@@ -316,7 +327,7 @@ public class ReflectionsTest {
         return new Match<Set<Class<?>>>() {
             public boolean matches(Object o) {
                 for (Class<?> c : (Iterable<Class<?>>) o) {
-                    if (!Iterables.contains(annotationTypes(Arrays.asList(c.getAnnotations())), annotation)) return false;
+                    if (!annotationTypes(Arrays.asList(c.getAnnotations())).contains(annotation)) return false;
                 }
                 return true;
             }
@@ -327,8 +338,8 @@ public class ReflectionsTest {
         return new Match<Set<Class<?>>>() {
             public boolean matches(Object o) {
                 for (Class<?> c : (Iterable<Class<?>>) o) {
-                    Set<Class> result = Sets.newHashSet();
-                    List<Class> stack = Lists.<Class>newArrayList(ReflectionUtils.getAllSuperTypes(c));
+                    Set<Class> result = new HashSet<>();
+                    List<Class> stack = new ArrayList<>(ReflectionUtils.getAllSuperTypes(c));
                     while (!stack.isEmpty()) {
                         Class next = stack.remove(0);
                         if (result.add(next)) {
@@ -344,12 +355,7 @@ public class ReflectionsTest {
         };
     }
 
-    private Iterable<Class<? extends Annotation>> annotationTypes(Iterable<Annotation> annotations) {
-        return Iterables.transform(annotations, new Function<Annotation, Class<? extends Annotation>>() {
-            @Nullable
-            public Class<? extends Annotation> apply(@Nullable Annotation input) {
-                return input != null ? input.annotationType() : null;
-            }
-        });
+    private List<Class<? extends Annotation>> annotationTypes(Collection<Annotation> annotations) {
+        return annotations.stream().filter(Objects::nonNull).map(Annotation::annotationType).collect(Collectors.toList());
     }
 }
