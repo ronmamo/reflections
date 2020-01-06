@@ -5,8 +5,3 @@ jdk:
   - oraclejdk11
   - openjdk8
   - openjdk11
-
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
