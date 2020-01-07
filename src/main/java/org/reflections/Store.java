@@ -42,22 +42,22 @@ public class Store {
     }
 
     /** get the values stored for the given {@code index} and {@code keys} */
-    public Set<String> get(Class<?> scannerClass, String keys) {
+    public Set<String> get(Class<?> scannerClass, String key) {
+        return get(index(scannerClass), Collections.singletonList(key));
+    }
+
+    /** get the values stored for the given {@code index} and {@code keys} */
+    public Set<String> get(String index, String key) {
+        return get(index, Collections.singletonList(key));
+    }
+
+    /** get the values stored for the given {@code index} and {@code keys} */
+    public Set<String> get(Class<?> scannerClass, Collection<String> keys) {
         return get(index(scannerClass), keys);
     }
 
     /** get the values stored for the given {@code index} and {@code keys} */
-    public Set<String> get(String index, String keys) {
-        return get(index, Collections.singletonList(keys));
-    }
-
-    /** get the values stored for the given {@code index} and {@code keys} */
-    public Set<String> get(Class<?> scannerClass, Iterable<String> keys) {
-        return get(index(scannerClass), keys);
-    }
-
-    /** get the values stored for the given {@code index} and {@code keys} */
-    public Set<String> get(String index, Iterable<String> keys) {
+    private Set<String> get(String index, Collection<String> keys) {
         Map<String, Collection<String>> mmap = get(index);
         Set<String> result = new LinkedHashSet<>();
         for (String key : keys) {
@@ -70,7 +70,8 @@ public class Store {
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, including keys */
-    private Set<String> getAllIncluding(String index, Set<String> keys) {
+    public Set<String> getAllIncluding(Class<?> scannerClass, Collection<String> keys) {
+        String index = index(scannerClass);
         Map<String, Collection<String>> mmap = get(index);
         List<String> workKeys = new ArrayList<>(keys);
 
@@ -89,22 +90,12 @@ public class Store {
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
     public Set<String> getAll(Class<?> scannerClass, String key) {
-        return getAll(index(scannerClass), key);
+        return getAllIncluding(scannerClass, get(scannerClass, key));
     }
 
     /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
-    public Set<String> getAll(String index, String key) {
-        return getAllIncluding(index, get(index, key));
-    }
-
-    /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
-    public Set<String> getAll(Class<?> scannerClass, Iterable<String> keys) {
-        return getAll(index(scannerClass), keys);
-    }
-
-    /** recursively get the values stored for the given {@code index} and {@code keys}, not including keys */
-    public Set<String> getAll(String index, Iterable<String> keys) {
-        return getAllIncluding(index, get(index, keys));
+    public Set<String> getAll(Class<?> scannerClass, Collection<String> keys) {
+        return getAllIncluding(scannerClass, get(scannerClass, keys));
     }
 
     public Set<String> keys(String index) {

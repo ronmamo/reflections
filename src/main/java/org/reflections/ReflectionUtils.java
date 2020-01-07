@@ -11,13 +11,15 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.reflections.util.Utils.filter;
 
@@ -194,9 +196,8 @@ public abstract class ReflectionUtils {
             if (input != null) {
                 Annotation[] inputAnnotations = input.getAnnotations();
                 if (inputAnnotations.length == annotations.length) {
-                    for (int i = 0; i < inputAnnotations.length; i++) {
-                        if (!areAnnotationMembersMatching(inputAnnotations[i], annotations[i])) return false;
-                    }
+                    return IntStream.range(0, inputAnnotations.length)
+                            .allMatch(i -> areAnnotationMembersMatching(inputAnnotations[i], annotations[i]));
                 }
             }
             return true;
@@ -325,14 +326,10 @@ public abstract class ReflectionUtils {
 
     /** try to resolve all given string representation of types to a list of java types */
     public static <T> Set<Class<? extends T>> forNames(final Collection<String> classes, ClassLoader... classLoaders) {
-        Set<Class<? extends T>> result = new LinkedHashSet<>();
-        for (String className : classes) {
-            Class<?> type = forName(className, classLoaders);
-            if (type != null) {
-                result.add((Class<? extends T>) type);
-            }
-        }
-        return result;
+        return classes.stream()
+                .map(className -> (Class<? extends T>) forName(className, classLoaders))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private static Class[] parameterTypes(Member member) {
@@ -342,24 +339,18 @@ public abstract class ReflectionUtils {
     }
 
     private static Set<Annotation> parameterAnnotations(Member member) {
-        Set<Annotation> result = new HashSet<>();
         Annotation[][] annotations =
                 member instanceof Method ? ((Method) member).getParameterAnnotations() :
                 member instanceof Constructor ? ((Constructor) member).getParameterAnnotations() : null;
-        for (Annotation[] annotation : annotations) Collections.addAll(result, annotation);
-        return result;
+        return Arrays.stream(annotations).flatMap(Arrays::stream).collect(Collectors.toSet());
     }
 
-    private static Set<Class<? extends Annotation>> annotationTypes(Iterable<Annotation> annotations) {
-        Set<Class<? extends Annotation>> result = new HashSet<>();
-        for (Annotation annotation : annotations) result.add(annotation.annotationType());
-        return result;
+    private static Set<Class<? extends Annotation>> annotationTypes(Collection<Annotation> annotations) {
+        return annotations.stream().map(Annotation::annotationType).collect(Collectors.toSet());
     }
 
     private static Class<? extends Annotation>[] annotationTypes(Annotation[] annotations) {
-        Class<? extends Annotation>[] result = new Class[annotations.length];
-        for (int i = 0; i < annotations.length; i++) result[i] = annotations[i].annotationType();
-        return result;
+        return Arrays.stream(annotations).map(Annotation::annotationType).toArray(Class[]::new);
     }
 
     //
@@ -402,12 +393,8 @@ public abstract class ReflectionUtils {
         if (childClasses.length != parentClasses.length) {
             return false;
         }
-        for (int i = 0; i < childClasses.length; i++) {
-            if (!parentClasses[i].isAssignableFrom(childClasses[i]) ||
-                    (parentClasses[i] == Object.class && childClasses[i] != Object.class)) {
-                return false;
-            }
-        }
-        return true;
+        return IntStream.range(0, childClasses.length)
+                .noneMatch(i -> !parentClasses[i].isAssignableFrom(childClasses[i]) ||
+                        parentClasses[i] == Object.class && childClasses[i] != Object.class);
     }
 }

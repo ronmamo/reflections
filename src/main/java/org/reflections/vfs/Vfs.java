@@ -161,7 +161,7 @@ public abstract class Vfs {
         try {
             path = url.toURI().getSchemeSpecificPart();
             if ((file = new java.io.File(path)).exists()) return file;
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException ignored) {
         }
 
         try {
@@ -169,7 +169,7 @@ public abstract class Vfs {
             if (path.contains(".jar!")) path = path.substring(0, path.lastIndexOf(".jar!") + ".jar".length());
             if ((file = new java.io.File(path)).exists()) return file;
 
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException ignored) {
         }
 
         try {
@@ -184,7 +184,7 @@ public abstract class Vfs {
             path = path.replace("%20", " ");
             if ((file = new java.io.File(path)).exists()) return file;
 
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         return null;

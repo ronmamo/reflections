@@ -12,7 +12,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,8 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.stream.IntStream;
 
 import static org.reflections.ReflectionUtils.forName;
 
@@ -31,13 +29,7 @@ import static org.reflections.ReflectionUtils.forName;
 public abstract class Utils {
 
     public static String repeat(String string, int times) {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < times; i++) {
-            sb.append(string);
-        }
-
-        return sb.toString();
+        return IntStream.range(0, times).mapToObj(i -> string).collect(Collectors.joining());
     }
 
     /**
@@ -45,10 +37,6 @@ public abstract class Utils {
      */
     public static boolean isEmpty(String s) {
         return s == null || s.length() == 0;
-    }
-
-    public static boolean isEmpty(Object[] objects) {
-        return objects == null || objects.length == 0;
     }
 
     public static File prepareFile(String filename) {
@@ -73,11 +61,7 @@ public abstract class Utils {
         Class<?>[] parameterTypes = null;
         if (!isEmpty(methodParameters)) {
             String[] parameterNames = methodParameters.split(",");
-            List<Class<?>> result = new ArrayList<>(parameterNames.length);
-            for (String name : parameterNames) {
-                result.add(forName(name.trim(), classLoaders));
-            }
-            parameterTypes = result.toArray(new Class<?>[result.size()]);
+            parameterTypes = Arrays.stream(parameterNames).map(name -> forName(name.trim(), classLoaders)).toArray(Class<?>[]::new);
         }
 
         Class<?> aClass = forName(className, classLoaders);
@@ -182,10 +166,8 @@ public abstract class Utils {
     }
 
 
-    public static List<String> names(Iterable<Class<?>> types) {
-        List<String> result = new ArrayList<>();
-        for (Class<?> type : types) result.add(name(type));
-        return result;
+    public static List<String> names(Collection<Class<?>> types) {
+        return types.stream().map(Utils::name).collect(Collectors.toList());
     }
 
     public static List<String> names(Class<?>... types) {
@@ -210,21 +192,16 @@ public abstract class Utils {
         return Arrays.stream(predicates).reduce(t -> true, Predicate::and);
     }
 
-    public static <T> Stream<T> stream(Iterable<T> elements) {
-        return StreamSupport.stream(elements.spliterator(), false);
-    }
-
     public static String join(Collection<?> elements, String delimiter) {
         return elements.stream().map(Object::toString).collect(Collectors.joining(delimiter));
     }
 
-    public static <T> Set<T> concat(Set<T> forNames, Set<T> forNames1) {
-        forNames.addAll(forNames1);
-        return forNames;
-    }
-
     public static <T> Set<T> filter(Collection<T> result, Predicate<? super T>... predicates) {
         return result.stream().filter(and(predicates)).collect(Collectors.toSet());
+    }
+
+    public static <T> Set<T> filter(Collection<T> result, Predicate<? super T> predicate) {
+        return result.stream().filter(predicate).collect(Collectors.toSet());
     }
 
     public static <T> Set<T> filter(T[] result, Predicate<? super T>... predicates) {

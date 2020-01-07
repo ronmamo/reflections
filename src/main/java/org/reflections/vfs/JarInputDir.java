@@ -27,7 +27,7 @@ public class JarInputDir implements Vfs.Dir {
     }
 
     public Iterable<Vfs.File> getFiles() {
-        return (Iterable<Vfs.File>) () -> new Iterator<Vfs.File>() {
+        return () -> new Iterator<Vfs.File>() {
 
             {
                 try { jarInputStream = new JarInputStream(url.openConnection().getInputStream()); }

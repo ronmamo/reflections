@@ -11,7 +11,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.reflections.ReflectionUtils.forName;
 import static org.reflections.util.Utils.join;
@@ -36,19 +38,10 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
     }
 
     public List<String> getParameterNames(final Member member) {
-        List<String> result = new ArrayList<>();
-
         Class<?>[] parameterTypes = member instanceof Method ? ((Method) member).getParameterTypes() :
                 member instanceof Constructor ? ((Constructor) member).getParameterTypes() : null;
 
-        if (parameterTypes != null) {
-            for (Class<?> paramType : parameterTypes) {
-                String name = getName(paramType);
-                result.add(name);
-            }
-        }
-
-        return result;
+        return parameterTypes != null ? Arrays.stream(parameterTypes).map(JavaReflectionAdapter::getName).collect(Collectors.toList()) : Collections.emptyList();
     }
 
     public List<String> getClassAnnotationNames(Class aClass) {
@@ -122,9 +115,7 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
 
     public List<String> getInterfacesNames(Class cls) {
         Class[] classes = cls.getInterfaces();
-        List<String> names = new ArrayList<>(classes != null ? classes.length : 0);
-        if (classes != null) for (Class cls1 : classes) names.add(cls1.getName());
-        return names;
+        return classes != null ? Arrays.stream(classes).map(Class::getName).collect(Collectors.toList()) : Collections.emptyList();
     }
 
     public boolean acceptsInput(String file) {
@@ -133,11 +124,7 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
     
     //
     private List<String> getAnnotationNames(Annotation[] annotations) {
-        List<String> names = new ArrayList<>(annotations.length);
-        for (Annotation annotation : annotations) {
-            names.add(annotation.annotationType().getName());
-        }
-        return names;
+        return Arrays.stream(annotations).map(annotation -> annotation.annotationType().getName()).collect(Collectors.toList());
     }
 
     public static String getName(Class type) {

@@ -18,7 +18,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static javassist.bytecode.AccessFlag.isPrivate;
 import static javassist.bytecode.AccessFlag.isProtected;
@@ -33,12 +37,10 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     public static boolean includeInvisibleTag = true;
 
     public List<FieldInfo> getFields(final ClassFile cls) {
-        //noinspection unchecked
         return cls.getFields();
     }
 
     public List<MethodInfo> getMethods(final ClassFile cls) {
-        //noinspection unchecked
         return cls.getMethods();
     }
 
@@ -153,29 +155,19 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     
     //
     private List<String> getAnnotationNames(final AnnotationsAttribute... annotationsAttributes) {
-        List<String> result = new ArrayList<>();
-
         if (annotationsAttributes != null) {
-            for (AnnotationsAttribute annotationsAttribute : annotationsAttributes) {
-                if (annotationsAttribute != null) {
-                    for (Annotation annotation : annotationsAttribute.getAnnotations()) {
-                        result.add(annotation.getTypeName());
-                    }
-                }
-            }
+            return Arrays.stream(annotationsAttributes)
+                    .filter(Objects::nonNull)
+                    .flatMap(annotationsAttribute -> Arrays.stream(annotationsAttribute.getAnnotations()))
+                    .map(Annotation::getTypeName)
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
         }
-
-        return result;
     }
 
     private List<String> getAnnotationNames(final Annotation[] annotations) {
-        List<String> result = new ArrayList<>();
-
-        for (Annotation annotation : annotations) {
-            result.add(annotation.getTypeName());
-        }
-
-        return result;
+        return Arrays.stream(annotations).map(Annotation::getTypeName).collect(Collectors.toList());
     }
 
     private List<String> splitDescriptorToTypeNames(final String descriptors) {
@@ -190,10 +182,9 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
             }
             indices.add(descriptors.length());
 
-            for (int i = 0; i < indices.size() - 1; i++) {
-                String s1 = Descriptor.toString(descriptors.substring(indices.get(i), indices.get(i + 1)));
-                result.add(s1);
-            }
+            result = IntStream.range(0, indices.size() - 1)
+                    .mapToObj(i -> Descriptor.toString(descriptors.substring(indices.get(i), indices.get(i + 1))))
+                    .collect(Collectors.toList());
 
         }
 
