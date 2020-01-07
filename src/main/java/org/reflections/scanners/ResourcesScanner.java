@@ -1,5 +1,6 @@
 package org.reflections.scanners;
 
+import org.reflections.Store;
 import org.reflections.vfs.Vfs;
 
 /** collects all resources that are not classes in a collection
@@ -9,12 +10,12 @@ public class ResourcesScanner extends AbstractScanner {
         return !file.endsWith(".class"); //not a class
     }
 
-    @Override public Object scan(Vfs.File file, Object classObject) {
-        getStore().put(file.getName(), file.getRelativePath());
+    @Override public Object scan(Vfs.File file, Object classObject, Store store) {
+        put(store, file.getName(), file.getRelativePath());
         return classObject;
     }
 
-    public void scan(Object cls) {
+    public void scan(Object cls, Store store) {
         throw new UnsupportedOperationException(); //shouldn't get here
     }
 }

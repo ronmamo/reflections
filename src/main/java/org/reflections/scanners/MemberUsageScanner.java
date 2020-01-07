@@ -1,11 +1,22 @@
 package org.reflections.scanners;
 
-import com.google.common.base.Joiner;
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtBehavior;
+import javassist.CtClass;
+import javassist.LoaderClassPath;
+import javassist.NotFoundException;
 import javassist.bytecode.MethodInfo;
-import javassist.expr.*;
+import javassist.expr.ConstructorCall;
+import javassist.expr.ExprEditor;
+import javassist.expr.FieldAccess;
+import javassist.expr.MethodCall;
+import javassist.expr.NewExpr;
 import org.reflections.ReflectionsException;
+import org.reflections.Store;
 import org.reflections.util.ClasspathHelper;
+
+import static org.reflections.util.Utils.join;
 
 /** scans methods/constructors/fields usage
  * <p><i> depends on {@link org.reflections.adapters.JavassistAdapter} configured </i>*/
@@ -14,14 +25,14 @@ public class MemberUsageScanner extends AbstractScanner {
     private ClassPool classPool;
 
     @Override
-    public void scan(Object cls) {
+    public void scan(Object cls, Store store) {
         try {
             CtClass ctClass = getClassPool().get(getMetadataAdapter().getClassName(cls));
             for (CtBehavior member : ctClass.getDeclaredConstructors()) {
-                scanMember(member);
+                scanMember(member, store);
             }
             for (CtBehavior member : ctClass.getDeclaredMethods()) {
-                scanMember(member);
+                scanMember(member, store);
             }
             ctClass.detach();
         } catch (Exception e) {
@@ -29,7 +40,7 @@ public class MemberUsageScanner extends AbstractScanner {
         }
     }
 
-    void scanMember(CtBehavior member) throws CannotCompileException {
+    void scanMember(CtBehavior member, Store store) throws CannotCompileException {
         //key contains this$/val$ means local field/parameter closure
         final String key = member.getDeclaringClass().getName() + "." + member.getMethodInfo().getName() +
                 "(" + parameterNames(member.getMethodInfo()) + ")"; //+ " #" + member.getMethodInfo().getLineNumber(0)
@@ -37,7 +48,7 @@ public class MemberUsageScanner extends AbstractScanner {
             @Override
             public void edit(NewExpr e) throws CannotCompileException {
                 try {
-                    put(e.getConstructor().getDeclaringClass().getName() + "." + "<init>" +
+                    put(store, e.getConstructor().getDeclaringClass().getName() + "." + "<init>" +
                             "(" + parameterNames(e.getConstructor().getMethodInfo()) + ")", e.getLineNumber(), key);
                 } catch (NotFoundException e1) {
                     throw new ReflectionsException("Could not find new instance usage in " + key, e1);
@@ -47,7 +58,7 @@ public class MemberUsageScanner extends AbstractScanner {
             @Override
             public void edit(MethodCall m) throws CannotCompileException {
                 try {
-                    put(m.getMethod().getDeclaringClass().getName() + "." + m.getMethodName() +
+                    put(store, m.getMethod().getDeclaringClass().getName() + "." + m.getMethodName() +
                             "(" + parameterNames(m.getMethod().getMethodInfo()) + ")", m.getLineNumber(), key);
                 } catch (NotFoundException e) {
                     throw new ReflectionsException("Could not find member " + m.getClassName() + " in " + key, e);
@@ -57,7 +68,7 @@ public class MemberUsageScanner extends AbstractScanner {
             @Override
             public void edit(ConstructorCall c) throws CannotCompileException {
                 try {
-                    put(c.getConstructor().getDeclaringClass().getName() + "." + "<init>" +
+                    put(store, c.getConstructor().getDeclaringClass().getName() + "." + "<init>" +
                             "(" + parameterNames(c.getConstructor().getMethodInfo()) + ")", c.getLineNumber(), key);
                 } catch (NotFoundException e) {
                     throw new ReflectionsException("Could not find member " + c.getClassName() + " in " + key, e);
@@ -67,7 +78,7 @@ public class MemberUsageScanner extends AbstractScanner {
             @Override
             public void edit(FieldAccess f) throws CannotCompileException {
                 try {
-                    put(f.getField().getDeclaringClass().getName() + "." + f.getFieldName(), f.getLineNumber(), key);
+                    put(store, f.getField().getDeclaringClass().getName() + "." + f.getFieldName(), f.getLineNumber(), key);
                 } catch (NotFoundException e) {
                     throw new ReflectionsException("Could not find member " + f.getFieldName() + " in " + key, e);
                 }
@@ -75,14 +86,14 @@ public class MemberUsageScanner extends AbstractScanner {
         });
     }
 
-    private void put(String key, int lineNumber, String value) {
+    private void put(Store store, String key, int lineNumber, String value) {
         if (acceptResult(key)) {
-            getStore().put(key, value + " #" + lineNumber);
+            put(store, key, value + " #" + lineNumber);
         }
     }
 
     String parameterNames(MethodInfo info) {
-        return Joiner.on(", ").join(getMetadataAdapter().getParameterNames(info));
+        return join(getMetadataAdapter().getParameterNames(info), ", ");
     }
 
     private ClassPool getClassPool() {

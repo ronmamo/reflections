@@ -13,7 +13,11 @@ import org.reflections.Store;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.Utils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 
 /** serialization of Reflections to xml
@@ -54,7 +58,7 @@ public class XmlSerializer implements Serializer {
                     Element values = entry.element("values");
                     for (Object o3 : values.elements()) {
                         Element value = (Element) o3;
-                        reflections.getStore().getOrCreate(index.getName()).put(key.getText(), value.getText());
+                        reflections.getStore().put(index.getName(), key.getText(), value.getText());
                     }
                 }
             }
@@ -106,11 +110,11 @@ public class XmlSerializer implements Serializer {
         Element root = document.addElement("Reflections");
         for (String indexName : map.keySet()) {
             Element indexElement = root.addElement(indexName);
-            for (String key : map.get(indexName).keySet()) {
+            for (String key : map.keys(indexName)) {
                 Element entryElement = indexElement.addElement("entry");
                 entryElement.addElement("key").setText(key);
                 Element valuesElement = entryElement.addElement("values");
-                for (String value : map.get(indexName).get(key)) {
+                for (String value : map.get(indexName, key)) {
                     valuesElement.addElement("value").setText(value);
                 }
             }

@@ -1,10 +1,10 @@
 package org.reflections;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -24,15 +24,12 @@ public class ReflectionsThreadSafenessTest {
     @Test
     public void reflections_scan_is_thread_safe() throws Exception {
 
-        Callable<Set<Class<? extends ImmutableMap>>> callable = new Callable<Set<Class<? extends ImmutableMap>>>() {
-            @Override
-            public Set<Class<? extends ImmutableMap>> call() throws Exception {
-                final Reflections reflections = new Reflections(new ConfigurationBuilder()
-                        .setUrls(singletonList(ClasspathHelper.forClass(ImmutableMap.class)))
-                        .setScanners(new SubTypesScanner(false)));
+        Callable<Set<Class<? extends Logger>>> callable = () -> {
+            final Reflections reflections = new Reflections(new ConfigurationBuilder()
+                    .setUrls(singletonList(ClasspathHelper.forClass(Logger.class)))
+                    .setScanners(new SubTypesScanner(false)));
 
-                return reflections.getSubTypesOf(ImmutableMap.class);
-            }
+            return reflections.getSubTypesOf(Logger.class);
         };
 
         final ExecutorService pool = Executors.newFixedThreadPool(2);
