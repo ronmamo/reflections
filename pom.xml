@@ -4,7 +4,7 @@
 
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.12-SNAPSHOT</version>
+    <version>0.9.13-SNAPSHOT</version>
 
     <name>Reflections</name>
     <description>Reflections - a Java runtime metadata analysis</description>
@@ -54,7 +54,7 @@
     <properties>
         <javassist.version>3.26.0-GA</javassist.version>
         <jdk.version>1.8</jdk.version>
-        <additionalparam>-Xdoclint:none</additionalparam>
+        <doclint>none</doclint>
     </properties>
 
     <dependencies>
@@ -149,7 +149,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <doclint>none</doclint>
                         </configuration>
                     </plugin>
                     <plugin>

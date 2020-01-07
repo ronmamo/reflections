@@ -1,3 +1,7 @@
+*Released `org.reflections:reflections:0.9.12` - with support for Java 8*
+
+*Reflections library has over 2.5 million downloads per month from Maven Central, and is being used by thousands of projects and libraries. We're looking for maintainers to assist in reviewing pull requests and managing releases, please reach out.*
+
 ## Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
 
 Reflections scans your classpath, indexes the metadata, allows you to query it on runtime and may save and collect that information for many modules within your project.
@@ -16,7 +20,7 @@ Add Reflections to your project. for maven projects just add this dependency:
 <dependency>
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.11</version>
+    <version>0.9.12</version>
 </dependency>
 ```
 
@@ -126,7 +130,7 @@ Set<Field> fields = getAllFields(SomeClass.class, withAnnotation(annotation), wi
 Although scanning can be easily done on bootstrap time of your application - and shouldn't take long, it is sometime a good idea to integrate Reflections into your build lifecyle.
 With simple Maven/Gradle/SBT/whatever configuration you can save all scanned metadata into xml/json files just after compile time. 
 Later on, when your project is bootstrapping you can let Reflections collect all those resources and re-create that metadata for you, 
-making it available at runtime without re-scanning the classpath - thus reducing the bootstrapping time.
+making it available at runtime without re-scanning the classpath.
 
 *For Maven, see example using gmavenplus in the [reflections-maven](https://github.com/ronmamo/reflections-maven/) repository*
 
@@ -135,6 +139,8 @@ making it available at runtime without re-scanning the classpath - thus reducing
 
 ### Contribute
 Pull requests are welcomed!!
+
+Apologize for not maintaining this repository continuously! We're looking for maintainers to assist in reviewing pull requests and managing releases, please reach out.
 
 The license is [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to. 
 
