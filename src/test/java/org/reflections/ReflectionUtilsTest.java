@@ -50,7 +50,17 @@ public class ReflectionUtilsTest {
 
         assertThat(getAllConstructors(TestModel.C4.class, withParametersCount(0)), names(TestModel.C4.class.getName()));
 
-        assertEquals(getAllAnnotations(TestModel.C3.class).size(), 5);
+        assertEquals(toStringSorted(getAllAnnotations(TestModel.C3.class)),
+                "[@java.lang.annotation.Documented(), " +
+                        "@java.lang.annotation.Inherited(), " +
+                        "@java.lang.annotation.Retention(value=RUNTIME), " +
+                        "@java.lang.annotation.Target(value=[ANNOTATION_TYPE]), " +
+                        "@org.reflections.TestModel$AC1(), " +
+                        "@org.reflections.TestModel$AC1n(), " +
+                        "@org.reflections.TestModel$AC2(value=ugh?!), " +
+                        "@org.reflections.TestModel$AI1(), " +
+                        "@org.reflections.TestModel$AI2(), " +
+                        "@org.reflections.TestModel$MAI1()]");
 
         Method m4 = getMethods(TestModel.C4.class, withName("m4")).iterator().next();
         assertEquals(m4.getName(), "m4");
@@ -137,5 +147,9 @@ public class ReflectionUtilsTest {
                 public void describeTo(Description description) {
                 }
             };
+    }
+
+    public static String toStringSorted(Set<?> set) {
+        return set.stream().map(Object::toString).sorted().collect(Collectors.toList()).toString();
     }
 }

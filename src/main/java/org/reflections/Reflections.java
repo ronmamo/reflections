@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -126,7 +127,7 @@ public class Reflections {
      */
     public Reflections(final Configuration configuration) {
         this.configuration = configuration;
-        store = new Store();
+        store = new Store(configuration);
 
         if (configuration.getScanners() != null && !configuration.getScanners().isEmpty()) {
             //inject to scanners
@@ -184,18 +185,20 @@ public class Reflections {
 
     protected Reflections() {
         configuration = new ConfigurationBuilder();
-        store = new Store();
+        store = new Store(configuration);
     }
 
     //
     protected void scan() {
         if (configuration.getUrls() == null || configuration.getUrls().isEmpty()) {
-            if (log != null) log.warn("given scan urls are empty. set urls in the configuration");
+            if (log != null) {
+                log.warn("given scan urls are empty. set urls in the configuration");
+            }
             return;
         }
 
-        if (log != null && log.isDebugEnabled()) {
-            log.debug("going to scan these urls: {}", configuration.getUrls());
+        if (log != null && log.isTraceEnabled()) {
+            log.trace("going to scan these urls: {}", configuration.getUrls());
         }
 
         long time = System.currentTimeMillis();
@@ -207,8 +210,8 @@ public class Reflections {
             try {
                 if (executorService != null) {
                     futures.add(executorService.submit(() -> {
-                        if (log != null) {
-                            log.debug("[{}] scanning {}", Thread.currentThread().toString(), url);
+                        if (log != null && log.isTraceEnabled()) {
+                            log.trace("[{}] scanning {}", Thread.currentThread().toString(), url);
                         }
                         scan(url);
                     }));
@@ -223,10 +226,13 @@ public class Reflections {
             }
         }
 
-        //todo use CompletionService
         if (executorService != null) {
             for (Future future : futures) {
-                try { future.get(); } catch (Exception e) { throw new RuntimeException(e); }
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
@@ -270,9 +276,9 @@ public class Reflections {
                                 classObject = scanner.scan(file, classObject, store);
                             }
                         } catch (Exception e) {
-                            if (log != null) {
+                            if (log != null && log.isTraceEnabled()) {
                                 // SLF4J will filter out Throwables from the format string arguments.
-                                log.debug("could not scan file {} in url {} with scanner {}", file.getRelativePath(), url.toExternalForm(), scanner.getClass().getSimpleName(), e);
+                                log.trace("could not scan file {} in url {} with scanner {}", file.getRelativePath(), url.toExternalForm(), scanner.getClass().getSimpleName(), e);
                             }
                         }
                     }
@@ -332,7 +338,6 @@ public class Reflections {
     public Reflections collect(final InputStream inputStream) {
         try {
             merge(configuration.getSerializer().read(inputStream));
-            if (log != null) log.info("Reflections collected metadata from input stream using serializer " + configuration.getSerializer().getClass().getName());
         } catch (Exception ex) {
             throw new ReflectionsException("could not merge input stream", ex);
         }
@@ -389,7 +394,9 @@ public class Reflections {
     private void expandSupertypes(Store store, String key, Class<?> type) {
         for (Class<?> supertype : ReflectionUtils.getSuperTypes(type)) {
             if (store.put(SubTypesScanner.class, supertype.getName(), key)) {
-                if (log != null) log.debug("expanded subtype {} -> {}", supertype.getName(), key);
+                if (log != null && log.isTraceEnabled()) {
+                    log.trace("expanded subtype {} -> {}", supertype.getName(), key);
+                }
                 expandSupertypes(store, supertype.getName(), supertype);
             }
         }
@@ -650,10 +657,7 @@ public class Reflections {
      * so that it could be found later much faster using the load method
      */
     public File save(final String filename, final Serializer serializer) {
-        File file = serializer.save(this, filename);
-        if (log != null)
-            log.info("Reflections successfully saved in " + file.getAbsolutePath() + " using " + serializer.getClass().getSimpleName());
-        return file;
+        return serializer.save(this, filename);
     }
 
     private ClassLoader[] loaders() { return configuration.getClassLoaders(); }

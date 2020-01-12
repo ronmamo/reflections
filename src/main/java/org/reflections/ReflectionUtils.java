@@ -131,14 +131,18 @@ public abstract class ReflectionUtils {
     }
 
     /** get all annotations of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */
-    public static <T extends AnnotatedElement> Set<Annotation>  getAllAnnotations(T type, Predicate<Annotation>... predicates) {
-        Set<Annotation> result = new HashSet<>();
+    public static <T extends AnnotatedElement> Set<Annotation> getAllAnnotations(T type, Predicate<Annotation>... predicates) {
+        Set<Annotation> result = new LinkedHashSet<>();
+        List<AnnotatedElement> keys = new ArrayList();
         if (type instanceof Class) {
-            for (Class<?> t : getAllSuperTypes((Class<?>) type)) {
-                result.addAll(getAnnotations(t, predicates));
+            keys.addAll(getAllSuperTypes((Class<?>) type));
+        }
+        for (int i = 0; i < keys.size(); i++) {
+            for (Annotation annotation : getAnnotations(keys.get(i), predicates)) {
+                if (result.add(annotation)) {
+                    keys.add(annotation.annotationType());
+                }
             }
-        } else {
-            result.addAll(getAnnotations(type, predicates));
         }
         return result;
     }
@@ -313,10 +317,9 @@ public abstract class ReflectionUtils {
                 }
             }
 
-            if (Reflections.log != null) {
+            if (Reflections.log != null && Reflections.log.isTraceEnabled()) {
                 for (ReflectionsException reflectionsException : reflectionsExceptions) {
-                    Reflections.log.warn("could not get type for name " + typeName + " from any class loader",
-                            reflectionsException);
+                    Reflections.log.trace("could not get type for name " + typeName + " from any class loader", reflectionsException);
                 }
             }
 

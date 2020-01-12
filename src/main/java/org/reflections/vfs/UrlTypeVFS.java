@@ -42,7 +42,6 @@ public class UrlTypeVFS implements UrlType {
             } catch (IOException e1) {
                 if (Reflections.log != null) {
                     Reflections.log.warn("Could not get URL", e);
-                    Reflections.log.warn("Could not get URL", e1);
                 }
             }
         }

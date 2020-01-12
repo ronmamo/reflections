@@ -110,7 +110,7 @@ public class ConfigurationBuilder implements Configuration {
             else if (param instanceof ClassLoader) { /* already taken care */ }
             else if (param instanceof Predicate) { filter.add((Predicate<String>) param); }
             else if (param instanceof ExecutorService) { builder.setExecutorService((ExecutorService) param); }
-            else if (Reflections.log != null) { throw new ReflectionsException("could not use param " + param); }
+            else throw new ReflectionsException("could not use param " + param);
         }
 
         if (builder.getUrls().isEmpty()) {
@@ -118,6 +118,9 @@ public class ConfigurationBuilder implements Configuration {
                 builder.addUrls(ClasspathHelper.forClassLoader(classLoaders)); //default urls getResources("")
             } else {
                 builder.addUrls(ClasspathHelper.forClassLoader()); //default urls getResources("")
+            }
+            if (builder.urls.isEmpty()) {
+                builder.addUrls(ClasspathHelper.forJavaClassPath());
             }
         }
 
