@@ -226,7 +226,15 @@ public class Reflections {
         //todo use CompletionService
         if (executorService != null) {
             for (Future future : futures) {
-                try { future.get(); } catch (Exception e) { throw new RuntimeException(e); }
+                try {
+                    future.get();
+                } catch (ReflectionsException e) {
+                    if (log != null) {
+                        log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
