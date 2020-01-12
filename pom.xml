@@ -118,14 +118,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <configuration>
-                            <archive>
-                                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                            </archive>
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
                         <executions>
@@ -150,31 +142,6 @@
                         </executions>
                         <configuration>
                             <doclint>none</doclint>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>maven-bundle-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>bundle-manifest</id>
-                                <phase>process-classes</phase>
-                                <goals>
-                                    <goal>manifest</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <instructions>
-                                <Import-Package>
-                                    org.jboss.vfs.*;resolution:=optional,
-                                    *
-                                </Import-Package>
-                                <Export-Package>
-                                    org.reflections.*
-                                </Export-Package>
-                                <Bundle-SymbolicName>org.reflections</Bundle-SymbolicName>
-                            </instructions>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -229,6 +196,40 @@
                 <configuration>
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <instructions>
+                        <!-- Do not import javax.annotation as we only need these at compile time -->
+                        <Import-Package>
+                            org.jboss.vfs.*;resolution:=optional,
+                            !javax.annotation,
+                            *
+                        </Import-Package>
+                        <Bundle-SymbolicName>org.reflections</Bundle-SymbolicName>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
