@@ -63,6 +63,16 @@ public class FilterBuilderTest {
     }
 
     @Test
+    public void test_excludePackageMultiple() {
+      FilterBuilder filter = new FilterBuilder().excludePackage("org.reflections", "org.foo");
+      assertFalse(filter.apply("org.reflections.Reflections"));
+      assertFalse(filter.apply("org.reflections.foo.Reflections"));
+      assertFalse(filter.apply("org.foo.Reflections"));
+      assertFalse(filter.apply("org.foo.bar.Reflections"));
+      assertTrue(filter.apply("org.bar.Reflections"));
+    }
+
+    @Test
     public void test_excludePackageByClass() {
         FilterBuilder filter = new FilterBuilder().excludePackage(Reflections.class);
         assertFalse(filter.test("org.reflections.Reflections"));
