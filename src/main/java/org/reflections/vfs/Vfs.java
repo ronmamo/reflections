@@ -255,13 +255,7 @@ public abstract class Vfs {
             }
 
             public Vfs.Dir createDir(URL url) throws Exception {
-                Object content = url.openConnection().getContent();
-                Class<?> virtualFile = ClasspathHelper.contextClassLoader().loadClass("org.jboss.vfs.VirtualFile");
-                java.io.File physicalFile = (java.io.File) virtualFile.getMethod("getPhysicalFile").invoke(content);
-                String name = (String) virtualFile.getMethod("getName").invoke(content);
-                java.io.File file = new java.io.File(physicalFile.getParentFile(), name);
-                if (!file.exists() || !file.canRead()) file = physicalFile;
-                return file.isDirectory() ? new SystemDir(file) : new ZipDir(new JarFile(file));
+		return JbossDir.createDir(url);
             }
         },
 
