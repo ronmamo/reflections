@@ -1,11 +1,13 @@
 package org.reflections.scanners;
 
+import org.reflections.Store;
+
 import java.util.List;
 
 /** scans for field's annotations */
 @SuppressWarnings({"unchecked"})
 public class FieldAnnotationsScanner extends AbstractScanner {
-    public void scan(final Object cls) {
+    public void scan(final Object cls, Store store) {
         final String className = getMetadataAdapter().getClassName(cls);
         List<Object> fields = getMetadataAdapter().getFields(cls);
         for (final Object field : fields) {
@@ -14,7 +16,7 @@ public class FieldAnnotationsScanner extends AbstractScanner {
 
                 if (acceptResult(fieldAnnotation)) {
                     String fieldName = getMetadataAdapter().getFieldName(field);
-                    getStore().put(fieldAnnotation, String.format("%s.%s", className, fieldName));
+                    put(store, fieldAnnotation, String.format("%s.%s", className, fieldName));
                 }
             }
         }

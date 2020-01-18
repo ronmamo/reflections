@@ -1,5 +1,6 @@
 package org.reflections.scanners;
 
+import org.reflections.Store;
 import org.reflections.adapters.MetadataAdapter;
 
 import java.util.List;
@@ -9,26 +10,26 @@ import java.util.List;
 public class MethodParameterScanner extends AbstractScanner {
 
     @Override
-    public void scan(Object cls) {
+    public void scan(Object cls, Store store) {
         final MetadataAdapter md = getMetadataAdapter();
 
         for (Object method : md.getMethods(cls)) {
 
             String signature = md.getParameterNames(method).toString();
             if (acceptResult(signature)) {
-                getStore().put(signature, md.getMethodFullKey(cls, method));
+                put(store, signature, md.getMethodFullKey(cls, method));
             }
 
             String returnTypeName = md.getReturnTypeName(method);
             if (acceptResult(returnTypeName)) {
-                getStore().put(returnTypeName, md.getMethodFullKey(cls, method));
+                put(store, returnTypeName, md.getMethodFullKey(cls, method));
             }
 
             List<String> parameterNames = md.getParameterNames(method);
             for (int i = 0; i < parameterNames.size(); i++) {
                 for (Object paramAnnotation : md.getParameterAnnotationNames(method, i)) {
                     if (acceptResult((String) paramAnnotation)) {
-                        getStore().put((String) paramAnnotation, md.getMethodFullKey(cls, method));
+                        put(store, (String) paramAnnotation, md.getMethodFullKey(cls, method));
                     }
                 }
             }

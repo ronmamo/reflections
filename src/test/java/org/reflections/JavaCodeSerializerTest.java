@@ -1,6 +1,5 @@
 package org.reflections;
 
-import com.google.common.base.Predicate;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.reflections.scanners.TypeElementsScanner;
@@ -9,12 +8,11 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
-import static java.util.Arrays.asList;
+import java.util.Collections;
+import java.util.function.Predicate;
+
 import static org.junit.Assert.assertEquals;
-import static org.reflections.TestModel.AC2;
-import static org.reflections.TestModel.C1;
-import static org.reflections.TestModel.C2;
-import static org.reflections.TestModel.C4;
+import static org.reflections.TestModel.*;
 
 /** */
 public class JavaCodeSerializerTest {
@@ -26,7 +24,7 @@ public class JavaCodeSerializerTest {
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .filterInputsBy(filter)
                 .setScanners(new TypeElementsScanner().includeFields().publicOnly(false))
-                .setUrls(asList(ClasspathHelper.forClass(TestModel.class))));
+                .setUrls(Collections.singletonList(ClasspathHelper.forClass(TestModel.class))));
 
         //save
         String filename = ReflectionsTest.getUserDir() + "/src/test/java/org.reflections.MyTestModelStore";

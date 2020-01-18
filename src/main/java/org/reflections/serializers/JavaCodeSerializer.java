@@ -1,12 +1,5 @@
 package org.reflections.serializers;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
@@ -20,19 +13,18 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.util.Collection;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.reflections.Reflections.log;
-import static org.reflections.util.Utils.index;
-import static org.reflections.util.Utils.prepareFile;
-import static org.reflections.util.Utils.repeat;
+import static org.reflections.util.Utils.*;
 
 /** Serialization of Reflections to java code
  * <p> Serializes types and types elements into interfaces respectively to fully qualified name,
@@ -117,7 +109,7 @@ public class JavaCodeSerializer implements Serializer {
             sb.append(toString(reflections));
             sb.append("}\n");
 
-            Files.write(sb.toString(), new File(filename), Charset.defaultCharset());
+            Files.write(new File(filename).toPath(), sb.toString().getBytes(Charset.defaultCharset()));
 
         } catch (IOException e) {
             throw new RuntimeException();
@@ -127,19 +119,19 @@ public class JavaCodeSerializer implements Serializer {
     }
 
     public String toString(Reflections reflections) {
-        if (reflections.getStore().get(index(TypeElementsScanner.class)).isEmpty()) {
+        if (reflections.getStore().keys(index(TypeElementsScanner.class)).isEmpty()) {
             if (log != null) log.warn("JavaCodeSerializer needs TypeElementsScanner configured");
         }
 
         StringBuilder sb = new StringBuilder();
 
-        List<String> prevPaths = Lists.newArrayList();
+        List<String> prevPaths = new ArrayList<>();
         int indent = 1;
 
-        List<String> keys = Lists.newArrayList(reflections.getStore().get(index(TypeElementsScanner.class)).keySet());
+        List<String> keys = new ArrayList<>(reflections.getStore().keys(index(TypeElementsScanner.class)));
         Collections.sort(keys);
         for (String fqn : keys) {
-            List<String> typePaths = Lists.newArrayList(fqn.split("\\."));
+            List<String> typePaths = Arrays.asList(fqn.split("\\."));
 
             //skip indention
             int i = 0;
@@ -161,15 +153,13 @@ public class JavaCodeSerializer implements Serializer {
             String className = typePaths.get(typePaths.size() - 1);
 
             //get fields and methods
-            List<String> annotations = Lists.newArrayList();
-            List<String> fields = Lists.newArrayList();
-            final Multimap<String,String> methods = Multimaps.newSetMultimap(new HashMap<String, Collection<String>>(), new Supplier<Set<String>>() {
-                public Set<String> get() {
-                    return Sets.newHashSet();
-                }
-            });
+            List<String> annotations = new ArrayList<>();
+            List<String> fields = new ArrayList<>();
+            List<String> methods = new ArrayList<>();
 
-            for (String element : reflections.getStore().get(index(TypeElementsScanner.class), fqn)) {
+            Iterable<String> members = reflections.getStore().get(index(TypeElementsScanner.class), fqn);
+            List<String> sorted = StreamSupport.stream(members.spliterator(), false).sorted().collect(Collectors.toList());
+            for (String element : sorted) {
                 if (element.startsWith("@")) {
                     annotations.add(element.substring(1));
                 } else if (element.contains("(")) {
@@ -184,7 +174,11 @@ public class JavaCodeSerializer implements Serializer {
                             paramsDescriptor = tokenSeparator + params.replace(dotSeparator, tokenSeparator).replace(", ", doubleSeparator).replace("[]", arrayDescriptor);
                         }
                         String normalized = name + paramsDescriptor;
-                        methods.put(name, normalized);
+                        if (!methods.contains(name)) {
+                            methods.add(name);
+                        } else {
+                            methods.add(normalized);
+                        }
                     }
                 } else if (!Utils.isEmpty(element)) {
                     //field
@@ -207,13 +201,8 @@ public class JavaCodeSerializer implements Serializer {
             //add methods
             if (!methods.isEmpty()) {
                 sb.append(repeat("\t", indent++)).append("public interface methods {\n");
-                for (Map.Entry<String, String> entry : methods.entries()) {
-                    String simpleName = entry.getKey();
-                    String normalized = entry.getValue();
-
-                    String methodName = methods.get(simpleName).size() == 1 ? simpleName : normalized;
-
-                    methodName = getNonDuplicateName(methodName, fields);
+                for (String method : methods) {
+                    String methodName = getNonDuplicateName(method, fields);
 
                     sb.append(repeat("\t", indent)).append("public interface ").append(getNonDuplicateName(methodName, typePaths)).append(" {}\n");
                 }
@@ -265,14 +254,14 @@ public class JavaCodeSerializer implements Serializer {
     //
     public static Class<?> resolveClassOf(final Class element) throws ClassNotFoundException {
         Class<?> cursor = element;
-        LinkedList<String> ognl = Lists.newLinkedList();
+        LinkedList<String> ognl = new LinkedList<>();
 
         while (cursor != null) {
             ognl.addFirst(cursor.getSimpleName());
             cursor = cursor.getDeclaringClass();
         }
 
-        String classOgnl = Joiner.on(".").join(ognl.subList(1, ognl.size())).replace(".$", "$");
+        String classOgnl = join(ognl.subList(1, ognl.size()), ".").replace(".$", "$");
         return Class.forName(classOgnl);
     }
 
