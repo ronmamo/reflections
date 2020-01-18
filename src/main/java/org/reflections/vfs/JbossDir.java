@@ -1,6 +1,5 @@
 package org.reflections.vfs;
 
-import com.google.common.collect.AbstractIterator;
 import org.jboss.vfs.VirtualFile;
 
 import java.io.IOException;
@@ -33,27 +32,37 @@ public class JbossDir implements Vfs.Dir {
 
     @Override
     public Iterable<Vfs.File> getFiles() {
-        return new Iterable<Vfs.File>() {
-            public Iterator<Vfs.File> iterator() {
-                return new AbstractIterator<Vfs.File>() {
-                    final Stack<VirtualFile> stack = new Stack<>();
-                    {
-                        stack.addAll(virtualFile.getChildren());
-                    }
+        return () -> new Iterator<Vfs.File>() {
+            final Stack<VirtualFile> stack = new Stack<>();
+            Vfs.File entry = null;
 
-                    protected Vfs.File computeNext() {
-                        while (!stack.isEmpty()) {
-                            final VirtualFile file = stack.pop();
-                            if (file.isDirectory()) {
-                                stack.addAll(file.getChildren());
-                            } else {
-                                return new JbossFile(JbossDir.this, file);
-                            }
-                        }
+            {
+                stack.addAll(virtualFile.getChildren());
+            }
 
-                        return endOfData();
+            @Override
+            public boolean hasNext() {
+                return entry != null || (entry = computeNext()) != null;
+            }
+
+            @Override
+            public Vfs.File next() {
+                Vfs.File next = entry;
+                entry = null;
+                return next;
+            }
+
+            private Vfs.File computeNext() {
+                while (!stack.isEmpty()) {
+                    final VirtualFile file = stack.pop();
+                    if (file.isDirectory()) {
+                        stack.addAll(file.getChildren());
+                    } else {
+                        return new JbossFile(JbossDir.this, file);
                     }
-                };
+                }
+
+                return null;
             }
         };
     }
