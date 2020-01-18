@@ -65,11 +65,11 @@ public class FilterBuilderTest {
     @Test
     public void test_excludePackageMultiple() {
       FilterBuilder filter = new FilterBuilder().excludePackage("org.reflections", "org.foo");
-      assertFalse(filter.apply("org.reflections.Reflections"));
-      assertFalse(filter.apply("org.reflections.foo.Reflections"));
-      assertFalse(filter.apply("org.foo.Reflections"));
-      assertFalse(filter.apply("org.foo.bar.Reflections"));
-      assertTrue(filter.apply("org.bar.Reflections"));
+      assertFalse(filter.test("org.reflections.Reflections"));
+      assertFalse(filter.test("org.reflections.foo.Reflections"));
+      assertFalse(filter.test("org.foo.Reflections"));
+      assertFalse(filter.test("org.foo.bar.Reflections"));
+      assertTrue(filter.test("org.bar.Reflections"));
     }
 
     @Test
