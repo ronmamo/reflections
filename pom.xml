@@ -62,8 +62,7 @@
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>${javassist.version}</version>
-            <optional>false
-            </optional> <!-- case: when not actually scanning with javassist or if using {@link Reflections.collect()} -->
+            <optional>false</optional> <!-- case: when not actually scanning with javassist or if using {@link Reflections.collect()} -->
         </dependency>
 
         <dependency>
@@ -102,7 +101,7 @@
             <version>1.7.24</version>
             <optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
         </dependency>
-             
+
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-vfs</artifactId>
@@ -120,19 +119,26 @@
 
     </dependencies>
 
+    <!-- Release -->
     <profiles>
         <profile>
-            <id>build</id>
+            <id>release</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
                                 <goals>
-                                    <goal>jar</goal>
+                                    <goal>jar-no-fork</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -140,6 +146,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.1.1</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -148,40 +155,11 @@
                                 </goals>
                             </execution>
                         </executions>
-                        <configuration>
-                            <doclint>none</doclint>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                                <configuration>
-                                    <rules>
-                                        <requireProperty>
-                                            <property>gpg.keyname</property>
-                                            <message>gpg.keyname must be supplied using -D.
-                                                create a key using gpg --gen-key or use existing one.
-                                            </message>
-                                        </requireProperty>
-                                        <requireProperty>
-                                            <property>gpg.passphrase</property>
-                                            <message>gpg.passphrase must be supplied using -D.
-                                                create a key using gpg --gen-key or use existing one.
-                                            </message>
-                                        </requireProperty>
-                                    </rules>
-                                    <fail>true</fail>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -191,6 +169,17 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
