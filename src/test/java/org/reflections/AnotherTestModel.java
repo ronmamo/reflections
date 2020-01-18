@@ -1,6 +1,7 @@
 package org.reflections;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -44,4 +45,27 @@ public class AnotherTestModel {
 
     public @org.reflections.TestModel.AC2("grr...") class C2 extends org.reflections.TestModel.C1 {}
 
+    // repeatable
+
+    @Repeatable(Names.class)
+    @Retention(RUNTIME)
+    @Target({ElementType.TYPE})
+    public @interface Name {
+        String name();
+    }
+
+    @Name(name = "foo")
+    @Name(name = "bar")
+    public static class MultiName {
+    }
+
+    @Retention(RUNTIME)
+    @Target({ElementType.TYPE})
+    public @interface Names {
+        Name[] value() default {};
+    }
+
+    @Name(name = "foo")
+    public static class SingleName {
+    }
 }

@@ -134,4 +134,17 @@ public class MoreTests {
         Set<String> keys = reflections.getStore().keys(ResourcesScanner.class.getSimpleName());
         assertTrue(keys.stream().noneMatch(res -> res.endsWith(".class")));
     }
+
+    @Test
+    public void test_repeatable() {
+        Reflections ref = new Reflections(AnotherTestModel.class);
+        Set<Class<?>> clazzes = ref.getTypesAnnotatedWith(AnotherTestModel.Name.class);
+        assertTrue(clazzes.contains(AnotherTestModel.SingleName.class));
+        assertFalse(clazzes.contains(AnotherTestModel.MultiName.class));
+
+        clazzes = ref.getTypesAnnotatedWith(AnotherTestModel.Names.class);
+        assertFalse(clazzes.contains(AnotherTestModel.SingleName.class));
+        assertTrue(clazzes.contains(AnotherTestModel.MultiName.class));
+    }
+
 }
