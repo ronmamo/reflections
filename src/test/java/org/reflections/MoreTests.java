@@ -2,6 +2,7 @@ package org.reflections;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -147,4 +148,19 @@ public class MoreTests {
         assertTrue(clazzes.contains(AnotherTestModel.MultiName.class));
     }
 
+    @Test
+    public void test_method_param_names_not_local_vars() throws NoSuchMethodException {
+        Reflections reflections = new Reflections("org.reflections.AnotherTestModel", new MethodParameterNamesScanner());
+
+        Class<AnotherTestModel.ParamNames> clazz = AnotherTestModel.ParamNames.class;
+        assertEquals(reflections.getConstructorParamNames(clazz.getConstructor(String.class)).toString(),
+                "[param1]");
+        assertEquals(reflections.getMethodParamNames(clazz.getMethod("test", String.class, String.class)).toString(),
+                "[testParam1, testParam2]");
+        assertEquals(reflections.getMethodParamNames(clazz.getMethod("test", String.class)).toString(),
+                "[testParam]");
+        assertEquals(reflections.getMethodParamNames(clazz.getMethod("test2", String.class)).toString(),
+                "[testParam]");
+
+    }
 }

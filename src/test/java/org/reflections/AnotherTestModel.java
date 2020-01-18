@@ -68,4 +68,28 @@ public class AnotherTestModel {
     @Name(name = "foo")
     public static class SingleName {
     }
+
+    //
+    public static class ParamNames {
+        public ParamNames() {
+            String testLocal = "local";
+        }
+
+        public ParamNames(String param1) {
+            String testLocal = "local";
+        }
+
+        public void test(String testParam) {
+            String testLocal = "local";
+        }
+
+        public void test(String testParam1, String testParam2) {
+            String testLocal1 = "local";
+            String testLocal2 = "local";
+        }
+
+        public static void test2(String testParam) {
+            String testLocal = "local";
+        }
+    }
 }
