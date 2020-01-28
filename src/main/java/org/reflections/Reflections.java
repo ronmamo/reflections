@@ -126,13 +126,15 @@ public class Reflections {
      */
     public Reflections(final Configuration configuration) {
         this.configuration = configuration;
-        store = new Store();
+        Set<Scanner> scanners = configuration.getScanners() == null ? Collections.emptySet() : configuration.getScanners();
 
-        if (configuration.getScanners() != null && !configuration.getScanners().isEmpty()) {
+        // the input scanners are used to initialize the inner map of store. It makes sure all configured scanners
+        // are visible even if the later "scan" fails.
+        store = new Store(scanners);
+
+        if (!scanners.isEmpty()) {
             //inject to scanners
-            for (Scanner scanner : configuration.getScanners()) {
-                scanner.setConfiguration(configuration);
-            }
+            scanners.forEach(scanner -> scanner.setConfiguration(configuration));
 
             scan();
 

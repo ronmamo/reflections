@@ -18,6 +18,8 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -232,6 +234,17 @@ public class ReflectionsTest {
 
         Set<String> resources = reflections.getStore().keys(index(ResourcesScanner.class));
         assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml"));
+    }
+
+    @Test
+    public void testConfiguredScannersWithIncorrectUrl() throws IOException {
+        File file = File.createTempFile("testConfiguredScanners", ".jar");
+        try (FileOutputStream writer = new FileOutputStream(file)) {
+            writer.write("testConfiguredScanners".getBytes());
+        }
+        ConfigurationBuilder config = new ConfigurationBuilder().addUrls(file.toURI().toURL());
+        Reflections reflections = new Reflections(config);
+        assertEquals(config.getScanners().size(), reflections.store.keySet().size());
     }
 
     @Test

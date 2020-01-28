@@ -1,5 +1,7 @@
 package org.reflections;
 
+import org.reflections.scanners.Scanner;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +26,12 @@ public class Store {
     private final ConcurrentHashMap<String, Map<String, Collection<String>>> storeMap;
 
     protected Store() {
+        this(Collections.emptySet());
+    }
+
+    protected Store(Set<Scanner> scanners) {
         storeMap = new ConcurrentHashMap<>();
+        if (scanners != null) scanners.forEach(s -> storeMap.put(index(s.getClass()), new ConcurrentHashMap<>()));
     }
 
     /** return all indices */
