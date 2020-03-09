@@ -115,7 +115,7 @@ public class Store {
 
     public boolean put(String index, String key, String value) {
         return storeMap.computeIfAbsent(index, s -> new ConcurrentHashMap<>())
-                .computeIfAbsent(key, s -> new ArrayList<>())
+                .computeIfAbsent(key, s -> Collections.synchronizedList(new ArrayList<>()))
                 .add(value);
     }
 
