@@ -2,6 +2,7 @@ package org.reflections;
 
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.MemberUsageScanner;
+import org.reflections.scanners.MetaAnnotationScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.scanners.MethodParameterScanner;
@@ -417,6 +418,29 @@ public class Reflections {
     }
 
     /**
+     * get types (meta) annotated with a given annotation, both classes and annotations
+     * <p>{@link java.lang.annotation.Inherited} is honored according to given honorInherited.
+     * <p>when honoring @Inherited, meta-annotation should only effect annotated super classes and it's sub types
+     * <p>when not honoring @Inherited, meta annotation effects all subtypes, including annotations interfaces and classes
+     * <p><i>Note that this (@Inherited) meta-annotation type has no effect if the annotated type is used for anything other then a class.
+     * Also, this meta-annotation causes annotations to be inherited only from superclasses; annotations on implemented interfaces have no effect.</i>
+     * <p/>depends on TypeAnnotationsScanner, SubTypesScanner and MetaAnnotationScanner configured
+     */
+    @SuppressWarnings("unchecked")
+    public Set<Class<?>> getTypesAnnotatedWithIncludingMetaAnnotations(final Class<? extends Annotation> annotation, boolean honorInherited) {
+        Set<String> annotationsToLookup = store.get(MetaAnnotationScanner.class, annotation.getName());
+        Set<Class<?>> types = new HashSet<>();
+
+        for(String annotationName: annotationsToLookup) {
+            Set<String> annotated = store.get(TypeAnnotationsScanner.class, annotationName);
+            annotated.addAll(getAllAnnotated(annotated, (Class<? extends Annotation>) forName(annotationName, loaders()), honorInherited));
+            types.addAll(forNames(annotated, loaders()));
+        }
+
+        return types;
+    }
+
+    /**
      * get types annotated with a given annotation, both classes and annotations
      * <p>{@link java.lang.annotation.Inherited} is honored according to given honorInherited.
      * <p>when honoring @Inherited, meta-annotation should only effect annotated super classes and it's sub types
@@ -476,6 +500,22 @@ public class Reflections {
      */
     public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation) {
         return getMethodsFromDescriptors(store.get(MethodAnnotationsScanner.class, annotation.getName()), loaders());
+    }
+
+    /**
+     * get all methods (meta) annotated with a given annotation
+     * <p/>depends on MethodAnnotationsScanner & MetaAnnotationScanner configured
+     */
+    public Set<Method> getMethodsAnnotatedWithIncludingMetaAnnotations(final Class<? extends Annotation> annotation) {
+        Set<String> annotationsToLookup = store.get(MetaAnnotationScanner.class, annotation.getName());
+
+        Set<Method> methods = new HashSet<>();
+
+        for(String annotationName : annotationsToLookup) {
+            methods.addAll(getMethodsFromDescriptors(store.get(MethodAnnotationsScanner.class, annotationName), loaders()));
+        }
+
+        return methods;
     }
 
     /**
@@ -546,6 +586,27 @@ public class Reflections {
         return store.get(FieldAnnotationsScanner.class, annotation.getName()).stream()
                 .map(annotated -> getFieldFromString(annotated, loaders()))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * get all fields annotated with a given annotation
+     * <p/>depends on FieldAnnotationsScanner configured
+     */
+    public Set<Field> getFieldsAnnotatedWithIncludingMetaAnnotations(final Class<? extends Annotation> annotation) {
+
+        Set<String> annotationsToLookup = store.get(MetaAnnotationScanner.class, annotation.getName());
+
+        Set<Field> fields = new HashSet<>();
+
+        for(String annotationName : annotationsToLookup) {
+            fields.addAll(
+                    store.get(FieldAnnotationsScanner.class, annotationName).stream()
+                            .map(annotated -> getFieldFromString(annotated, loaders()))
+                            .collect(Collectors.toSet())
+            );
+        }
+
+        return fields;
     }
 
     /**

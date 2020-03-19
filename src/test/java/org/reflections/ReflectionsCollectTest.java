@@ -3,6 +3,7 @@ package org.reflections;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.reflections.scanners.MemberUsageScanner;
+import org.reflections.scanners.MetaAnnotationScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.scanners.MethodParameterScanner;
@@ -35,7 +36,8 @@ public class ReflectionsCollectTest extends ReflectionsTest {
                         new TypeAnnotationsScanner(),
                         new MethodAnnotationsScanner(),
                         new MethodParameterNamesScanner(),
-                        new MemberUsageScanner()));
+                        new MemberUsageScanner(),
+                        new MetaAnnotationScanner()));
 
         ref.save(getUserDir() + "/target/test-classes" + "/META-INF/reflections/testModel-reflections.xml");
 

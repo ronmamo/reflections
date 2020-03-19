@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.MemberUsageScanner;
+import org.reflections.scanners.MetaAnnotationScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.scanners.MethodParameterScanner;
@@ -55,7 +56,9 @@ public class ReflectionsTest {
                         new MethodAnnotationsScanner(),
                         new MethodParameterScanner(),
                         new MethodParameterNamesScanner(),
-                        new MemberUsageScanner()));
+                        new MemberUsageScanner(),
+                        new MetaAnnotationScanner()
+                ));
     }
 
     @Test
@@ -167,7 +170,8 @@ public class ReflectionsTest {
             assertThat(reflections.getMethodsMatchParams(),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m3"),
                             AC2.class.getMethod("value"), AF1.class.getMethod("value"), AM1.class.getMethod("value"),
-                            Usage.C1.class.getDeclaredMethod("method"), Usage.C2.class.getDeclaredMethod("method")));
+                            Usage.C1.class.getDeclaredMethod("method"), Usage.C2.class.getDeclaredMethod("method"),
+                            MetaClass.class.getDeclaredMethod("testMethod1"), MetaClass.class.getDeclaredMethod("testMethod2")));
 
             assertThat(reflections.getMethodsMatchParams(int[][].class, String[][].class),
                     are(C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
@@ -182,7 +186,8 @@ public class ReflectionsTest {
             assertThat(reflections.getMethodsReturn(void.class),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m1", int.class, String[].class),
                             C4.class.getDeclaredMethod("m1", int[][].class, String[][].class), Usage.C1.class.getDeclaredMethod("method"),
-                            Usage.C1.class.getDeclaredMethod("method", String.class), Usage.C2.class.getDeclaredMethod("method")));
+                            Usage.C1.class.getDeclaredMethod("method", String.class), Usage.C2.class.getDeclaredMethod("method"),
+                            MetaClass.class.getDeclaredMethod("testMethod1"), MetaClass.class.getDeclaredMethod("testMethod2")));
 
             assertThat(reflections.getMethodsWithAnyParamAnnotated(AM1.class),
                     are(C4.class.getDeclaredMethod("m4", String.class)));
@@ -206,7 +211,8 @@ public class ReflectionsTest {
         assertThat(reflections.getConstructorsMatchParams(),
                 are(C1.class.getDeclaredConstructor(), C2.class.getDeclaredConstructor(), C3.class.getDeclaredConstructor(),
                         C4.class.getDeclaredConstructor(), C5.class.getDeclaredConstructor(), C6.class.getDeclaredConstructor(),
-                        C7.class.getDeclaredConstructor(), Usage.C1.class.getDeclaredConstructor(), Usage.C2.class.getDeclaredConstructor()));
+                        C7.class.getDeclaredConstructor(), Usage.C1.class.getDeclaredConstructor(), Usage.C2.class.getDeclaredConstructor(),
+                        MetaClass.class.getDeclaredConstructor()));
 
         assertThat(reflections.getConstructorsWithAnyParamAnnotated(AM1.class),
                 are(C4.class.getDeclaredConstructor(String.class)));
@@ -272,6 +278,36 @@ public class ReflectionsTest {
 
         assertThat(reflections.getConstructorUsage(Usage.C1.class.getDeclaredConstructor(Usage.C2.class)),
                 are(Usage.C2.class.getDeclaredMethod("method")));
+    }
+
+    @Test
+    public void testMetaAnnotatedMethods() {
+        try {
+            assertThat(reflections.getMethodsAnnotatedWithIncludingMetaAnnotations(Annotation1.class),
+                    are(MetaClass.class.getDeclaredMethod("testMethod1"),
+                            MetaClass.class.getDeclaredMethod("testMethod2")
+                    ));
+        } catch (NoSuchMethodException e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testMetaAnnotatedFields() {
+        try {
+            assertThat(reflections.getFieldsAnnotatedWithIncludingMetaAnnotations(Annotation1.class),
+                    are(MetaClass.class.getDeclaredField("testField1"),
+                            MetaClass.class.getDeclaredField("testField2")
+                    ));
+        } catch (NoSuchFieldException e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testMetaAnnotatedClasses() {
+        assertThat(reflections.getTypesAnnotatedWithIncludingMetaAnnotations(Annotation1.class, false),
+                are(MetaAnnotation1.class, MetaClass.TestClass1.class, MetaClass.TestClass2.class));
     }
 
     @Test

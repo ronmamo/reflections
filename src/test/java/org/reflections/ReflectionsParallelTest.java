@@ -3,6 +3,7 @@ package org.reflections;
 import org.junit.BeforeClass;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.MemberUsageScanner;
+import org.reflections.scanners.MetaAnnotationScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.scanners.MethodParameterScanner;
@@ -28,7 +29,8 @@ public class ReflectionsParallelTest extends ReflectionsTest {
                         new MethodAnnotationsScanner(),
                         new MethodParameterScanner(),
                         new MethodParameterNamesScanner(),
-                        new MemberUsageScanner())
+                        new MemberUsageScanner(),
+                        new MetaAnnotationScanner())
                 .useParallelExecutor());
     }
 }
