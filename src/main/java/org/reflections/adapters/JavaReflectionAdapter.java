@@ -139,4 +139,15 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
         }
         return type.getName();
     }
+
+    @Override
+    public List<String> getMetaMethodAnnotationNames(Member method) {
+        return Collections.emptyList();
+    }
+
+
+    @Override
+    public List<String> getMetaFieldAnnotationNames(Field field) {
+        return Collections.emptyList();
+    }
 }

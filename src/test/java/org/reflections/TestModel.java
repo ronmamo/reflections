@@ -73,4 +73,26 @@ public interface TestModel {
             }
         }
     }
+
+    public @Retention(RUNTIME) @Inherited @interface Annotation1 {}
+    public @Retention(RUNTIME) @Annotation1 @interface MetaAnnotation1 {}
+
+    public class MetaClass {
+
+        @MetaAnnotation1
+        int testField1;
+        @Annotation1
+        int testField2;
+
+        @MetaAnnotation1
+        public void testMethod1() {}
+
+        @Annotation1
+        public void testMethod2() {}
+
+        @MetaAnnotation1
+        public class TestClass1 {}
+        @Annotation1
+        public class TestClass2 {}
+    }
 }

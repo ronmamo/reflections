@@ -1,6 +1,7 @@
 package org.reflections;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.reflections.scanners.MemberUsageScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -69,5 +70,12 @@ public class ReflectionsCollectTest extends ReflectionsTest {
         Set<String> resources = reflections.getStore().keys(index(ResourcesScanner.class));
         assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml",
                 "testModel-reflections.xml", "testModel-reflections.json"));
+    }
+
+    @Override
+    @Test
+    @Ignore("This test method is not supposed to be run during the collect test as the scanners are not configured to support it")
+    public void testMetaAnnotatedFieldsWithoutMetaAnnotationsEnabled() {
+        throw new UnsupportedOperationException("This test method is not supposed to be run during the collect test as the scanners are not configured to support it");
     }
 }

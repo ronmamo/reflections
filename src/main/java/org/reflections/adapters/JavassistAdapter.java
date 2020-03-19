@@ -1,5 +1,7 @@
 package org.reflections.adapters;
 
+import javassist.ClassPool;
+import javassist.NotFoundException;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -16,13 +18,10 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static javassist.bytecode.AccessFlag.isPrivate;
 import static javassist.bytecode.AccessFlag.isProtected;
@@ -187,6 +186,63 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
                     .collect(Collectors.toList());
 
         }
+
+        return result;
+    }
+
+    @Override
+    public List<String> getMetaMethodAnnotationNames(MethodInfo method) {
+        return getAnnotationNamesRecursive((AnnotationsAttribute) method.getAttribute(AnnotationsAttribute.visibleTag),
+                includeInvisibleTag ? (AnnotationsAttribute) method.getAttribute(AnnotationsAttribute.invisibleTag) : null);
+    }
+
+    @Override
+    public List<String> getMetaFieldAnnotationNames(FieldInfo field) {
+        return getAnnotationNamesRecursive((AnnotationsAttribute) field.getAttribute(AnnotationsAttribute.visibleTag),
+                includeInvisibleTag ? (AnnotationsAttribute) field.getAttribute(AnnotationsAttribute.invisibleTag) : null);
+    }
+
+    public List<String> getAnnotationNamesRecursive(final AnnotationsAttribute... annotationsAttributes) {
+        return Arrays.stream(annotationsAttributes)
+                .filter(Objects::nonNull)
+                .flatMap(annotationsAttribute -> getMetaAnnotations(new HashSet<>(), annotationsAttributes).stream())
+                .map(Annotation::getTypeName)
+                .collect(Collectors.toList());
+    }
+
+    private Set<Annotation> getMetaAnnotations(Set<String> mappedAnnotations, final AnnotationsAttribute... annotationsAttribute) {
+        Set<String> alreadyMapped = new HashSet<>(mappedAnnotations);
+        List<Annotation> annotations = Arrays.stream(annotationsAttribute)
+                .filter(Objects::nonNull)
+                .flatMap(it -> Arrays.stream(it.getAnnotations()))
+                .collect(Collectors.toList());
+
+        alreadyMapped.addAll(
+                annotations.stream()
+                    .map(Annotation::getTypeName)
+                    .collect(Collectors.toList())
+        );
+
+        List<Annotation> children = annotations.stream()
+                .filter(it -> !mappedAnnotations.contains(it.getTypeName()))
+                .flatMap((it) -> {
+                    ClassFile annotationClassFile;
+                    try {
+                        annotationClassFile = ClassPool.getDefault().getCtClass(it.getTypeName()).getClassFile();
+                    } catch (NotFoundException e) {
+                        annotationClassFile = null;
+                    }
+
+                    if(annotationClassFile == null)
+                        return Stream.empty();
+
+                    return getMetaAnnotations(alreadyMapped, (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.visibleTag), includeInvisibleTag ? (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.invisibleTag) : null).stream();
+                })
+                .collect(Collectors.toList());
+
+        Set<Annotation> result = new HashSet<>();
+        result.addAll(annotations);
+        result.addAll(children);
 
         return result;
     }

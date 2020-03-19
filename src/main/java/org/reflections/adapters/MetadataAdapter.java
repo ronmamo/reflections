@@ -29,7 +29,11 @@ public interface MetadataAdapter<C,F,M> {
 
     List<String> getFieldAnnotationNames(final F field);
 
+    List<String> getMetaFieldAnnotationNames(final F field);
+
     List<String> getMethodAnnotationNames(final M method);
+
+    List<String> getMetaMethodAnnotationNames(final M method);
 
     List<String> getParameterAnnotationNames(final M method, final int parameterIndex);
 
@@ -48,5 +52,5 @@ public interface MetadataAdapter<C,F,M> {
     boolean isPublic(Object o);
     
     boolean acceptsInput(String file);
-    
+
 }
