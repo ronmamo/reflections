@@ -1,6 +1,7 @@
 package org.reflections.adapters;
 
 import javassist.ClassPool;
+import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
@@ -11,6 +12,7 @@ import javassist.bytecode.MethodInfo;
 import javassist.bytecode.ParameterAnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
 import org.reflections.ReflectionsException;
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
 
@@ -37,6 +39,16 @@ import static org.reflections.util.Utils.join;
  *
  */
 public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, MethodInfo> {
+
+    private ClassLoader[] classLoaders;
+
+    public JavassistAdapter() {
+        this.classLoaders = null;
+    }
+
+    public JavassistAdapter(ClassLoader[] classLoaders) {
+        this.classLoaders = classLoaders;
+    }
 
     /**setting this to false will result in returning only visible annotations from the relevant methods here (only {@link java.lang.annotation.RetentionPolicy#RUNTIME})*/
     public static boolean includeInvisibleTag = true;
@@ -232,17 +244,12 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
         List<Annotation> children = annotations.stream()
                 .filter(it -> !mappedAnnotations.contains(it.getTypeName()))
                 .flatMap((it) -> {
-                    ClassFile annotationClassFile;
                     try {
-                        annotationClassFile = ClassPool.getDefault().getCtClass(it.getTypeName()).getClassFile();
+                        ClassFile annotationClassFile = getClassPool().getCtClass(it.getTypeName()).getClassFile();
+                        return getMetaAnnotations(alreadyMapped, (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.visibleTag), includeInvisibleTag ? (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.invisibleTag) : null).stream();
                     } catch (NotFoundException e) {
-                        annotationClassFile = null;
-                    }
-
-                    if(annotationClassFile == null)
                         return Stream.empty();
-
-                    return getMetaAnnotations(alreadyMapped, (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.visibleTag), includeInvisibleTag ? (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.invisibleTag) : null).stream();
+                    }
                 })
                 .collect(Collectors.toList());
 
@@ -251,5 +258,23 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
         result.addAll(children);
 
         return result;
+    }
+
+    private ClassPool classPool;
+
+    private ClassPool getClassPool() {
+        if (classPool == null) {
+            synchronized (this) {
+                classPool = new ClassPool();
+                ClassLoader[] classLoaders = this.classLoaders;
+                if (classLoaders == null) {
+                    classLoaders = ClasspathHelper.classLoaders();
+                }
+                for (ClassLoader classLoader : classLoaders) {
+                    classPool.appendClassPath(new LoaderClassPath(classLoader));
+                }
+            }
+        }
+        return classPool;
     }
 }

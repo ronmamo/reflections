@@ -194,7 +194,7 @@ public class ConfigurationBuilder implements Configuration {
         if (metadataAdapter != null) return metadataAdapter;
         else {
             try {
-                return (metadataAdapter = new JavassistAdapter());
+                return (metadataAdapter = new JavassistAdapter(getClassLoaders()));
             } catch (Throwable e) {
                 if (Reflections.log != null)
                     Reflections.log.warn("could not create JavassistAdapter, using JavaReflectionAdapter", e);
