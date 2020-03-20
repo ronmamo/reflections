@@ -1,9 +1,5 @@
 package org.reflections.adapters;
 
-import javassist.ClassPool;
-import javassist.NotFoundException;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.ClassFile;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
 
@@ -13,9 +9,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.reflections.ReflectionUtils.forName;
 import static org.reflections.util.Utils.join;

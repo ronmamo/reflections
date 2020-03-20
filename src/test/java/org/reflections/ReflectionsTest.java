@@ -5,7 +5,6 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.reflections.adapters.JavaReflectionAdapter;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.MemberUsageScanner;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -56,8 +55,7 @@ public class ReflectionsTest {
                         new MethodAnnotationsScanner(),
                         new MethodParameterScanner(),
                         new MethodParameterNamesScanner(),
-                        new MemberUsageScanner()
-                ));
+                        new MemberUsageScanner()));
     }
 
     @Test

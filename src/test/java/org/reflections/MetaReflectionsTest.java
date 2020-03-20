@@ -2,7 +2,6 @@ package org.reflections;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.reflections.adapters.JavaReflectionAdapter;
 import org.reflections.scanners.*;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
