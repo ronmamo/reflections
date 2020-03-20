@@ -1,5 +1,9 @@
 package org.reflections.adapters;
 
+import javassist.ClassPool;
+import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
 
@@ -9,11 +13,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.reflections.ReflectionUtils.forName;
 import static org.reflections.util.Utils.join;
@@ -142,12 +144,44 @@ public class JavaReflectionAdapter implements MetadataAdapter<Class, Field, Memb
 
     @Override
     public List<String> getMetaMethodAnnotationNames(Member method) {
-        return Collections.emptyList();
+        Annotation[] annotations = method instanceof Method ? ((Method) method).getDeclaredAnnotations() :
+                method instanceof Constructor ? ((Constructor) method).getDeclaredAnnotations() : null;
+        return getAnnotationNamesRecursive(annotations);
     }
 
 
     @Override
     public List<String> getMetaFieldAnnotationNames(Field field) {
-        return Collections.emptyList();
+        Annotation[] annotations = field.getDeclaredAnnotations();
+        return getAnnotationNamesRecursive(annotations);
+    }
+
+    public List<String> getAnnotationNamesRecursive(Annotation[] annotations) {
+        List<Annotation> initial = Arrays.stream(annotations)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return getMetaAnnotations(new HashSet<>(), initial).stream().map(it -> it.annotationType().getName()).collect(Collectors.toList());
+    }
+
+    private Set<Annotation> getMetaAnnotations(Set<String> mappedAnnotations, final List<Annotation> annotations) {
+        Set<String> alreadyMapped = new HashSet<>(mappedAnnotations);
+
+        alreadyMapped.addAll(
+                annotations.stream()
+                        .map(it -> it.annotationType().getName())
+                        .collect(Collectors.toList())
+        );
+
+        List<Annotation> children = annotations.stream()
+                .filter(it -> !mappedAnnotations.contains(it.annotationType().getName()))
+                .flatMap((it) -> getMetaAnnotations(alreadyMapped, Arrays.asList(it.annotationType().getDeclaredAnnotations())).stream())
+                .collect(Collectors.toList());
+
+        Set<Annotation> result = new HashSet<>();
+        result.addAll(annotations);
+        result.addAll(children);
+
+        return result;
     }
 }
