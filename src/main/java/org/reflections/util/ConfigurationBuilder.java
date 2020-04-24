@@ -301,9 +301,9 @@ public class ConfigurationBuilder implements Configuration {
 
     /** add class loader, might be used for resolving methods/fields */
     public ConfigurationBuilder addClassLoaders(ClassLoader... classLoaders) {
-        this.classLoaders = this.classLoaders == null ? classLoaders :
-                Stream.concat(Stream.concat(Arrays.stream(this.classLoaders), Arrays.stream(classLoaders)), Stream.of(ClassLoader.class))
-                        .distinct().toArray(ClassLoader[]::new);
+        this.classLoaders = this.classLoaders == null
+                            ? classLoaders
+                            : Stream.concat(Arrays.stream(this.classLoaders), Arrays.stream(classLoaders)).toArray(ClassLoader[]::new);
         return this;
     }
 
