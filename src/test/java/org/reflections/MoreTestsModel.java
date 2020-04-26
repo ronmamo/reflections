@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-public class AnotherTestModel {
+public class MoreTestsModel {
 
     @CyclicAnnotation
     public @Retention(RUNTIME) @interface CyclicAnnotation {}
@@ -27,9 +27,12 @@ public class AnotherTestModel {
     @Retention(RUNTIME)
     @interface B {}
 
-    @A class A1 {}
-    @B class B1 {}
-    @A class A2 {}
+    @A
+    class A1 {}
+    @B
+    class B1 {}
+    @A
+    class A2 {}
 
     @Retention(RetentionPolicy.RUNTIME)
     public @interface TestAnnotation {
@@ -42,8 +45,6 @@ public class AnotherTestModel {
         class Thing {
         }
     }
-
-    public @org.reflections.TestModel.AC2("grr...") class C2 extends org.reflections.TestModel.C1 {}
 
     // repeatable
 

@@ -19,8 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
-import static org.reflections.AnotherTestModel.Meta;
-import static org.reflections.AnotherTestModel.TestAnnotation;
+import static org.reflections.MoreTestsModel.*;
 import static org.reflections.ReflectionUtilsTest.toStringSorted;
 import static org.reflections.ReflectionsTest.are;
 
@@ -28,9 +27,9 @@ public class MoreTests {
 
     @Test
     public void test_cyclic_annotation() {
-        Reflections reflections = new Reflections(AnotherTestModel.class);
-        assertThat(reflections.getTypesAnnotatedWith(AnotherTestModel.CyclicAnnotation.class),
-                are(AnotherTestModel.CyclicAnnotation.class));
+        Reflections reflections = new Reflections(MoreTestsModel.class);
+        assertThat(reflections.getTypesAnnotatedWith(CyclicAnnotation.class),
+                are(CyclicAnnotation.class));
     }
 
     @Test
@@ -45,7 +44,7 @@ public class MoreTests {
 
     @Test
     public void getAllAnnotated_returns_meta_annotations() {
-        Reflections reflections = new Reflections(AnotherTestModel.class);
+        Reflections reflections = new Reflections(MoreTestsModel.class);
         for (Class<?> type: reflections.getTypesAnnotatedWith(Meta.class)) {
             Set<Annotation> allAnnotations = ReflectionUtils.getAllAnnotations(type);
             List<? extends Class<? extends Annotation>> collect = allAnnotations.stream().map(Annotation::annotationType).collect(Collectors.toList());
@@ -64,23 +63,6 @@ public class MoreTests {
     }
 
     @Test
-    public void external_jar_inner_class_annotation() throws MalformedURLException {
-        Reflections reflections = new Reflections(AnotherTestModel.class);
-        Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(TestAnnotation.class);
-        Assert.assertEquals(toStringSorted(typesAnnotatedWith),
-                "[class org.reflections.AnotherTestModel$ActualFunctionalityClass, " +
-                        "class org.reflections.AnotherTestModel$ActualFunctionalityClass$Thing]");
-
-        URL url = new URL("jar:file:" + ReflectionsTest.getUserDir() + "/src/test/resources/another-project.jar!/");
-        Reflections reflections1 = new Reflections(url);
-        Store store = reflections1.getStore();
-
-        assertEquals(toStringSorted(store.get(TypeAnnotationsScanner.class, "another.project.AnotherTestModel$TestAnnotation")),
-                "[another.project.AnotherTestModel$ActualFunctionalityClass, " +
-                        "another.project.AnotherTestModel$ActualFunctionalityClass$Thing]");
-    }
-
-    @Test
     public void test_java_9_subtypes_of_Object() {
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forClass(Object.class))
@@ -91,26 +73,16 @@ public class MoreTests {
 
     @Test
     public void test_custom_url_class_loader() throws MalformedURLException {
-        URL url = new URL("jar:file:" + ReflectionsTest.getUserDir() + "/src/test/resources/another-project.jar!/");
-        final URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
+        URL externalUrl = new URL("jar:file:" + ReflectionsTest.getUserDir() + "/src/test/resources/another-project.jar!/");
+        URLClassLoader externalClassLoader = new URLClassLoader(new URL[]{externalUrl}, Thread.currentThread().getContextClassLoader());
 
-        Reflections reflections = new Reflections(url, classLoader);
-        Store store = reflections.getStore();
-        assertEquals(toStringSorted(store.get(TypeAnnotationsScanner.class, "another.project.TestModel$AC1")),
-                "[another.project.TestModel$C1]");
-    }
-
-    @Test
-    public void test_expand_supertypes_from_another_jar() throws MalformedURLException {
-        URL url = new URL("jar:file:" + ReflectionsTest.getUserDir() + "/src/test/resources/another-project.jar!/");
-        Reflections reflections = new Reflections(url);
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .addUrls(ClasspathHelper.forClass(TestModel.class))
+                .addUrls(externalUrl)
+                .addClassLoaders(externalClassLoader));
 
         assertEquals(toStringSorted(reflections.getSubTypesOf(TestModel.C1.class)),
-                "[class another.project.AnotherTestModel$C2]");
-
-        Reflections reflections1 = new Reflections(url, TestModel.class);
-        assertEquals(toStringSorted(reflections1.getSubTypesOf(TestModel.C1.class)),
-                "[class org.reflections.AnotherTestModel$C2, " +
+                "[class another.project.AnotherTestModel$C2, " +
                         "class org.reflections.TestModel$C2, " +
                         "class org.reflections.TestModel$C3, " +
                         "class org.reflections.TestModel$C5]");
@@ -138,21 +110,21 @@ public class MoreTests {
 
     @Test
     public void test_repeatable() {
-        Reflections ref = new Reflections(AnotherTestModel.class);
-        Set<Class<?>> clazzes = ref.getTypesAnnotatedWith(AnotherTestModel.Name.class);
-        assertTrue(clazzes.contains(AnotherTestModel.SingleName.class));
-        assertFalse(clazzes.contains(AnotherTestModel.MultiName.class));
+        Reflections ref = new Reflections(MoreTestsModel.class);
+        Set<Class<?>> clazzes = ref.getTypesAnnotatedWith(Name.class);
+        assertTrue(clazzes.contains(SingleName.class));
+        assertFalse(clazzes.contains(MultiName.class));
 
-        clazzes = ref.getTypesAnnotatedWith(AnotherTestModel.Names.class);
-        assertFalse(clazzes.contains(AnotherTestModel.SingleName.class));
-        assertTrue(clazzes.contains(AnotherTestModel.MultiName.class));
+        clazzes = ref.getTypesAnnotatedWith(Names.class);
+        assertFalse(clazzes.contains(SingleName.class));
+        assertTrue(clazzes.contains(MultiName.class));
     }
 
     @Test
     public void test_method_param_names_not_local_vars() throws NoSuchMethodException {
-        Reflections reflections = new Reflections("org.reflections.AnotherTestModel", new MethodParameterNamesScanner());
+        Reflections reflections = new Reflections(MoreTestsModel.class, new MethodParameterNamesScanner());
 
-        Class<AnotherTestModel.ParamNames> clazz = AnotherTestModel.ParamNames.class;
+        Class<ParamNames> clazz = ParamNames.class;
         assertEquals(reflections.getConstructorParamNames(clazz.getConstructor(String.class)).toString(),
                 "[param1]");
         assertEquals(reflections.getMethodParamNames(clazz.getMethod("test", String.class, String.class)).toString(),

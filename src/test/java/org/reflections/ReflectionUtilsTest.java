@@ -54,7 +54,7 @@ public class ReflectionUtilsTest {
                 "[@java.lang.annotation.Documented(), " +
                         "@java.lang.annotation.Inherited(), " +
                         "@java.lang.annotation.Retention(value=RUNTIME), " +
-                        "@java.lang.annotation.Target(value=[ANNOTATION_TYPE]), " +
+                        "@java.lang.annotation.Target(value={ANNOTATION_TYPE}), " +
                         "@org.reflections.TestModel$AC1(), " +
                         "@org.reflections.TestModel$AC1n(), " +
                         "@org.reflections.TestModel$AC2(value=ugh?!), " +
@@ -150,6 +150,8 @@ public class ReflectionUtilsTest {
     }
 
     public static String toStringSorted(Set<?> set) {
-        return set.stream().map(Object::toString).sorted().collect(Collectors.toList()).toString();
+        return set.stream()
+                .map(o -> o.toString().replace("\"", ""))
+                .sorted().collect(Collectors.toList()).toString();
     }
 }

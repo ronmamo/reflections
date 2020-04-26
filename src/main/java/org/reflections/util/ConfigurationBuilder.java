@@ -293,8 +293,9 @@ public class ConfigurationBuilder implements Configuration {
     }
 
     /** set class loader, might be used for resolving methods/fields */
-    public void setClassLoaders(ClassLoader[] classLoaders) {
+    public ConfigurationBuilder setClassLoaders(ClassLoader[] classLoaders) {
         this.classLoaders = classLoaders;
+        return this;
     }
 
     /** add class loader, might be used for resolving methods/fields */
