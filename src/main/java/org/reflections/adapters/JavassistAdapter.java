@@ -1,5 +1,8 @@
 package org.reflections.adapters;
 
+import javassist.ClassPool;
+import javassist.LoaderClassPath;
+import javassist.NotFoundException;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -9,6 +12,7 @@ import javassist.bytecode.MethodInfo;
 import javassist.bytecode.ParameterAnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
 import org.reflections.ReflectionsException;
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.Utils;
 import org.reflections.vfs.Vfs;
 
@@ -19,10 +23,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static javassist.bytecode.AccessFlag.isPrivate;
 import static javassist.bytecode.AccessFlag.isProtected;
@@ -32,6 +39,16 @@ import static org.reflections.util.Utils.join;
  *
  */
 public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, MethodInfo> {
+
+    private ClassLoader[] classLoaders;
+
+    public JavassistAdapter() {
+        this.classLoaders = null;
+    }
+
+    public JavassistAdapter(ClassLoader[] classLoaders) {
+        this.classLoaders = classLoaders;
+    }
 
     /**setting this to false will result in returning only visible annotations from the relevant methods here (only {@link java.lang.annotation.RetentionPolicy#RUNTIME})*/
     public static boolean includeInvisibleTag = true;
@@ -189,5 +206,75 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
         }
 
         return result;
+    }
+
+    @Override
+    public List<String> getMetaMethodAnnotationNames(MethodInfo method) {
+        return getAnnotationNamesRecursive((AnnotationsAttribute) method.getAttribute(AnnotationsAttribute.visibleTag),
+                includeInvisibleTag ? (AnnotationsAttribute) method.getAttribute(AnnotationsAttribute.invisibleTag) : null);
+    }
+
+    @Override
+    public List<String> getMetaFieldAnnotationNames(FieldInfo field) {
+        return getAnnotationNamesRecursive((AnnotationsAttribute) field.getAttribute(AnnotationsAttribute.visibleTag),
+                includeInvisibleTag ? (AnnotationsAttribute) field.getAttribute(AnnotationsAttribute.invisibleTag) : null);
+    }
+
+    public List<String> getAnnotationNamesRecursive(final AnnotationsAttribute... annotationsAttributes) {
+        return Arrays.stream(annotationsAttributes)
+                .filter(Objects::nonNull)
+                .flatMap(annotationsAttribute -> getMetaAnnotations(new HashSet<>(), annotationsAttributes).stream())
+                .map(Annotation::getTypeName)
+                .collect(Collectors.toList());
+    }
+
+    private Set<Annotation> getMetaAnnotations(Set<String> mappedAnnotations, final AnnotationsAttribute... annotationsAttribute) {
+        Set<String> alreadyMapped = new HashSet<>(mappedAnnotations);
+        List<Annotation> annotations = Arrays.stream(annotationsAttribute)
+                .filter(Objects::nonNull)
+                .flatMap(it -> Arrays.stream(it.getAnnotations()))
+                .collect(Collectors.toList());
+
+        alreadyMapped.addAll(
+                annotations.stream()
+                    .map(Annotation::getTypeName)
+                    .collect(Collectors.toList())
+        );
+
+        List<Annotation> children = annotations.stream()
+                .filter(it -> !mappedAnnotations.contains(it.getTypeName()))
+                .flatMap((it) -> {
+                    try {
+                        ClassFile annotationClassFile = getClassPool().getCtClass(it.getTypeName()).getClassFile();
+                        return getMetaAnnotations(alreadyMapped, (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.visibleTag), includeInvisibleTag ? (AnnotationsAttribute) annotationClassFile.getAttribute(AnnotationsAttribute.invisibleTag) : null).stream();
+                    } catch (NotFoundException e) {
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.toList());
+
+        Set<Annotation> result = new HashSet<>();
+        result.addAll(annotations);
+        result.addAll(children);
+
+        return result;
+    }
+
+    private ClassPool classPool;
+
+    private ClassPool getClassPool() {
+        if (classPool == null) {
+            synchronized (this) {
+                classPool = new ClassPool();
+                ClassLoader[] classLoaders = this.classLoaders;
+                if (classLoaders == null) {
+                    classLoaders = ClasspathHelper.classLoaders();
+                }
+                for (ClassLoader classLoader : classLoaders) {
+                    classPool.appendClassPath(new LoaderClassPath(classLoader));
+                }
+            }
+        }
+        return classPool;
     }
 }
