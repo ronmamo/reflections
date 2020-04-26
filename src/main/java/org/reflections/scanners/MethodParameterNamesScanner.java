@@ -7,10 +7,8 @@ import org.reflections.Store;
 import org.reflections.adapters.MetadataAdapter;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.reflections.util.Utils.join;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /** scans methods/constructors and indexes parameter names */
 @SuppressWarnings("unchecked")
@@ -25,12 +23,16 @@ public class MethodParameterNamesScanner extends AbstractScanner {
             if (acceptResult(key)) {
                 CodeAttribute codeAttribute = ((MethodInfo) method).getCodeAttribute();
                 LocalVariableAttribute table = codeAttribute != null ? (LocalVariableAttribute) codeAttribute.getAttribute(LocalVariableAttribute.tag) : null;
-                int length = table != null ? table.tableLength() : 0;
-                int i = Modifier.isStatic(((MethodInfo) method).getAccessFlags()) ? 0 : 1; //skip this
-                if (i < length) {
-                    List<String> names = new ArrayList<>(length - i);
-                    while (i < length) names.add(((MethodInfo) method).getConstPool().getUtf8Info(table.nameIndex(i++)));
-                    put(store, key, join(names, ", "));
+                int length = md.getParameterNames(method).size();
+                if (length > 0) {
+                    int shift = Modifier.isStatic(((MethodInfo) method).getAccessFlags()) ? 0 : 1; //skip this
+                    String join = IntStream.range(shift, length + shift)
+                            .mapToObj(i -> ((MethodInfo) method).getConstPool().getUtf8Info(table.nameIndex(i)))
+                            .filter(name -> !name.startsWith("this$"))
+                            .collect(Collectors.joining(", "));
+                    if (!join.isEmpty()) {
+                        put(store, key, join);
+                    }
                 }
             }
         }

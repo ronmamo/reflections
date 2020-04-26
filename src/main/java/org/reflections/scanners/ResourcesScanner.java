@@ -7,7 +7,7 @@ import org.reflections.vfs.Vfs;
  * <p>key: value - {web.xml: WEB-INF/web.xml} */
 public class ResourcesScanner extends AbstractScanner {
     public boolean acceptsInput(String file) {
-        return !file.endsWith(".class"); //not a class
+        return !file.endsWith(".class") && !file.endsWith(".groovy") && !file.endsWith(".scala") && !file.endsWith(".kt"); //not a class
     }
 
     @Override public Object scan(Vfs.File file, Object classObject, Store store) {
