@@ -151,7 +151,7 @@ public class ReflectionUtilsTest {
 
     public static String toStringSorted(Set<?> set) {
         return set.stream()
-                .map(o -> o.toString().replace("[]", "").replace("]", "").replace("{", "").replace("}", "").replace("\"", ""))
+                .map(o -> o.toString().replace("[", "").replace("]", "").replace("{", "").replace("}", "").replace("\"", ""))
                 .sorted().collect(Collectors.toList()).toString();
     }
 }
