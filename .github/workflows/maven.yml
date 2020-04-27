@@ -1,0 +1,19 @@
+name: Java CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        jdk: [1.8.x, 11.0.x, 13.0.x]
+    runs-on: ${{matrix.os}}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{matrix.jdk}}
+    - name: Build with Maven
+      run: mvn clean test
