@@ -1,0 +1,8 @@
+Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+This program and the accompanying materials are dual-licensed under
+either the terms of the WTFPL (http://www.wtfpl.net)
+ 
+  or (per the licensee's choosing)
+ 
+under the terms of the The New BSD License (http://www.opensource.org/licenses/bsd-license.html)
