@@ -167,7 +167,8 @@ public class ReflectionsTest {
             assertThat(reflections.getMethodsMatchParams(),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m3"),
                             AC2.class.getMethod("value"), AF1.class.getMethod("value"), AM1.class.getMethod("value"),
-                            Usage.C1.class.getDeclaredMethod("method"), Usage.C2.class.getDeclaredMethod("method")));
+                            Usage.C1.class.getDeclaredMethod("method"), Usage.C1.class.getDeclaredMethod("zero"),
+                            Usage.C2.class.getDeclaredMethod("method")));
 
             assertThat(reflections.getMethodsMatchParams(int[][].class, String[][].class),
                     are(C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
@@ -272,6 +273,15 @@ public class ReflectionsTest {
 
         assertThat(reflections.getConstructorUsage(Usage.C1.class.getDeclaredConstructor(Usage.C2.class)),
                 are(Usage.C2.class.getDeclaredMethod("method")));
+    }
+
+    @Test
+    public void testMemberUsageScannerWithFunctionalUsage() throws NoSuchMethodException {
+        Class<?> anonymousClass = ReflectionUtils.forName("org.reflections.TestModel$Usage$C2$1");
+        assertNotNull(anonymousClass);
+        assertThat(reflections.getMethodUsage(Usage.C1.class.getDeclaredMethod("zero")),
+                are(anonymousClass.getDeclaredMethod("applyAsDouble", Usage.C1.class),
+                        Usage.C2.class.getDeclaredMethod("lambda$useLambda$0", Usage.C1.class)));
     }
 
     @Test
