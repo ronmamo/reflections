@@ -49,12 +49,21 @@ public abstract class Utils {
         return file;
     }
 
+    /**
+     * Parses the member descriptor and finds the specified member along the inheritance chain
+     *
+     * @param descriptor   describes a member (constructor/method/field) of a class and consists of the class name,
+     *                     the member name, and the line number of constructor/method usage (optional)
+     * @param classLoaders one of which is responsible for loading the class specified by the descriptor
+     * @return a reflected member specified by the descriptor
+     * @throws ReflectionsException if no such member is found along the inheritance chain
+     */
     public static Member getMemberFromDescriptor(String descriptor, ClassLoader... classLoaders) throws ReflectionsException {
         int p0 = descriptor.lastIndexOf('(');
         String memberKey = p0 != -1 ? descriptor.substring(0, p0) : descriptor;
         String methodParameters = p0 != -1 ? descriptor.substring(p0 + 1, descriptor.lastIndexOf(')')) : "";
 
-        int p1 = Math.max(memberKey.lastIndexOf('.'), memberKey.lastIndexOf("$"));
+        int p1 = memberKey.lastIndexOf('.');
         String className = memberKey.substring(0, p1);
         String memberName = memberKey.substring(p1 + 1);
 
@@ -67,7 +76,7 @@ public abstract class Utils {
         Class<?> aClass = forName(className, classLoaders);
         while (aClass != null) {
             try {
-                if (!descriptor.contains("(")) {
+                if (p0 == -1) { // field descriptor: doesn't contain '('
                     return aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName);
                 } else if (isConstructor(descriptor)) {
                     return aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes);
