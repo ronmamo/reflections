@@ -53,7 +53,7 @@ public abstract class Utils {
      * Parses the member descriptor and finds the specified member along the inheritance chain
      *
      * @param descriptor   describes a member (constructor/method/field) of a class and consists of the class name,
-     *                     the member name, and the line number of usage
+     *                     the member name, and the line number of constructor/method usage (optional)
      * @param classLoaders one of which is responsible for loading the class specified by the descriptor
      * @return a reflected member specified by the descriptor
      * @throws ReflectionsException if no such member is found along the inheritance chain
@@ -76,7 +76,7 @@ public abstract class Utils {
         Class<?> aClass = forName(className, classLoaders);
         while (aClass != null) {
             try {
-                if (!descriptor.contains("(")) {
+                if (p0 == -1) { // field descriptor: doesn't contain '('
                     return aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName);
                 } else if (isConstructor(descriptor)) {
                     return aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes);
