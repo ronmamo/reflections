@@ -2,7 +2,6 @@ package org.reflections;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Inherited;
-import java.util.function.Consumer;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
 
