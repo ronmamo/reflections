@@ -92,6 +92,23 @@ public abstract class Utils {
         return result;
     }
 
+    /**
+     * gets all methods annotated including meta annotated ones.
+     * @param metaAnnotatedWith eligible methods in string
+     * @param classLoaders one or more classLoaders
+     * @return set containing methods
+     */
+    public static Set<Method> getMetaAnnotatedMethodsFromDescriptors(Set<String> metaAnnotatedWith, ClassLoader... classLoaders) {
+        Set<Method> result = new HashSet<>();
+        for (String annotated : metaAnnotatedWith) {
+            if (!isConstructor(annotated)) {
+                Method member = (Method) getMemberFromDescriptor(annotated, classLoaders);
+                if (member != null) result.add(member);
+            }
+        }
+        return result;
+    }
+
     public static Set<Constructor> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
         Set<Constructor> result = new HashSet<>();
         for (String annotated : annotatedWith) {

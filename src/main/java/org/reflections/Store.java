@@ -33,6 +33,46 @@ public class Store {
         }
     }
 
+    /**
+     * gets types from method scanner
+     * @return set of types in string
+     */
+    public Set<String> getInMethodScanner(){
+        return storeMap.get("MethodAnnotationsScanner").keySet();
+    }
+
+    /**
+     * gets methods from method scanner
+     * @param target the target type sets in string
+     * @return set of methods in string
+     */
+    public Set<String> getMethodsInMethodScanner(Set<String> target){
+        Set<String> result = new HashSet<>();
+        for (String t: target){
+            for (String s: storeMap.get("MethodAnnotationsScanner").get(t)){
+                result.add(s);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * gets types from type scanner
+     * @return set of types in string
+     */
+    public Set<String> getInTypeScanner(){
+        Set<String> result = new HashSet<>();
+        for (String s: storeMap.get("TypeAnnotationsScanner").keySet()){
+            result.add(s);
+        }
+        for (Collection<String> cs: storeMap.get("TypeAnnotationsScanner").values()){
+            for (String s: cs){
+                result.add(s);
+            }
+        }
+        return result;
+    }
+
     /** return all indices */
     public Set<String> keySet() {
         return storeMap.keySet();
