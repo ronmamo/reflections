@@ -13,13 +13,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.Assert.*;
 
 @Retention(RUNTIME)
-@interface Meta {}
+@interface MetaBase {}
 
-@Meta
+@MetaBase
 @Retention(RUNTIME)
 @interface AM {}
 
-@Meta
+@MetaBase
 @Retention(RUNTIME)
 @interface BM {}
 
@@ -47,7 +47,7 @@ public class Issue269 {
         expected.add(A1.class.getMethod("inA1"));
         expected.add(A2.class.getMethod("inA2"));
         expected.add(B1.class.getMethod("inB1"));
-        Set<Method> metaMethods = reflections.getMethodsAnnotatedWith(Meta.class);
+        Set<Method> metaMethods = reflections.getMethodsAnnotatedWith(MetaBase.class);
         assertEquals(expected, metaMethods);
     }
 }
