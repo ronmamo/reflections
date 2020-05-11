@@ -37,8 +37,12 @@ public class Store {
      * gets types from method scanner
      * @return set of types in string
      */
-    public Set<String> getInMethodScanner(){
-        return storeMap.get("MethodAnnotationsScanner").keySet();
+    public Set<String> getInMethodScanner() {
+        Map<String, Collection<String>> map = storeMap.get("MethodAnnotationsScanner");
+        if (map == null) {
+            throw new ReflectionsException("Scanner MethodAnnotationsScanner was not configured");
+        }
+        return map.keySet();
     }
 
     /**
@@ -46,12 +50,10 @@ public class Store {
      * @param target the target type sets in string
      * @return set of methods in string
      */
-    public Set<String> getMethodsInMethodScanner(Set<String> target){
+    public Set<String> getMethodsInMethodScanner(Set<String> target) {
         Set<String> result = new HashSet<>();
         for (String t: target){
-            for (String s: storeMap.get("MethodAnnotationsScanner").get(t)){
-                result.add(s);
-            }
+            result.addAll(storeMap.get("MethodAnnotationsScanner").get(t));
         }
         return result;
     }
@@ -60,15 +62,10 @@ public class Store {
      * gets types from type scanner
      * @return set of types in string
      */
-    public Set<String> getInTypeScanner(){
-        Set<String> result = new HashSet<>();
-        for (String s: storeMap.get("TypeAnnotationsScanner").keySet()){
-            result.add(s);
-        }
-        for (Collection<String> cs: storeMap.get("TypeAnnotationsScanner").values()){
-            for (String s: cs){
-                result.add(s);
-            }
+    public Set<String> getInTypeScanner() {
+        Set<String> result = new HashSet<>(storeMap.get("TypeAnnotationsScanner").keySet());
+        for (Collection<String> cs: storeMap.get("TypeAnnotationsScanner").values()) {
+            result.addAll(cs);
         }
         return result;
     }
