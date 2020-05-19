@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -92,11 +93,11 @@ public abstract class Utils {
         return result;
     }
 
-    public static Set<Constructor> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
-        Set<Constructor> result = new HashSet<>();
+    public static Set<Constructor<?>> getConstructorsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {
+        Set<Constructor<?>> result = new HashSet<>();
         for (String annotated : annotatedWith) {
             if (isConstructor(annotated)) {
-                Constructor member = (Constructor) getMemberFromDescriptor(annotated, classLoaders);
+                Constructor<?> member = (Constructor<?>) getMemberFromDescriptor(annotated, classLoaders);
                 if (member != null) result.add(member);
             }
         }
@@ -120,7 +121,7 @@ public abstract class Utils {
         String fieldName = field.substring(field.lastIndexOf('.') + 1);
 
         try {
-            return forName(className, classLoaders).getDeclaredField(fieldName);
+            return Objects.requireNonNull(forName(className, classLoaders), "Can't resolve class named " + className).getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
             throw new ReflectionsException("Can't resolve field named " + fieldName, e);
         }
@@ -152,7 +153,7 @@ public abstract class Utils {
         return fqn.contains("init>");
     }
 
-    public static String name(Class type) {
+    public static String name(Class<?> type) {
         if (!type.isArray()) {
             return type.getName();
         } else {
@@ -174,7 +175,7 @@ public abstract class Utils {
         return names(Arrays.asList(types));
     }
 
-    public static String name(Constructor constructor) {
+    public static String name(Constructor<?> constructor) {
         return constructor.getName() + "." + "<init>" + "(" + join(names(constructor.getParameterTypes()), ", ") + ")";
     }
 
@@ -188,14 +189,16 @@ public abstract class Utils {
 
     public static String index(Class<?> scannerClass) { return scannerClass.getSimpleName(); }
 
-    public static <T> Predicate<T> and(Predicate... predicates) {
-        return Arrays.stream(predicates).reduce(t -> true, Predicate::and);
+    @SafeVarargs
+    public static <T> Predicate<T> and(Predicate<? super T>... predicates) {
+        return t -> Arrays.stream(predicates).allMatch(p -> p.test(t));
     }
 
     public static String join(Collection<?> elements, String delimiter) {
         return elements.stream().map(Object::toString).collect(Collectors.joining(delimiter));
     }
 
+    @SafeVarargs
     public static <T> Set<T> filter(Collection<T> result, Predicate<? super T>... predicates) {
         return result.stream().filter(and(predicates)).collect(Collectors.toSet());
     }
@@ -204,6 +207,7 @@ public abstract class Utils {
         return result.stream().filter(predicate).collect(Collectors.toSet());
     }
 
+    @SafeVarargs
     public static <T> Set<T> filter(T[] result, Predicate<? super T>... predicates) {
         return Arrays.stream(result).filter(and(predicates)).collect(Collectors.toSet());
     }

@@ -36,7 +36,7 @@ import static org.reflections.util.Utils.filter;
  *         <li>{@link #getAllMethods(Class, java.util.function.Predicate...)}
  *         <li>{@link #getAllConstructors(Class, java.util.function.Predicate...)}
  *     </ul>
- *     <p>and predicates included here all starts with "with", such as 
+ *     <p>and predicates included here all starts with "with", such as
  *     <ul>
  *         <li>{@link #withAnnotation(java.lang.annotation.Annotation)}
  *         <li>{@link #withModifier(int)}
@@ -49,19 +49,18 @@ import static org.reflections.util.Utils.filter;
  *         <li>{@link #withReturnType(Class)}
  *         <li>{@link #withType(Class)}
  *         <li>{@link #withTypeAssignableTo}
- *     </ul> 
+ *     </ul>
  *
  *     <p><br>
  *      for example, getting all getters would be:
  *     <pre>
- *      Set&#60Method> getters = getAllMethods(someClasses, 
+ *      Set&#60Method> getters = getAllMethods(someClasses,
  *              Predicates.and(
- *                      withModifier(Modifier.PUBLIC), 
- *                      withPrefix("get"), 
+ *                      withModifier(Modifier.PUBLIC),
+ *                      withPrefix("get"),
  *                      withParametersCount(0)));
  *     </pre>
  * */
-@SuppressWarnings("unchecked")
 public abstract class ReflectionUtils {
 
     /** would include {@code Object.class} when {@link #getAllSuperTypes(Class, java.util.function.Predicate[])}. default is false. */
@@ -69,6 +68,7 @@ public abstract class ReflectionUtils {
 
     /** get all super types of given {@code type}, including, optionally filtered by {@code predicates}
      * <p> include {@code Object.class} if {@link #includeObject} is true */
+    @SafeVarargs
     public static Set<Class<?>> getAllSuperTypes(final Class<?> type, Predicate<? super Class<?>>... predicates) {
         Set<Class<?>> result = new LinkedHashSet<>();
         if (type != null && (includeObject || !type.equals(Object.class))) {
@@ -91,6 +91,7 @@ public abstract class ReflectionUtils {
     }
 
     /** get all methods of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */
+    @SafeVarargs
     public static Set<Method> getAllMethods(final Class<?> type, Predicate<? super Method>... predicates) {
         Set<Method> result = new HashSet<>();
         for (Class<?> t : getAllSuperTypes(type)) {
@@ -100,13 +101,15 @@ public abstract class ReflectionUtils {
     }
 
     /** get methods of given {@code type}, optionally filtered by {@code predicates} */
+    @SafeVarargs
     public static Set<Method> getMethods(Class<?> t, Predicate<? super Method>... predicates) {
         return filter(t.isInterface() ? t.getMethods() : t.getDeclaredMethods(), predicates);
     }
 
     /** get all constructors of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */
-    public static Set<Constructor> getAllConstructors(final Class<?> type, Predicate<? super Constructor>... predicates) {
-        Set<Constructor> result = new HashSet<>();
+    @SafeVarargs
+    public static Set<Constructor<?>> getAllConstructors(final Class<?> type, Predicate<? super Constructor<?>>... predicates) {
+        Set<Constructor<?>> result = new HashSet<>();
         for (Class<?> t : getAllSuperTypes(type)) {
             result.addAll(getConstructors(t, predicates));
         }
@@ -114,11 +117,13 @@ public abstract class ReflectionUtils {
     }
 
     /** get constructors of given {@code type}, optionally filtered by {@code predicates} */
-    public static Set<Constructor> getConstructors(Class<?> t, Predicate<? super Constructor>... predicates) {
+    @SafeVarargs
+    public static Set<Constructor<?>> getConstructors(Class<?> t, Predicate<? super Constructor<?>>... predicates) {
         return filter(t.getDeclaredConstructors(), predicates);
     }
 
     /** get all fields of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */
+    @SafeVarargs
     public static Set<Field> getAllFields(final Class<?> type, Predicate<? super Field>... predicates) {
         Set<Field> result = new HashSet<>();
         for (Class<?> t : getAllSuperTypes(type)) result.addAll(getFields(t, predicates));
@@ -126,14 +131,16 @@ public abstract class ReflectionUtils {
     }
 
     /** get fields of given {@code type}, optionally filtered by {@code predicates} */
+    @SafeVarargs
     public static Set<Field> getFields(Class<?> type, Predicate<? super Field>... predicates) {
         return filter(type.getDeclaredFields(), predicates);
     }
 
     /** get all annotations of given {@code type}, up the super class hierarchy, optionally filtered by {@code predicates} */
+    @SafeVarargs
     public static <T extends AnnotatedElement> Set<Annotation> getAllAnnotations(T type, Predicate<Annotation>... predicates) {
         Set<Annotation> result = new LinkedHashSet<>();
-        List<AnnotatedElement> keys = new ArrayList();
+        List<AnnotatedElement> keys = new ArrayList<>();
         if (type instanceof Class) {
             keys.addAll(getAllSuperTypes((Class<?>) type));
         }
@@ -148,11 +155,13 @@ public abstract class ReflectionUtils {
     }
 
     /** get annotations of given {@code type}, optionally honorInherited, optionally filtered by {@code predicates} */
+    @SafeVarargs
     public static <T extends AnnotatedElement> Set<Annotation> getAnnotations(T type, Predicate<Annotation>... predicates) {
         return filter(type.getDeclaredAnnotations(), predicates);
     }
 
     /** filter all given {@code elements} with {@code predicates}, if given */
+    @SafeVarargs
     public static <T extends AnnotatedElement> Set<T> getAll(final Set<T> elements, Predicate<? super T>... predicates) {
         return filter(elements, predicates);
     }
@@ -184,8 +193,10 @@ public abstract class ReflectionUtils {
     }
 
     /** where element is annotated with given {@code annotations} */
+    @SafeVarargs
     public static <T extends AnnotatedElement> Predicate<T> withAnnotations(final Class<? extends Annotation>... annotations) {
-        return input -> input != null && Arrays.equals(annotations, annotationTypes(input.getAnnotations()));
+        final Set<Class<? extends Annotation>> annotationsSet = Arrays.stream(annotations).collect(Collectors.toSet());
+        return input -> input != null && annotationsSet.equals(annotationTypes(input.getAnnotations()));
     }
 
     /** where element is annotated with given {@code annotation}, including member matching */
@@ -210,22 +221,22 @@ public abstract class ReflectionUtils {
 
     /** when method/constructor parameter types equals given {@code types} */
     public static Predicate<Member> withParameters(final Class<?>... types) {
-        return input -> Arrays.equals(parameterTypes(input), types);
+        return input -> Arrays.asList(types).equals(parameterTypes(input));
     }
 
     /** when member parameter types assignable to given {@code types} */
-    public static Predicate<Member> withParametersAssignableTo(final Class... types) {
-        return input -> isAssignable(types, parameterTypes(input));
+    public static Predicate<Member> withParametersAssignableTo(final Class<?>... types) {
+        return input -> isAssignable(Arrays.asList(types), parameterTypes(input));
     }
 
     /** when method/constructor parameter types assignable from given {@code types} */
-    public static Predicate<Member> withParametersAssignableFrom(final Class... types) {
-        return input -> isAssignable(parameterTypes(input), types);
+    public static Predicate<Member> withParametersAssignableFrom(final Class<?>... types) {
+        return input -> isAssignable(parameterTypes(input), Arrays.asList(types));
     }
 
     /** when method/constructor parameters count equal given {@code count} */
     public static Predicate<Member> withParametersCount(final int count) {
-        return input -> input != null && parameterTypes(input).length == count;
+        return input -> input != null && parameterTypes(input).size() == count;
     }
 
     /** when method/constructor has any parameter with an annotation matches given {@code annotations} */
@@ -329,36 +340,45 @@ public abstract class ReflectionUtils {
 
     /** try to resolve all given string representation of types to a list of java types */
     public static <T> Set<Class<? extends T>> forNames(final Collection<String> classes, ClassLoader... classLoaders) {
+        //noinspection unchecked
         return classes.stream()
                 .map(className -> (Class<? extends T>) forName(className, classLoaders))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private static Class[] parameterTypes(Member member) {
-        return member != null ?
-                member.getClass() == Method.class ? ((Method) member).getParameterTypes() :
-                        member.getClass() == Constructor.class ? ((Constructor) member).getParameterTypes() : null : null;
+    private static List<Class<?>> parameterTypes(Member member) {
+        if (member != null) {
+            if (member.getClass() == Method.class) {
+                return Arrays.asList(((Method) member).getParameterTypes());
+            }
+            if (member.getClass() == Constructor.class) {
+                return Arrays.asList(((Constructor<?>) member).getParameterTypes());
+            }
+        }
+        return null;
     }
 
     private static Set<Annotation> parameterAnnotations(Member member) {
         Annotation[][] annotations =
                 member instanceof Method ? ((Method) member).getParameterAnnotations() :
-                member instanceof Constructor ? ((Constructor) member).getParameterAnnotations() : null;
-        return Arrays.stream(annotations).flatMap(Arrays::stream).collect(Collectors.toSet());
+                member instanceof Constructor<?> ? ((Constructor<?>) member).getParameterAnnotations() : null;
+        return Arrays.stream(Objects.requireNonNull(annotations, "could not resolve annotations from " + member.getClass()))
+                .flatMap(Arrays::stream)
+                .collect(Collectors.toSet());
     }
 
     private static Set<Class<? extends Annotation>> annotationTypes(Collection<Annotation> annotations) {
         return annotations.stream().map(Annotation::annotationType).collect(Collectors.toSet());
     }
 
-    private static Class<? extends Annotation>[] annotationTypes(Annotation[] annotations) {
-        return Arrays.stream(annotations).map(Annotation::annotationType).toArray(Class[]::new);
+    private static Set<Class<? extends Annotation>> annotationTypes(Annotation[] annotations) {
+        return Arrays.stream(annotations).map(Annotation::annotationType).collect(Collectors.toSet());
     }
 
     //
     private static List<String> primitiveNames;
-    private static List<Class> primitiveTypes;
+    private static List<Class<?>> primitiveTypes;
     private static List<String> primitiveDescriptors;
 
     private static void initPrimitives() {
@@ -370,7 +390,7 @@ public abstract class ReflectionUtils {
     }
 
     private static List<String> getPrimitiveNames() { initPrimitives(); return primitiveNames; }
-    private static List<Class> getPrimitiveTypes() { initPrimitives(); return primitiveTypes; }
+    private static List<Class<?>> getPrimitiveTypes() { initPrimitives(); return primitiveTypes; }
     private static List<String> getPrimitiveDescriptors() { initPrimitives(); return primitiveDescriptors; }
 
     //
@@ -389,15 +409,15 @@ public abstract class ReflectionUtils {
     }
 
 
-    private static boolean isAssignable(Class[] childClasses, Class[] parentClasses) {
+    private static boolean isAssignable(List<Class<?>> childClasses, List<Class<?>> parentClasses) {
         if (childClasses == null) {
-            return parentClasses == null || parentClasses.length == 0;
+            return parentClasses == null || parentClasses.isEmpty();
         }
-        if (childClasses.length != parentClasses.length) {
+        if (childClasses.size() != parentClasses.size()) {
             return false;
         }
-        return IntStream.range(0, childClasses.length)
-                .noneMatch(i -> !parentClasses[i].isAssignableFrom(childClasses[i]) ||
-                        parentClasses[i] == Object.class && childClasses[i] != Object.class);
+        return IntStream.range(0, childClasses.size())
+                .noneMatch(i -> !parentClasses.get(i).isAssignableFrom(childClasses.get(i)) ||
+                        parentClasses.get(i) == Object.class && childClasses.get(i) != Object.class);
     }
 }
