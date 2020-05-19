@@ -227,7 +227,7 @@ public class Reflections {
         }
 
         if (executorService != null) {
-            for (Future future : futures) {
+            for (Future<?> future : futures) {
                 try {
                     future.get();
                 } catch (InterruptedException | ExecutionException e) {
@@ -499,7 +499,7 @@ public class Reflections {
     }
 
     /** get methods with return type match given type */
-    public Set<Method> getMethodsReturn(Class returnType) {
+    public Set<Method> getMethodsReturn(Class<?> returnType) {
         return getMethodsFromDescriptors(store.get(MethodParameterScanner.class, names(returnType)), loaders());
     }
 
@@ -518,7 +518,7 @@ public class Reflections {
      * get all constructors annotated with a given annotation
      * <p/>depends on MethodAnnotationsScanner configured
      */
-    public Set<Constructor> getConstructorsAnnotatedWith(final Class<? extends Annotation> annotation) {
+    public Set<Constructor<?>> getConstructorsAnnotatedWith(final Class<? extends Annotation> annotation) {
         return getConstructorsFromDescriptors(store.get(MethodAnnotationsScanner.class, annotation.getName()), loaders());
     }
 
@@ -526,22 +526,22 @@ public class Reflections {
      * get all constructors annotated with a given annotation, including annotation member values matching
      * <p/>depends on MethodAnnotationsScanner configured
      */
-    public Set<Constructor> getConstructorsAnnotatedWith(final Annotation annotation) {
+    public Set<Constructor<?>> getConstructorsAnnotatedWith(final Annotation annotation) {
         return filter(getConstructorsAnnotatedWith(annotation.annotationType()), withAnnotation(annotation));
     }
 
     /** get constructors with parameter types matching given {@code types}*/
-    public Set<Constructor> getConstructorsMatchParams(Class<?>... types) {
+    public Set<Constructor<?>> getConstructorsMatchParams(Class<?>... types) {
         return getConstructorsFromDescriptors(store.get(MethodParameterScanner.class, names(types).toString()), loaders());
     }
 
     /** get constructors with any parameter annotated with given annotation */
-    public Set<Constructor> getConstructorsWithAnyParamAnnotated(Class<? extends Annotation> annotation) {
+    public Set<Constructor<?>> getConstructorsWithAnyParamAnnotated(Class<? extends Annotation> annotation) {
         return getConstructorsFromDescriptors(store.get(MethodParameterScanner.class, annotation.getName()), loaders());
     }
 
     /** get constructors with any parameter annotated with given annotation, including annotation member values matching */
-    public Set<Constructor> getConstructorsWithAnyParamAnnotated(Annotation annotation) {
+    public Set<Constructor<?>> getConstructorsWithAnyParamAnnotated(Annotation annotation) {
         return filter(getConstructorsWithAnyParamAnnotated(annotation.annotationType()), withAnyParameterAnnotation(annotation));
     }
 
@@ -590,7 +590,7 @@ public class Reflections {
     /** get parameter names of given {@code constructor}
      * <p>depends on MethodParameterNamesScanner configured
      */
-    public List<String> getConstructorParamNames(Constructor constructor) {
+    public List<String> getConstructorParamNames(Constructor<?> constructor) {
         Set<String> names = store.get(MethodParameterNamesScanner.class, Utils.name(constructor));
         return names.size() == 1 ? Arrays.asList(names.iterator().next().split(", ")) : Collections.emptyList();
     }
@@ -612,7 +612,7 @@ public class Reflections {
     /** get all given {@code constructors} usages in methods and constructors
      * <p>depends on MemberUsageScanner configured
      */
-    public Set<Member> getConstructorUsage(Constructor constructor) {
+    public Set<Member> getConstructorUsage(Constructor<?> constructor) {
         return getMembersFromDescriptors(store.get(MemberUsageScanner.class, name(constructor)));
     }
 
