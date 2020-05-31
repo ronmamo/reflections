@@ -1,5 +1,6 @@
 package org.reflections.adapters;
 
+import javassist.ClassPool;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -16,6 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,8 +26,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static javassist.bytecode.AccessFlag.isPrivate;
-import static javassist.bytecode.AccessFlag.isProtected;
+import static javassist.bytecode.AccessFlag.*;
 import static org.reflections.util.Utils.join;
 
 /**
@@ -152,18 +153,59 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
     public boolean acceptsInput(String file) {
         return file.endsWith(".class");
     }
-    
-    //
+
+    /**
+     * get the name of annotations of annotationsAttributes from Type, Method or Field.
+     * @param annotationsAttributes the list AnnotationsAttribute from Type, Method or Field.
+     * @return A list of String containing the name of annotations.
+     */
     private List<String> getAnnotationNames(final AnnotationsAttribute... annotationsAttributes) {
         if (annotationsAttributes != null) {
-            return Arrays.stream(annotationsAttributes)
+            List<String> annotationNames = Arrays.stream(annotationsAttributes)
                     .filter(Objects::nonNull)
                     .flatMap(annotationsAttribute -> Arrays.stream(annotationsAttribute.getAnnotations()))
                     .map(Annotation::getTypeName)
                     .collect(Collectors.toList());
+            annotationNames.addAll(getRepeatedAnnotationNames(annotationsAttributes));
+            return annotationNames;
         } else {
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Support JAVA8 repeatable annotation. Return the name of annotation that is repeatable.
+     * @param annotationsAttributes the list AnnotationsAttribute from Type, Method or Field.
+     * @return A list of String containing the name of repeatable annotations.
+     */
+    private List<String> getRepeatedAnnotationNames(final AnnotationsAttribute... annotationsAttributes){
+        List<String> repeated = new ArrayList<>();
+        for (AnnotationsAttribute annotationsAttribute : annotationsAttributes){
+            if (annotationsAttribute == null){
+                continue;
+            }
+            Annotation[] annotations = annotationsAttribute.getAnnotations();
+            for (Annotation annotation : annotations){
+                ClassPool cp = ClassPool.getDefault();
+                ClassLoader cl = cp.getClassLoader();
+                try {
+                    java.lang.annotation.Annotation anno = (java.lang.annotation.Annotation) annotation.toAnnotationType(cl, cp);
+                    Class<? extends java.lang.annotation.Annotation> annoType = anno.annotationType();
+                    for(Method method : annoType.getDeclaredMethods()){
+                        if (method.getReturnType().getComponentType() != null) {
+                            for (java.lang.annotation.Annotation annotationLang : method.getReturnType().getComponentType().getDeclaredAnnotations()) {
+                                if (annotationLang instanceof java.lang.annotation.Repeatable) {
+                                    repeated.add(method.getReturnType().getComponentType().getTypeName());
+                                }
+                            }
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return repeated;
     }
 
     private List<String> getAnnotationNames(final Annotation[] annotations) {
@@ -191,3 +233,4 @@ public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, M
         return result;
     }
 }
+
