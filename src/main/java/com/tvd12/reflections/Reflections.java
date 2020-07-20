@@ -233,7 +233,7 @@ public class Reflections {
                 values += store.get(index).size();
             }
 
-            log.info(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
+            log.debug(format("Reflections took %d ms to scan %d urls, producing %d keys and %d values %s",
                     time, scannedUrls, keys, values,
                     executorService != null && executorService instanceof ThreadPoolExecutor ?
                             format("[using %d cores]", ((ThreadPoolExecutor) executorService).getMaximumPoolSize()) : ""));
@@ -314,7 +314,7 @@ public class Reflections {
                 values += store.get(index).size();
             }
 
-            log.info(format("Reflections took %d ms to collect %d url%s, producing %d keys and %d values [%s]",
+            log.debug(format("Reflections took %d ms to collect %d url%s, producing %d keys and %d values [%s]",
                     System.currentTimeMillis() - start, urls.size(), urls.size() > 1 ? "s" : "", keys, values, Joiner.on(", ").join(urls)));
         }
         return reflections;
@@ -326,7 +326,7 @@ public class Reflections {
     public Reflections collect(final InputStream inputStream) {
         try {
             merge(configuration.getSerializer().read(inputStream));
-            if (log != null) log.info("Reflections collected metadata from input stream using serializer " + configuration.getSerializer().getClass().getName());
+            if (log != null) log.debug("Reflections collected metadata from input stream using serializer " + configuration.getSerializer().getClass().getName());
         } catch (Exception ex) {
             throw new ReflectionsException("could not merge input stream", ex);
         }
@@ -680,7 +680,7 @@ public class Reflections {
     public File save(final String filename, final Serializer serializer) {
         File file = serializer.save(this, filename);
         if (log != null) //noinspection ConstantConditions
-            log.info("Reflections successfully saved in " + file.getAbsolutePath() + " using " + serializer.getClass().getSimpleName());
+            log.debug("Reflections successfully saved in " + file.getAbsolutePath() + " using " + serializer.getClass().getSimpleName());
         return file;
     }
 
