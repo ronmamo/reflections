@@ -14,6 +14,8 @@ import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -133,6 +135,29 @@ public class MoreTests {
                 "[testParam]");
         assertEquals(reflections.getMethodParamNames(clazz.getMethod("test2", String.class)).toString(),
                 "[testParam]");
+
+    }
+
+    @Test
+    public void test_scan_all_classes_from_package() throws MalformedURLException {
+        URL url = new URL("jar:file:" + ReflectionsTest.getUserDir() + "/src/test/resources/another-project.jar!/");
+        final URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(url)
+                .setScanners(new SubTypesScanner(false))
+                .addClassLoaders(classLoader));
+        Set<Class<?>> allClass = reflections.getSubTypesOf(Object.class);
+        assertEquals(34, allClass.size());
+
+        Set<String> classNames = allClass.stream()
+                .map(classType -> {return classType.getSimpleName();})
+                .collect(Collectors.toSet());
+        Set<String> expectedClassNames = new LinkedHashSet<>(Arrays.asList("Meta", "A", "B",
+                "AM1", "TestAnnotation", "I1", "AI1", "I2", "AI2", "I3", "TestModel", "C1",
+                "AC1", "C2", "A1", "AC2", "C3", "A2", "AC3", "C4", "C5", "C6", "C7",
+                "AnotherTestModel", "Thing", "AC1n", "Usage", "ActualFunctionalityClass",
+                "AF1", "B1", "CyclicAnnotation", "MAI1"));
+        assertTrue(classNames.containsAll(expectedClassNames));
 
     }
 }
