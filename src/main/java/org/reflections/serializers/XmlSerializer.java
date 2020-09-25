@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -62,6 +63,15 @@ public class XmlSerializer implements Serializer {
         try {
 
             final SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+            parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            parserFactory.setFeature("http://xml.org/sax/features/external-general-entities",
+                                     false);
+            parserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities",
+                                     false);
+            parserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            parserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",
+                                     false);
+
             final SAXParser parser = parserFactory.newSAXParser();
 
             final ReflectionsXMLHandler handler = new ReflectionsXMLHandler();
