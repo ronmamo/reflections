@@ -227,7 +227,7 @@
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                         <manifestEntries>
-                            <Automatic-Module-Name>org.requires</Automatic-Module-Name>
+                            <Automatic-Module-Name>org.reflections</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
                 </configuration>
