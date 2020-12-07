@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 import static java.text.MessageFormat.format;
@@ -110,7 +112,7 @@ public class VfsTest {
         try {
             Vfs.Dir dir = Vfs.fromURL(new URL(format("file:{0}", dirWithJarInName)));
 
-            assertEquals(dirWithJarInName, dir.getPath());
+            assertEquals(Path.of(dirWithJarInName), Path.of(dir.getPath()));
             assertEquals(SystemDir.class, dir.getClass());
         } finally {
             newDir.delete();

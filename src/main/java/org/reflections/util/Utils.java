@@ -54,31 +54,43 @@ public abstract class Utils {
         String memberKey = p0 != -1 ? descriptor.substring(0, p0) : descriptor;
         String methodParameters = p0 != -1 ? descriptor.substring(p0 + 1, descriptor.lastIndexOf(')')) : "";
 
-        int p1 = Math.max(memberKey.lastIndexOf('.'), memberKey.lastIndexOf("$"));
-        String className = memberKey.substring(0, p1);
+        int p1 = Math.max(memberKey.lastIndexOf('.'), memberKey.lastIndexOf('$'));
+        String className = memberKey.substring(memberKey.lastIndexOf(' ') + 1, p1);
         String memberName = memberKey.substring(p1 + 1);
-
-        Class<?>[] parameterTypes = null;
-        if (!isEmpty(methodParameters)) {
-            String[] parameterNames = methodParameters.split(",");
-            parameterTypes = Arrays.stream(parameterNames).map(name -> forName(name.trim(), classLoaders)).toArray(Class<?>[]::new);
+        int endsWithLambda = memberKey.lastIndexOf(".lambda");
+        if (endsWithLambda > 0) {
+            memberName = memberKey.substring(endsWithLambda + 1);
+            className = memberKey.substring(memberKey.lastIndexOf(' ') + 1, endsWithLambda);
         }
-
+        Class<?>[] parameterTypes = getParameterTypes(methodParameters, classLoaders);
         Class<?> aClass = forName(className, classLoaders);
         while (aClass != null) {
             try {
-                if (!descriptor.contains("(")) {
-                    return aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName);
-                } else if (isConstructor(descriptor)) {
-                    return aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes);
-                } else {
-                    return aClass.isInterface() ? aClass.getMethod(memberName, parameterTypes) : aClass.getDeclaredMethod(memberName, parameterTypes);
-                }
+                return getMember(p0, aClass, memberName, descriptor, parameterTypes);
             } catch (Exception e) {
                 aClass = aClass.getSuperclass();
             }
         }
         throw new ReflectionsException("Can't resolve member named " + memberName + " for class " + className);
+    }
+
+    private static Class<?>[] getParameterTypes(String methodParameters, ClassLoader[] classLoaders) {
+        Class<?>[] parameterTypes = null;
+        if (!isEmpty(methodParameters)) {
+            String[] parameterNames = methodParameters.split(",");
+            parameterTypes = Arrays.stream(parameterNames).map(name -> forName(name.trim(), classLoaders)).toArray(Class<?>[]::new);
+        }
+        return parameterTypes;
+    }
+    
+    private static Member getMember(int p0, Class<?> aClass, String memberName, String descriptor, Class<?>[] parameterTypes) throws NoSuchMethodException, NoSuchFieldException, SecurityException {
+        if (p0 == -1) {
+            return aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName);
+        } else if (isConstructor(descriptor)) {
+            return aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes);
+        } else {
+            return aClass.isInterface() ? aClass.getMethod(memberName, parameterTypes) : aClass.getDeclaredMethod(memberName, parameterTypes);
+        }
     }
 
     public static Set<Method> getMethodsFromDescriptors(Iterable<String> annotatedWith, ClassLoader... classLoaders) {

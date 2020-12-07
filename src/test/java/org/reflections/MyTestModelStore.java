@@ -1,4 +1,4 @@
-//generated using Reflections JavaCodeSerializer [Mon Jan 06 09:39:37 ICT 2020]
+//generated using Reflections JavaCodeSerializer [Sat Oct 24 16:09:23 CEST 2020]
 package org.reflections;
 
 public interface MyTestModelStore {
@@ -99,6 +99,12 @@ public interface MyTestModelStore {
 					public interface org_reflections_TestModel$AC3 {}
 				}
 			}
+			public interface TestModel$C8 {
+				public interface methods {
+					public interface lambda$print$0 {}
+					public interface print {}
+				}
+			}
 			public interface TestModel$I1 {
 				public interface annotations {
 					public interface org_reflections_TestModel$AI1 {}
@@ -129,6 +135,7 @@ public interface MyTestModelStore {
 				public interface methods {
 					public interface method {}
 					public interface method_java_lang_String {}
+					public interface zero {}
 				}
 			}
 			public interface TestModel$Usage$C2 {
@@ -136,7 +143,19 @@ public interface MyTestModelStore {
 					public interface c1 {}
 				}
 				public interface methods {
+					public interface lambda$useLambda$0 {}
 					public interface method {}
+					public interface useAnonymousClass {}
+					public interface useLambda {}
+				}
+			}
+			public interface TestModel$Usage$C2$1 {
+				public interface fields {
+					public interface this$0 {}
+				}
+				public interface methods {
+					public interface applyAsDouble {}
+					public interface applyAsDouble_org_reflections_TestModel$Usage$C1 {}
 				}
 			}
 		}

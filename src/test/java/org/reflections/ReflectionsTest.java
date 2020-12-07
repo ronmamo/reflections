@@ -167,7 +167,9 @@ public class ReflectionsTest {
             assertThat(reflections.getMethodsMatchParams(),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m3"),
                             AC2.class.getMethod("value"), AF1.class.getMethod("value"), AM1.class.getMethod("value"),
-                            Usage.C1.class.getDeclaredMethod("method"), Usage.C2.class.getDeclaredMethod("method")));
+                            Usage.C1.class.getDeclaredMethod("method"), Usage.C1.class.getDeclaredMethod("zero"), 
+                            Usage.C2.class.getDeclaredMethod("method"),
+                            C8.class.getDeclaredMethod("print"), C8.class.getDeclaredMethod("lambda$print$0")));
 
             assertThat(reflections.getMethodsMatchParams(int[][].class, String[][].class),
                     are(C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
@@ -182,7 +184,8 @@ public class ReflectionsTest {
             assertThat(reflections.getMethodsReturn(void.class),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m1", int.class, String[].class),
                             C4.class.getDeclaredMethod("m1", int[][].class, String[][].class), Usage.C1.class.getDeclaredMethod("method"),
-                            Usage.C1.class.getDeclaredMethod("method", String.class), Usage.C2.class.getDeclaredMethod("method")));
+                            Usage.C1.class.getDeclaredMethod("method", String.class), Usage.C2.class.getDeclaredMethod("method"),
+                            C8.class.getDeclaredMethod("print"), C8.class.getDeclaredMethod("lambda$print$0")));
 
             assertThat(reflections.getMethodsWithAnyParamAnnotated(AM1.class),
                     are(C4.class.getDeclaredMethod("m4", String.class)));
@@ -206,7 +209,9 @@ public class ReflectionsTest {
         assertThat(reflections.getConstructorsMatchParams(),
                 are(C1.class.getDeclaredConstructor(), C2.class.getDeclaredConstructor(), C3.class.getDeclaredConstructor(),
                         C4.class.getDeclaredConstructor(), C5.class.getDeclaredConstructor(), C6.class.getDeclaredConstructor(),
-                        C7.class.getDeclaredConstructor(), Usage.C1.class.getDeclaredConstructor(), Usage.C2.class.getDeclaredConstructor()));
+                        C7.class.getDeclaredConstructor(), Usage.C1.class.getDeclaredConstructor(), Usage.C2.class.getDeclaredConstructor(),
+                        C8.class.getDeclaredConstructor()));
+
 
         assertThat(reflections.getConstructorsWithAnyParamAnnotated(AM1.class),
                 are(C4.class.getDeclaredConstructor(String.class)));
@@ -274,6 +279,15 @@ public class ReflectionsTest {
                 are(Usage.C2.class.getDeclaredMethod("method")));
     }
 
+    @Test
+    public void testMemberUsageScannerWithFunctionalUsage() throws NoSuchMethodException {
+        Class<?> anonymousClass = ReflectionUtils.forName("org.reflections.TestModel$Usage$C2$1");
+        assertNotNull(anonymousClass);
+        assertThat(reflections.getMethodUsage(Usage.C1.class.getDeclaredMethod("zero")),
+                are(anonymousClass.getDeclaredMethod("applyAsDouble", Usage.C1.class),
+                        Usage.C2.class.getDeclaredMethod("lambda$useLambda$0", Usage.C1.class)));
+    }
+    
     @Test
     public void testScannerNotConfigured() {
         try {

@@ -3,6 +3,8 @@ package org.reflections;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Inherited;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.util.function.ToDoubleFunction;
+import java.util.stream.Stream;
 
 /**
  *
@@ -62,6 +64,7 @@ public interface TestModel {
             public C1(C2 c2) { this.c2 = c2; }
             public void method() { c2.method(); }
             public void method(String string) { c2.method(); }
+            public double zero() { return 0;}
         }
         public static class C2 {
             C1 c1 = new C1();
@@ -71,6 +74,24 @@ public interface TestModel {
                 c1.method();
                 c1.method("");
             }
+                        public double useAnonymousClass(C1... objects) {
+                return Stream.of(objects)
+                        .mapToDouble(new ToDoubleFunction<C1>() {
+                            @Override
+                            public double applyAsDouble(C1 c1) {
+                                return c1.zero();
+                            }
+                        })
+                        .sum();
+            }
+            public double useLambda(C1... objects) {
+                return Stream.of(objects)
+                        .mapToDouble(it -> it.zero())
+                        .sum();
+            }
         }
+    }    
+    public class C8 {
+        public void print() {Runnable run = () -> {};}
     }
 }
