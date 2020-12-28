@@ -38,7 +38,9 @@ public class ReflectionsUsageTest {
         URLClassLoader externalClassLoader = new URLClassLoader(new URL[]{externalUrl},
             Thread.currentThread().getContextClassLoader());
 
+        String basePackage = "tests.usages";
         reflections = new Reflections(
+            basePackage,
             new MemberUsageScanner(),
             new SubTypesScanner(false),
             externalClassLoader);
@@ -48,7 +50,7 @@ public class ReflectionsUsageTest {
     public void test_find_field_usages_using_custom_url_class_loader() {
         try {
             Set<Member> members = reflections.getSubTypesOf(Object.class).stream()
-                .filter(clz -> clz.getCanonicalName().equals("tests.usages.model.Game"))
+                .filter(clz -> "tests.usages.model.Game".equals(clz.getName()))
                 .map(this::retrieveFields)
                 .flatMap(Collection::stream)
                 .map(reflections::getFieldUsage)
@@ -64,7 +66,7 @@ public class ReflectionsUsageTest {
     public void test_find_method_usages_using_custom_url_class_loader() {
         try {
             Set<Member> members = reflections.getSubTypesOf(Object.class).stream()
-                .filter(clz -> clz.getCanonicalName().equals("tests.usages.model.Game"))
+                .filter(clz -> "tests.usages.model.Game".equals(clz.getName()))
                 .map(this::retrieveGetters)
                 .flatMap(Collection::stream)
                 .map(reflections::getMethodUsage)
@@ -80,7 +82,7 @@ public class ReflectionsUsageTest {
     public void test_find_constructor_usages_using_custom_url_class_loader() {
         try {
             Set<Member> members = reflections.getSubTypesOf(Object.class).stream()
-                .filter(clz -> clz.getCanonicalName().equals("tests.usages.model.Game"))
+                .filter(clz -> "tests.usages.model.Game".equals(clz.getName()))
                 .map(this::retrieveConstructors)
                 .flatMap(Collection::stream)
                 .map(reflections::getConstructorUsage)
