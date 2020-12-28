@@ -599,21 +599,21 @@ public class Reflections {
      * <p>depends on MemberUsageScanner configured
      */
     public Set<Member> getFieldUsage(Field field) {
-        return getMembersFromDescriptors(store.get(MemberUsageScanner.class, name(field)));
+        return getMembersFromDescriptors(store.get(MemberUsageScanner.class, name(field)), loaders());
     }
 
     /** get all given {@code method} usages in methods and constructors
      * <p>depends on MemberUsageScanner configured
      */
     public Set<Member> getMethodUsage(Method method) {
-        return getMembersFromDescriptors(store.get(MemberUsageScanner.class, name(method)));
+        return getMembersFromDescriptors(store.get(MemberUsageScanner.class, name(method)), loaders());
     }
 
     /** get all given {@code constructors} usages in methods and constructors
      * <p>depends on MemberUsageScanner configured
      */
     public Set<Member> getConstructorUsage(Constructor constructor) {
-        return getMembersFromDescriptors(store.get(MemberUsageScanner.class, name(constructor)));
+        return getMembersFromDescriptors(store.get(MemberUsageScanner.class, name(constructor)), loaders());
     }
 
     /** get all types scanned. this is effectively similar to getting all subtypes of Object.
