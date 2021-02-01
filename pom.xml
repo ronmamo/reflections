@@ -53,7 +53,7 @@
 
     <properties>
         <javassist.version>3.26.0-GA</javassist.version>
-        <jdk.version>11</jdk.version>
+        <jdk.version>1.8</jdk.version>
         <doclint>none</doclint>
     </properties>
 
