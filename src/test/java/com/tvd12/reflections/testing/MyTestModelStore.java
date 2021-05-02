@@ -1,4 +1,4 @@
-//generated using Reflections JavaCodeSerializer [Mon Jul 20 21:48:53 ICT 2020]
+//generated using Reflections JavaCodeSerializer [Sun May 02 22:50:41 ICT 2021]
 package com.tvd12.reflections.testing;
 
 public interface MyTestModelStore {
@@ -83,13 +83,13 @@ public interface MyTestModelStore {
 							public interface f3 {}
 						}
 						public interface methods {
-							public interface c2toC3 {}
-							public interface m1 {}
 							public interface m1_int$$$$__java_lang_String$$$$ {}
-							public interface m4 {}
-							public interface m3 {}
+							public interface c2toC3 {}
 							public interface m1_int__java_lang_String$$ {}
+							public interface m4 {}
 							public interface add {}
+							public interface m3 {}
+							public interface m1 {}
 						}
 					}
 					public interface TestModel$C5 {
