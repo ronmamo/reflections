@@ -52,7 +52,7 @@ public class Store {
      */
     public Set<String> getMethodsInMethodScanner(Set<String> target) {
         Set<String> result = new HashSet<>();
-        for (String t: target){
+        for (String t: target) {
             result.addAll(storeMap.get("MethodAnnotationsScanner").get(t));
         }
         return result;

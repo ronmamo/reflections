@@ -484,14 +484,14 @@ public class Reflections {
     public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation) {
         Set<Class<?>> types = getTypesAnnotatedWith(annotation, false);
         Set<String> typeStrings = new HashSet<>();
-        for (Class<?> type: types){
+        for (Class<?> type: types) {
             typeStrings.add(type.getTypeName());
         }
         Set<String> inMethodScanner = store.getInMethodScanner();
         Set<String> inTypeScanner = store.getInTypeScanner();
         Set<String> annotatedInMethodScanner = new HashSet<>();
-        for (String s: inMethodScanner){
-            if (inTypeScanner.contains(s) && (typeStrings.contains(s) || s.equals(annotation.getTypeName()))){
+        for (String s: inMethodScanner) {
+            if (inTypeScanner.contains(s) && (typeStrings.contains(s) || s.equals(annotation.getTypeName()))) {
                 annotatedInMethodScanner.add(s);
             }
         }
