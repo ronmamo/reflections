@@ -16,8 +16,9 @@ jobs:
       matrix:
         # 15 and 16 not supported yet - test failures
         java: [ '8', '9', '11', '13']
+        os: [ ubuntu-latest, windows-latest ]
     name: Java ${{ matrix.Java }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
@@ -45,7 +46,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Test with Maven
-        run: mvn -Pci -B package ${{ matrix.jdk }}
+        run: mvn -Pci -B clean package ${{ matrix.jdk }}
 
 #     - name: Archive test results
 #       if: ${{ always() }}
