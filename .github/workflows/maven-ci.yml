@@ -14,8 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 15 and 16 not supported yet - test failures
-        java: [ '8', '9', '11', '13']
+        java: [ '8', '9', '11', '13', '15', '16']
         os: [ ubuntu-latest, windows-latest ]
     name: Java ${{ matrix.Java }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
