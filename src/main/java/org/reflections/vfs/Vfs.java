@@ -189,20 +189,24 @@ public abstract class Vfs {
 
         return null;
     }
-    
+
     private static boolean hasJarFileInPath(URL url) {
-		return url.toExternalForm().matches(".*\\.jar(\\!.*|$)");
-	}
+        return url.toExternalForm().matches(".*\\.jar(\\!.*|$)");
+    }
+
+    private static boolean hasInnerJarFileInPath(URL url) {
+        return url.toExternalForm().matches(".+\\.jar\\!.+");
+    }
 
     /** default url types used by {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)}
      * <p>
      * <p>jarFile - creates a {@link org.reflections.vfs.ZipDir} over jar file
-     * <p>jarUrl - creates a {@link org.reflections.vfs.ZipDir} over a jar url (contains ".jar!/" in it's name), using Java's {@link JarURLConnection}
+     * <p>jarUrl - creates a {@link org.reflections.vfs.ZipDir} over a jar url, using Java's {@link JarURLConnection}
      * <p>directory - creates a {@link org.reflections.vfs.SystemDir} over a file system directory
      * <p>jboss vfs - for protocols vfs, using jboss vfs (should be provided in classpath)
      * <p>jboss vfsfile - creates a {@link UrlTypeVFS} for protocols vfszip and vfsfile.
      * <p>bundle - for bundle protocol, using eclipse FileLocator (should be provided in classpath)
-     * <p>jarInputStream - creates a {@link JarInputDir} over jar files, using Java's JarInputStream
+     * <p>jarInputStream - creates a {@link JarInputDir} over jar files (contains ".jar!/" in it's name), using Java's JarInputStream
      * */
     public enum DefaultUrlTypes implements UrlType {
         jarFile {
@@ -217,7 +221,7 @@ public abstract class Vfs {
 
         jarUrl {
             public boolean matches(URL url) {
-                return "jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol());
+                return ("jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol())) && !hasInnerJarFileInPath(url);
             }
 
             public Dir createDir(URL url) throws Exception {
@@ -255,7 +259,7 @@ public abstract class Vfs {
             }
 
             public Vfs.Dir createDir(URL url) throws Exception {
-		return JbossDir.createDir(url);
+                return JbossDir.createDir(url);
             }
         },
 
