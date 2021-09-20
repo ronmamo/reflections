@@ -4,7 +4,7 @@
 
     <groupId>org.reflections</groupId>
     <artifactId>reflections14</artifactId>
-    <version>0.9.14-SNAPSHOT</version>
+    <version>0.10-SNAPSHOT</version>
 
     <name>Reflections</name>
     <description>Reflections - Java runtime metadata analysis</description>

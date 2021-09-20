@@ -52,67 +52,45 @@ import static org.reflections.scanners.Scanners.*;
 
 /**
  * Reflections one-stop-shop object
- * <p>Reflections scans your classpath, indexes the metadata, allows you to query it on runtime and may save and collect that information for many modules within your project.
- * <p>Using Reflections you can query your metadata such as:
+ * <p>Reflections scans and indexes your project's classpath, allowing reverse query of the type system metadata on runtime.
+ * <p>Using Reflections you can query for example:
  * <ul>
- *     <li>get all subtypes of some type
- *     <li>get all types/constructors/methods/fields annotated with some annotation, optionally with annotation parameters matching
- *     <li>get all resources matching matching a regular expression
- *     <li>get all methods with specific signature including parameters, parameter annotations and return type
- *     <li>get all methods parameter names
- *     <li>get all fields/methods/constructors usages in code
+ *   <li> Subtypes of a type
+ *   <li> Types annotated with an annotation
+ *   <li> Methods with annotation, parameters, return type
+ *   <li> Resources found in classpath
  * </ul>
- * <p>A typical use of Reflections would be:
+ * <p></p>
+ * Create Reflections instance with scanning {@link Configuration}:
  * <pre>{@code
- *      Reflections reflections = new Reflections("my.project.prefix");
- *
- *      Set<Class<? extends SomeType>> subTypes = reflections.getSubTypesOf(SomeType.class);
- *
- *      Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(SomeAnnotation.class);
+ * Reflections reflections = new Reflections("com.my.project");
+ * // or
+ * Reflections reflections = new Reflections(
+ *   new ConfigurationBuilder()
+ *     .setUrls(ClasspathHelper.forPackage("com.my.project"))
+ *     .filterInputsBy(new FilterBuilder().includePackage("com.my.project"))
+ *     .setScanners(Scanners.SubTypes, Scanners.TypesAnnotated));
  * }</pre>
- * <p>Basically, to use Reflections first instantiate it with one of the constructors, then depending on the scanners, use the convenient query methods:
+ * <p>{@link Scanners} provided for scan and query using {@link Reflections#get(QueryFunction)}
  * <pre>{@code
- *      Reflections reflections = new Reflections("my.package.prefix");
- *      //or
- *      Reflections reflections = new Reflections(ClasspathHelper.forPackage("my.package.prefix"),
- *            new SubTypesScanner(), new TypesAnnotationScanner(), new FilterBuilder().include(...), ...);
+ * Set<Class<? extends Module>> modules = reflections.get(SubTypes.of(com.google.inject.Module.class));
+ * Set<Class<?>> singletons = reflections.get(TypesAnnotated.with(javax.inject.Singleton.class));
  *
- *       //or using the ConfigurationBuilder
- *       new Reflections(new ConfigurationBuilder()
- *            .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix("my.project.prefix")))
- *            .setUrls(ClasspathHelper.forPackage("my.project.prefix"))
- *            .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner().filterResultsBy(optionalFilter), ...));
+ * Set<String> properties =   reflections.get(Resources.with(".*\\.properties"));
+ * Set<Constructor> injects = reflections.get(ConstructorsAnnotated.with(javax.inject.Inject.class));
+ * Set<Method> deprecated =   reflections.get(MethodsAnnotated.with(javax.ws.rs.Path.class));
+ * Set<Field> ids =           reflections.get(FieldsAnnotated.with(javax.persistence.Id.class));
+ *
+ * Set<Method> voidMethods =  reflections.get(MethodsReturn.with(void.class));
+ * Set<Method> someMethods =  reflections.get(MethodsSignature.of(long.class, int.class));
+ * Set<Method> pathMethods =  reflections.get(MethodsParameter.of(PathParam.class));
  * }</pre>
- * And then query, for example:
- * <pre>{@code 
- *       Set<Class<? extends Module>> modules = reflections.getSubTypesOf(com.google.inject.Module.class);
- *       Set<Class<?>> singletons =             reflections.getTypesAnnotatedWith(javax.inject.Singleton.class);
- *
- *       Set<String> properties =       reflections.getResources(Pattern.compile(".*\\.properties"));
- *       Set<Constructor> injectables = reflections.getConstructorsAnnotatedWith(javax.inject.Inject.class);
- *       Set<Method> deprecateds =      reflections.getMethodsAnnotatedWith(javax.ws.rs.Path.class);
- *       Set<Field> ids =               reflections.getFieldsAnnotatedWith(javax.persistence.Id.class);
- *
- *       Set<Method> someMethods =      reflections.getMethodsMatchParams(long.class, int.class);
- *       Set<Method> voidMethods =      reflections.getMethodsReturn(void.class);
- *       Set<Method> pathParamMethods = reflections.getMethodsWithAnyParamAnnotated(PathParam.class);
- *       List<String> parameterNames =  reflections.getMethodsParamNames(Method.class);
- *
- *       Set<Member> fieldUsage =       reflections.getFieldUsage(Field.class);
- *       Set<Member> methodUsage =      reflections.getMethodUsage(Method.class);
- *       Set<Member> constructorUsage = reflections.getConstructorUsage(Constructor.class);
- * }</pre>
- * <p>You can use other scanners defined in Reflections as well, such as: SubTypesScanner, TypeAnnotationsScanner (both default),
- * ResourcesScanner, MethodsAnnotated, ConstructorAnnotated, FieldAnnotated,
- * MethodParameters, MethodParameterNamesScanner, MemberUsageScanner or any custom scanner.
- * <p>Use {@link #store} to access and query the store directly
- * <p>In order to save the store metadata, use {@link #save(String)} or {@link #save(String, org.reflections.serializers.Serializer)}
- * for example with {@link org.reflections.serializers.XmlSerializer} or {@link org.reflections.serializers.JavaCodeSerializer}
- * <p>In order to collect pre saved metadata and avoid re-scanning, use {@link #collect(String, java.util.function.Predicate, org.reflections.serializers.Serializer)}
- * <p><i>Make sure to scan all the transitively relevant packages.
- * <br>for instance, given your class C extends B extends A, and both B and A are located in another package than C,
- * when only the package of C is scanned - then querying for sub types of A returns nothing (transitive), but querying for sub types of B returns C (direct).
- * In that case make sure to scan all relevant packages a priori.</i>
+ * <p>Other scanners provided such as {@link MethodParameterNamesScanner}, {@link MemberUsageScanner}.
+ * <p><i>Note that previous 0.9.x API is still supported though marked for removal</i>
+ * <p></p>
+ * <p>Use {@link #getStore()} to access and query the {@link Store} multimap directly
+ * <p>Persist scanned metadata using {@link #save(String)}, and collect saved metadata using {@link #collect(String, java.util.function.Predicate, org.reflections.serializers.Serializer)}
+ * <p><i>Make sure to scan all the transitively relevant packages, see more {@link #expandSuperTypes(Map)}
  * <p><p><p>For Javadoc, source code, and more information about Reflections Library, see http://github.com/ronmamo/reflections/
  */
 public class Reflections implements NameHelper {

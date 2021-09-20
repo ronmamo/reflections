@@ -12,7 +12,6 @@ import org.reflections.util.QueryFunction;
 import org.reflections.vfs.Vfs;
 
 import java.lang.annotation.Inherited;
-import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,11 +19,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * base Reflections {@link Scanner}s
+ * base Reflections {@link Scanner}s such as:
  * <ul>
  *   <li>{@link #SubTypes}</li>
  *   <li>{@link #TypesAnnotated}</li>
@@ -38,8 +36,8 @@ import java.util.stream.Collectors;
  * */
 public enum Scanners implements Scanner, QueryBuilder, NameHelper {
 
-    /** scan type superclasses and interfaces, allowing reverse lookup using {@link org.reflections.Reflections#getSubTypesOf(Class)}
-     * <br><br>
+    /** scan type superclasses and interfaces
+     * <p></p>
      * <i>Note that {@code Object} class is excluded by default, in order to reduce store size.
      * Use {@link #filterResultsBy(Predicate)} to change, i.e. {@code filterResultsBy(c -> true)}</i>
      * */
@@ -56,7 +54,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan type annotations, allowing reverse lookup using {@link org.reflections.Reflections#getTypesAnnotatedWith(Class)} */
+    /** scan type annotations */
     TypesAnnotated {
         @Override
         public boolean acceptResult(String annotation) {
@@ -69,7 +67,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan method annotations, allowing reverse lookup using {@link org.reflections.Reflections#getMethodsAnnotatedWith(Class)} */
+    /** scan method annotations */
     MethodsAnnotated {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
@@ -86,7 +84,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan constructor annotations, allowing reverse lookup using {@link org.reflections.Reflections#getMethodsAnnotatedWith(Class)} */
+    /** scan constructor annotations */
     ConstructorsAnnotated {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
@@ -104,9 +102,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan field annotations, allowing reverse lookup for fields with annotations
-     * using {@link org.reflections.Reflections#getFieldsAnnotatedWith(Class)}
-     * */
+    /** scan field annotations */
     FieldsAnnotated {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
@@ -118,7 +114,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan non .class files such as xml or properties files, allowing lookup using {@link org.reflections.Reflections#getResources(Pattern)} */
+    /** scan non .class files such as xml or properties files */
     Resources {
         @Override
         public boolean acceptsInput(String file) {
@@ -142,7 +138,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan method parameters types and annotations, allowing lookup using {@link org.reflections.Reflections#getMethodsWithParameter(AnnotatedElement)} */
+    /** scan method parameters types and annotations */
     MethodsParameter {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
@@ -162,8 +158,8 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan constructor parameters types and annotations, allowing lookup using {@link org.reflections.Reflections#getMethodsWithParameter(AnnotatedElement)}
-     * <p>requires {@link #MethodsParameter} configured */
+    /** scan constructor parameters types and annotations
+     * <p><i>requires {@link #MethodsParameter} configured</i> */
     ConstructorsParameter {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
@@ -181,7 +177,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan method parameters types, allowing lookup by exact signature using {@link org.reflections.Reflections#getMethodsWithSignature(Class...)} */
+    /** scan method parameters types */
     MethodsSignature {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
@@ -198,8 +194,8 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan constructor parameters types, allowing lookup by exact signature using {@link org.reflections.Reflections#getMethodsWithSignature(Class...)}
-     * <p>requires {@link #MethodsSignature} configured */
+    /** scan constructor parameters types
+     * <p><i>requires {@link #MethodsSignature} configured</i> */
     ConstructorsSignature {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
@@ -217,7 +213,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
     },
 
-    /** scan method return type, allowing lookup using {@link org.reflections.Reflections#getMethodsReturn(Class)} */
+    /** scan method return type */
     MethodsReturn {
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
