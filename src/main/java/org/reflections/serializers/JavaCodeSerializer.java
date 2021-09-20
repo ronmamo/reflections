@@ -1,62 +1,49 @@
 package org.reflections.serializers;
 
-import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
-import org.reflections.ReflectionsException;
 import org.reflections.scanners.TypeElementsScanner;
-import org.reflections.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.stream.IntStream;
 
-import static org.reflections.Reflections.log;
-import static org.reflections.util.Utils.*;
-
-/** Serialization of Reflections to java code
- * <p> Serializes types and types elements into interfaces respectively to fully qualified name,
- * <p> For example, after saving with JavaCodeSerializer:
- * <pre>
- *   reflections.save(filename, new JavaCodeSerializer());
- * </pre>
- * <p>Saved file should look like:
- * <pre>
- *     public interface MyModel {
- *      public interface my {
- *       public interface package1 {
- *        public interface MyClass1 {
- *         public interface fields {
- *          public interface f1 {}
- *          public interface f2 {}
+/** source code serialization for {@link org.reflections.Reflections} <pre>{@code reflections.save(file, new JavaCodeSerializer())}</pre>
+ * <p></p>an example of produced java source:
+ * <pre>{@code
+ * public interface MyTestModelStore {
+ *   interface org {
+ *     interface reflections {
+ *       interface TestModel$C4 {
+ *         interface fields {
+ *           interface f1 {}
+ *           interface f2 {}
  *         }
- *         public interface methods {
- *          public interface m1 {}
- *          public interface m2 {}
+ *         interface methods {
+ *           interface m1 {}
+ *           interface add {}
  *         }
- *	...
+ *         interface annotations {
+ *           ...
+ *         }
+ *       }
+ *     }
+ *   }
  * }
- * </pre>
- * <p> Use the different resolve methods to resolve the serialized element into Class, Field or Method. for example:
- * <pre>
- *  Class m1Ref = MyModel.my.package1.MyClass1.methods.m1.class;
- *  Method method = JavaCodeSerializer.resolve(m1Ref);
- * </pre>
- * <p>The {@link #save(org.reflections.Reflections, String)} method filename should be in the pattern: path/path/path/package.package.classname
- * <p>depends on Reflections configured with {@link org.reflections.scanners.TypeElementsScanner}
- * */
+ * }</pre>
+ * <p>this allows strongly typed access by fqn to type elements - packages, classes, annotations, fields and methods:
+ * <pre>{@code MyTestModelStore.org.reflections.TestModel$C1.methods.m1.class}</pre>
+ * <p>depends on {@link org.reflections.scanners.TypeElementsScanner} configured
+ */
 public class JavaCodeSerializer implements Serializer {
 
     private static final String pathSeparator = "_";
@@ -65,14 +52,17 @@ public class JavaCodeSerializer implements Serializer {
     private static final String arrayDescriptor = "$$";
     private static final String tokenSeparator = "_";
 
+    private StringBuilder sb;
+    private List<String> prevPaths;
+    private int indent;
+
     public Reflections read(InputStream inputStream) {
         throw new UnsupportedOperationException("read is not implemented on JavaCodeSerializer");
     }
 
     /**
-     * name should be in the pattern: path/path/path/package.package.classname,
-     * for example <pre>/data/projects/my/src/main/java/org.my.project.MyStore</pre>
-     * would create class MyStore in package org.my.project in the path /data/projects/my/src/main/java
+     * serialize and save to java source code
+     * @param name should be in the pattern {@code path/path/path/package.package.classname},
      */
     public File save(Reflections reflections, String name) {
         if (name.endsWith("/")) {
@@ -81,7 +71,7 @@ public class JavaCodeSerializer implements Serializer {
 
         //prepare file
         String filename = name.replace('.', '/').concat(".java");
-        File file = prepareFile(filename);
+        File file = Serializer.prepareFile(filename);
 
         //get package and class names
         String packageName;
@@ -97,16 +87,14 @@ public class JavaCodeSerializer implements Serializer {
 
         //generate
         try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("//generated using Reflections JavaCodeSerializer")
-                    .append(" [").append(new Date()).append("]")
-                    .append("\n");
+            sb = new StringBuilder();
+            sb.append("//generated using Reflections JavaCodeSerializer").append(" [").append(new Date()).append("]").append("\n");
             if (packageName.length() != 0) {
                 sb.append("package ").append(packageName).append(";\n");
                 sb.append("\n");
             }
             sb.append("public interface ").append(className).append(" {\n\n");
-            sb.append(toString(reflections));
+            toString(reflections);
             sb.append("}\n");
 
             Files.write(new File(filename).toPath(), sb.toString().getBytes(Charset.defaultCharset()));
@@ -118,128 +106,111 @@ public class JavaCodeSerializer implements Serializer {
         return file;
     }
 
-    public String toString(Reflections reflections) {
-        if (reflections.getStore().keys(index(TypeElementsScanner.class)).isEmpty()) {
-            if (log != null) log.warn("JavaCodeSerializer needs TypeElementsScanner configured");
-        }
+    private void toString(Reflections reflections) {
+        Map<String, Set<String>> map = reflections.getStore().get(TypeElementsScanner.class.getSimpleName());
+        prevPaths = new ArrayList<>();
+        indent = 1;
 
-        StringBuilder sb = new StringBuilder();
-
-        List<String> prevPaths = new ArrayList<>();
-        int indent = 1;
-
-        List<String> keys = new ArrayList<>(reflections.getStore().keys(index(TypeElementsScanner.class)));
-        Collections.sort(keys);
-        for (String fqn : keys) {
+        map.keySet().stream().sorted().forEach(fqn -> {
             List<String> typePaths = Arrays.asList(fqn.split("\\."));
-
-            //skip indention
-            int i = 0;
-            while (i < Math.min(typePaths.size(), prevPaths.size()) && typePaths.get(i).equals(prevPaths.get(i))) {
-                i++;
-            }
-
-            //indent left
-            for (int j = prevPaths.size(); j > i; j--) {
-                sb.append(repeat("\t", --indent)).append("}\n");
-            }
-
-            //indent right - add packages
-            for (int j = i; j < typePaths.size() - 1; j++) {
-                sb.append(repeat("\t", indent++)).append("public interface ").append(getNonDuplicateName(typePaths.get(j), typePaths, j)).append(" {\n");
-            }
-
-            //indent right - add class
-            String className = typePaths.get(typePaths.size() - 1);
-
-            //get fields and methods
-            List<String> annotations = new ArrayList<>();
+            String className = fqn.substring(fqn.lastIndexOf('.') + 1);
             List<String> fields = new ArrayList<>();
             List<String> methods = new ArrayList<>();
-
-            Iterable<String> members = reflections.getStore().get(index(TypeElementsScanner.class), fqn);
-            List<String> sorted = StreamSupport.stream(members.spliterator(), false).sorted().collect(Collectors.toList());
-            for (String element : sorted) {
+            List<String> annotations = new ArrayList<>();
+            map.get(fqn).stream().sorted().forEach(element -> {
                 if (element.startsWith("@")) {
                     annotations.add(element.substring(1));
                 } else if (element.contains("(")) {
-                    //method
                     if (!element.startsWith("<")) {
-                        int i1 = element.indexOf('(');
-                        String name = element.substring(0, i1);
-                        String params = element.substring(i1 + 1, element.indexOf(")"));
-
-                        String paramsDescriptor = "";
-                        if (params.length() != 0) {
-                            paramsDescriptor = tokenSeparator + params.replace(dotSeparator, tokenSeparator).replace(", ", doubleSeparator).replace("[]", arrayDescriptor);
-                        }
-                        String normalized = name + paramsDescriptor;
-                        if (!methods.contains(name)) {
-                            methods.add(name);
-                        } else {
-                            methods.add(normalized);
-                        }
+                        int i = element.indexOf('(');
+                        String name = element.substring(0, i);
+                        String params = element.substring(i + 1, element.indexOf(")"));
+                        String paramsDescriptor = params.length() != 0 ? tokenSeparator + params.replace(dotSeparator, tokenSeparator).replace(", ", doubleSeparator).replace("[]", arrayDescriptor) : "";
+                        methods.add(!methods.contains(name) ? name : name + paramsDescriptor);
                     }
-                } else if (!Utils.isEmpty(element)) {
-                    //field
+                } else if (!element.isEmpty()) {
                     fields.add(element);
                 }
-            }
+            });
 
-            //add class and it's fields and methods
-            sb.append(repeat("\t", indent++)).append("public interface ").append(getNonDuplicateName(className, typePaths, typePaths.size() - 1)).append(" {\n");
-
-            //add fields
-            if (!fields.isEmpty()) {
-                sb.append(repeat("\t", indent++)).append("public interface fields {\n");
-                for (String field : fields) {
-                    sb.append(repeat("\t", indent)).append("public interface ").append(getNonDuplicateName(field, typePaths)).append(" {}\n");
-                }
-                sb.append(repeat("\t", --indent)).append("}\n");
-            }
-
-            //add methods
-            if (!methods.isEmpty()) {
-                sb.append(repeat("\t", indent++)).append("public interface methods {\n");
-                for (String method : methods) {
-                    String methodName = getNonDuplicateName(method, fields);
-
-                    sb.append(repeat("\t", indent)).append("public interface ").append(getNonDuplicateName(methodName, typePaths)).append(" {}\n");
-                }
-                sb.append(repeat("\t", --indent)).append("}\n");
-            }
-
-            //add annotations
-            if (!annotations.isEmpty()) {
-                sb.append(repeat("\t", indent++)).append("public interface annotations {\n");
-                for (String annotation : annotations) {
-                    String nonDuplicateName = annotation;
-                    nonDuplicateName = getNonDuplicateName(nonDuplicateName, typePaths);
-                    sb.append(repeat("\t", indent)).append("public interface ").append(nonDuplicateName).append(" {}\n");
-                }
-                sb.append(repeat("\t", --indent)).append("}\n");
-            }
+            int i = indentOpen(typePaths, prevPaths);
+            addPackages(typePaths, i);
+            addClass(typePaths, className);
+            addFields(typePaths, fields);
+            addMethods(typePaths, fields, methods);
+            addAnnotations(typePaths, annotations);
 
             prevPaths = typePaths;
-        }
+        });
 
-
-        //close indention
-        for (int j = prevPaths.size(); j >= 1; j--) {
-            sb.append(repeat("\t", j)).append("}\n");
-        }
-
-        return sb.toString();
+        indentClose(prevPaths);
     }
 
-    private String getNonDuplicateName(String candidate, List<String> prev, int offset) {
+    protected int indentOpen(List<String> typePaths, List<String> prevPaths) {
+        int i = 0;
+        while (i < Math.min(typePaths.size(), prevPaths.size()) && typePaths.get(i).equals(prevPaths.get(i))) {
+            i++;
+        }
+        for (int j = prevPaths.size(); j > i; j--) {
+            sb.append(indent(--indent)).append("}\n");
+        }
+        return i;
+    }
+
+    protected void indentClose(List<String> prevPaths) {
+        for (int j = prevPaths.size(); j >= 1; j--) {
+            sb.append(indent(j)).append("}\n");
+        }
+    }
+
+    protected void addPackages(List<String> typePaths, int i) {
+        for (int j = i; j < typePaths.size() - 1; j++) {
+            sb.append(indent(indent++)).append("interface ").append(uniqueName(typePaths.get(j), typePaths, j)).append(" {\n");
+        }
+    }
+
+    protected void addClass(List<String> typePaths, String className) {
+        sb.append(indent(indent++)).append("interface ").append(uniqueName(className, typePaths, typePaths.size() - 1)).append(" {\n");
+    }
+
+    protected void addFields(List<String> typePaths, List<String> fields) {
+        if (!fields.isEmpty()) {
+            sb.append(indent(indent++)).append("interface fields {\n");
+            for (String field : fields) {
+                sb.append(indent(indent)).append("interface ").append(uniqueName(field, typePaths)).append(" {}\n");
+            }
+            sb.append(indent(--indent)).append("}\n");
+        }
+    }
+
+    protected void addMethods(List<String> typePaths, List<String> fields, List<String> methods) {
+        if (!methods.isEmpty()) {
+            sb.append(indent(indent++)).append("interface methods {\n");
+            for (String method : methods) {
+                String methodName = uniqueName(method, fields);
+                sb.append(indent(indent)).append("interface ").append(uniqueName(methodName, typePaths)).append(" {}\n");
+            }
+            sb.append(indent(--indent)).append("}\n");
+        }
+    }
+
+    protected void addAnnotations(List<String> typePaths, List<String> annotations) {
+        if (!annotations.isEmpty()) {
+            sb.append(indent(indent++)).append("interface annotations {\n");
+            for (String annotation : annotations) {
+                sb.append(indent(indent)).append("interface ").append(uniqueName(annotation, typePaths)).append(" {}\n");
+            }
+            sb.append(indent(--indent)).append("}\n");
+        }
+    }
+
+    private String uniqueName(String candidate, List<String> prev, int offset) {
         String normalized = normalize(candidate);
         for (int i = 0; i < offset; i++) {
             if (normalized.equals(prev.get(i))) {
-                return getNonDuplicateName(normalized + tokenSeparator, prev, offset);
+                return uniqueName(normalized + tokenSeparator, prev, offset);
             }
         }
-
         return normalized;
     }
 
@@ -247,78 +218,11 @@ public class JavaCodeSerializer implements Serializer {
         return candidate.replace(dotSeparator, pathSeparator);
     }
 
-    private String getNonDuplicateName(String candidate, List<String> prev) {
-        return getNonDuplicateName(candidate, prev, prev.size());
+    private String uniqueName(String candidate, List<String> prev) {
+        return uniqueName(candidate, prev, prev.size());
     }
 
-    //
-    public static Class<?> resolveClassOf(final Class element) throws ClassNotFoundException {
-        Class<?> cursor = element;
-        LinkedList<String> ognl = new LinkedList<>();
-
-        while (cursor != null) {
-            ognl.addFirst(cursor.getSimpleName());
-            cursor = cursor.getDeclaringClass();
-        }
-
-        String classOgnl = join(ognl.subList(1, ognl.size()), ".").replace(".$", "$");
-        return Class.forName(classOgnl);
-    }
-
-    public static Class<?> resolveClass(final Class aClass) {
-        try {
-            return resolveClassOf(aClass);
-        } catch (Exception e) {
-            throw new ReflectionsException("could not resolve to class " + aClass.getName(), e);
-        }
-    }
-
-    public static Field resolveField(final Class aField) {
-        try {
-            String name = aField.getSimpleName();
-            Class<?> declaringClass = aField.getDeclaringClass().getDeclaringClass();
-            return resolveClassOf(declaringClass).getDeclaredField(name);
-        } catch (Exception e) {
-            throw new ReflectionsException("could not resolve to field " + aField.getName(), e);
-        }
-    }
-
-    public static Annotation resolveAnnotation(Class annotation) {
-        try {
-            String name = annotation.getSimpleName().replace(pathSeparator, dotSeparator);
-            Class<?> declaringClass = annotation.getDeclaringClass().getDeclaringClass();
-            Class<?> aClass = resolveClassOf(declaringClass);
-            Class<? extends Annotation> aClass1 = (Class<? extends Annotation>) ReflectionUtils.forName(name);
-            Annotation annotation1 = aClass.getAnnotation(aClass1);
-            return annotation1;
-        } catch (Exception e) {
-            throw new ReflectionsException("could not resolve to annotation " + annotation.getName(), e);
-        }
-    }
-
-    public static Method resolveMethod(final Class aMethod) {
-        String methodOgnl = aMethod.getSimpleName();
-
-        try {
-            String methodName;
-            Class<?>[] paramTypes;
-            if (methodOgnl.contains(tokenSeparator)) {
-                methodName = methodOgnl.substring(0, methodOgnl.indexOf(tokenSeparator));
-                String[] params = methodOgnl.substring(methodOgnl.indexOf(tokenSeparator) + 1).split(doubleSeparator);
-                paramTypes = new Class<?>[params.length];
-                for (int i = 0; i < params.length; i++) {
-                    String typeName = params[i].replace(arrayDescriptor, "[]").replace(pathSeparator, dotSeparator);
-                    paramTypes[i] = ReflectionUtils.forName(typeName);
-                }
-            } else {
-                methodName = methodOgnl;
-                paramTypes = null;
-            }
-
-            Class<?> declaringClass = aMethod.getDeclaringClass().getDeclaringClass();
-            return resolveClassOf(declaringClass).getDeclaredMethod(methodName, paramTypes);
-        } catch (Exception e) {
-            throw new ReflectionsException("could not resolve to method " + aMethod.getName(), e);
-        }
+    private String indent(int times) {
+        return IntStream.range(0, times).mapToObj(i -> "  ").collect(Collectors.joining());
     }
 }

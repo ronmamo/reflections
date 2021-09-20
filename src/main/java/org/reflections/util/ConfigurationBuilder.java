@@ -3,14 +3,8 @@ package org.reflections.util;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
-import org.reflections.adapters.JavaReflectionAdapter;
-import org.reflections.adapters.JavassistAdapter;
-import org.reflections.adapters.MetadataAdapter;
 import org.reflections.scanners.Scanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.serializers.Serializer;
-import org.reflections.serializers.XmlSerializer;
+import org.reflections.scanners.Scanners;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -18,59 +12,50 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * a fluent builder for {@link org.reflections.Configuration}, to be used for constructing a {@link org.reflections.Reflections} instance
- * <p>usage:
- * <pre>
- *      new Reflections(
- *          new ConfigurationBuilder()
- *              .filterInputsBy(new FilterBuilder().include("your project's common package prefix here..."))
- *              .setUrls(ClasspathHelper.forClassLoader())
- *              .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner().filterResultsBy(myClassAnnotationsFilter)));
- * </pre>
- * <br>{@link #executorService} is used optionally used for parallel scanning. if value is null then scanning is done in a simple for loop
- * <p>defaults: accept all for {@link #inputsFilter},
- * {@link #executorService} is null,
- * {@link #serializer} is {@link org.reflections.serializers.XmlSerializer}
+ * {@link org.reflections.Configuration} builder for instantiating Reflections using {@link Reflections#Reflections(org.reflections.Configuration)}
+ * <pre>{@code
+ * new Reflections(
+ *   new ConfigurationBuilder()
+ *     .setUrls(ClasspathHelper.forPackage("org.reflections"))
+ *     .addScanners(Scanners.SubTypes, Scanners.TypesAnnotated.filterResultsBy(filter))
+ *     .filterInputsBy(new FilterBuilder().includePackage("org.reflections")))
+ * }</pre>
+ * <p>defaults scanners: {@link Scanners#SubTypes} and {@link Scanners#TypesAnnotated}
  */
 public class ConfigurationBuilder implements Configuration {
-    private Set<Scanner> scanners;
+    private final Set<Scanner> scanners;
     private Set<URL> urls;
-    /*lazy*/ protected MetadataAdapter metadataAdapter;
     private Predicate<String> inputsFilter;
-    /*lazy*/ private Serializer serializer;
-    private ExecutorService executorService;
+    private boolean isParallel = true;
     private ClassLoader[] classLoaders;
     private boolean expandSuperTypes = true;
 
     public ConfigurationBuilder() {
-        scanners = new HashSet<>(Arrays.asList(new TypeAnnotationsScanner(), new SubTypesScanner()));
+        scanners = new HashSet<>(Arrays.asList(Scanners.TypesAnnotated, Scanners.SubTypes));
         urls = new HashSet<>();
     }
 
-    /** constructs a {@link ConfigurationBuilder} using the given parameters, in a non statically typed way.
-     * that is, each element in {@code params} is guessed by it's type and populated into the configuration.
+    /** constructs a {@link ConfigurationBuilder}
+     * <p>each parameter in {@code params} is referred by its type:
      * <ul>
-     *     <li>{@link String} - add urls using {@link ClasspathHelper#forPackage(String, ClassLoader...)} ()}</li>
-     *     <li>{@link Class} - add urls using {@link ClasspathHelper#forClass(Class, ClassLoader...)} </li>
-     *     <li>{@link ClassLoader} - use these classloaders in order to find urls in ClasspathHelper.forPackage(), ClasspathHelper.forClass() and for resolving types</li>
-     *     <li>{@link Scanner} - use given scanner, overriding the default scanners</li>
-     *     <li>{@link URL} - add the given url for scanning</li>
-     *     <li>{@code Object[]} - flatten and use each element as above</li>
+     *     <li>{@link String} - add urls using {@link ClasspathHelper#forPackage(String, ClassLoader...)} and an input filter
+     *     <li>{@link Class} - add urls using {@link ClasspathHelper#forClass(Class, ClassLoader...)} and an input filter
+     *     <li>{@link Scanner} - use scanner, overriding default scanners
+     *     <li>{@link URL} - add url for scanning
+     *     <li>{@link Predicate} - override inputs filter
+     *     <li>{@link ClassLoader} - use these classloaders in order to find urls using ClasspathHelper and for resolving types
+     *     <li>{@code Object[]} - flatten and use each element as above
      * </ul>
      *
      * an input {@link FilterBuilder} will be set according to given packages.
-     * <p>use any parameter type in any order. this constructor uses instanceof on each param and instantiate a {@link ConfigurationBuilder} appropriately.
      * */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static ConfigurationBuilder build(final Object... params) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
@@ -89,7 +74,7 @@ public class ConfigurationBuilder implements Configuration {
         List<ClassLoader> loaders = new ArrayList<>();
         for (Object param : parameters) if (param instanceof ClassLoader) loaders.add((ClassLoader) param);
 
-        ClassLoader[] classLoaders = loaders.isEmpty() ? null : loaders.toArray(new ClassLoader[loaders.size()]);
+        ClassLoader[] classLoaders = loaders.isEmpty() ? null : loaders.toArray(new ClassLoader[0]);
         FilterBuilder filter = new FilterBuilder();
         List<Scanner> scanners = new ArrayList<>();
 
@@ -100,16 +85,16 @@ public class ConfigurationBuilder implements Configuration {
             }
             else if (param instanceof Class) {
                 if (Scanner.class.isAssignableFrom((Class) param)) {
-                    try { builder.addScanners(((Scanner) ((Class) param).newInstance())); } catch (Exception e) { /*fallback*/ }
+                    try { builder.addScanners(((Scanner) ((Class) param).getDeclaredConstructor().newInstance())); }
+                    catch (Exception e) { /*fallback*/ }
                 }
                 builder.addUrls(ClasspathHelper.forClass((Class) param, classLoaders));
-                filter.includePackage(((Class) param));
+                filter.includePackage(((Class) param).getPackage().getName());
             }
             else if (param instanceof Scanner) { scanners.add((Scanner) param); }
             else if (param instanceof URL) { builder.addUrls((URL) param); }
-            else if (param instanceof ClassLoader) { /* already taken care */ }
-            else if (param instanceof Predicate) { filter.add((Predicate<String>) param); }
-            else if (param instanceof ExecutorService) { builder.setExecutorService((ExecutorService) param); }
+            // predicate - set override inputFilter
+            else if (param instanceof Predicate) { filter = new FilterBuilder().add((Predicate<String>) param); }
             else throw new ReflectionsException("could not use param " + param);
         }
 
@@ -125,7 +110,7 @@ public class ConfigurationBuilder implements Configuration {
         }
 
         builder.filterInputsBy(filter);
-        if (!scanners.isEmpty()) { builder.setScanners(scanners.toArray(new Scanner[scanners.size()])); }
+        if (!scanners.isEmpty()) { builder.setScanners(scanners.toArray(new Scanner[0])); }
         if (!loaders.isEmpty()) { builder.addClassLoaders(loaders); }
 
         return builder;
@@ -138,6 +123,8 @@ public class ConfigurationBuilder implements Configuration {
         return this;
     }
 
+    @Override
+    /* @inherited */
     public Set<Scanner> getScanners() {
 		return scanners;
 	}
@@ -154,6 +141,8 @@ public class ConfigurationBuilder implements Configuration {
         return this;
     }
 
+    @Override
+    /* @inherited */
     public Set<URL> getUrls() {
         return urls;
     }
@@ -190,28 +179,8 @@ public class ConfigurationBuilder implements Configuration {
         return this;
     }
 
-    /** returns the metadata adapter.
-     * if javassist library exists in the classpath, this method returns {@link JavassistAdapter} otherwise defaults to {@link JavaReflectionAdapter}.
-     * <p>the {@link JavassistAdapter} is preferred in terms of performance and class loading. */
-    public MetadataAdapter getMetadataAdapter() {
-        if (metadataAdapter != null) return metadataAdapter;
-        else {
-            try {
-                return (metadataAdapter = new JavassistAdapter());
-            } catch (Throwable e) {
-                if (Reflections.log != null)
-                    Reflections.log.warn("could not create JavassistAdapter, using JavaReflectionAdapter", e);
-                return (metadataAdapter = new JavaReflectionAdapter());
-            }
-        }
-    }
-
-    /** sets the metadata adapter used to fetch metadata from classes */
-    public ConfigurationBuilder setMetadataAdapter(final MetadataAdapter metadataAdapter) {
-        this.metadataAdapter = metadataAdapter;
-        return this;
-    }
-
+    @Override
+    /* @inherited */
     public Predicate<String> getInputsFilter() {
         return inputsFilter;
     }
@@ -229,63 +198,32 @@ public class ConfigurationBuilder implements Configuration {
         return this;
     }
 
-    public ExecutorService getExecutorService() {
-        return executorService;
+    @Override
+    /* @inherited */
+    public boolean isParallel() {
+        return isParallel;
     }
 
-    /** sets the executor service used for scanning. */
-    public ConfigurationBuilder setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-        return this;
+    /** */
+    public void setParallel(boolean parallel) {
+        isParallel = parallel;
     }
 
-    /** sets the executor service used for scanning to ThreadPoolExecutor with core size as {@link java.lang.Runtime#availableProcessors()}
-     * <p>default is ThreadPoolExecutor with a single core */
-    public ConfigurationBuilder useParallelExecutor() {
-        return useParallelExecutor(Runtime.getRuntime().availableProcessors());
-    }
-
-    /** sets the executor service used for scanning to ThreadPoolExecutor with core size as the given availableProcessors parameter.
-     * the executor service spawns daemon threads by default.
-     * <p>default is ThreadPoolExecutor with a single core */
-    public ConfigurationBuilder useParallelExecutor(final int availableProcessors) {
-        ThreadFactory threadFactory = new ThreadFactory() {
-            private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("org.reflections-scanner-" + threadNumber.getAndIncrement());
-                t.setDaemon(true);
-                return t;
-            }
-        };
-        setExecutorService(Executors.newFixedThreadPool(availableProcessors, threadFactory));
-        return this;
-    }
-
-    public Serializer getSerializer() {
-        return serializer != null ? serializer : (serializer = new XmlSerializer()); //lazily defaults to XmlSerializer
-    }
-
-    /** sets the serializer used when issuing {@link org.reflections.Reflections#save} */
-    public ConfigurationBuilder setSerializer(Serializer serializer) {
-        this.serializer = serializer;
-        return this;
-    }
-
-    /** get class loader, might be used for scanning or resolving methods/fields */
+    @Override
+    /* @inherited */
     public ClassLoader[] getClassLoaders() {
         return classLoaders;
     }
 
     @Override
+    /* @inherited */
     public boolean shouldExpandSuperTypes() {
         return expandSuperTypes;
     }
 
     /**
      * if set to true, Reflections will expand super types after scanning.
-     * <p>see {@link org.reflections.Reflections#expandSuperTypes()}
+     * <p>see {@link org.reflections.Reflections#expandSuperTypes(Map)}
      */
     public ConfigurationBuilder setExpandSuperTypes(boolean expandSuperTypes) {
         this.expandSuperTypes = expandSuperTypes;
@@ -313,6 +251,6 @@ public class ConfigurationBuilder implements Configuration {
 
     /** add class loader, might be used for resolving methods/fields */
     public ConfigurationBuilder addClassLoaders(Collection<ClassLoader> classLoaders) {
-        return addClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]));
+        return addClassLoaders(classLoaders.toArray(new ClassLoader[0]));
     }
 }

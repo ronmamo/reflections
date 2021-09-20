@@ -1,27 +1,28 @@
 package org.reflections;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.reflections.scanners.MethodParameterNamesScanner;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
 
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.reflections.MoreTestsModel.*;
+import static org.reflections.ReflectionUtils.Annotations;
+import static org.reflections.ReflectionUtils.SuperTypes;
 import static org.reflections.ReflectionUtilsTest.toStringSorted;
 import static org.reflections.ReflectionsTest.are;
+import static org.reflections.scanners.Scanners.SubTypes;
 
 public class MoreTests {
 
@@ -34,21 +35,23 @@ public class MoreTests {
 
     @Test
     public void no_exception_when_configured_scanner_store_is_empty() {
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("my.project.prefix"))
-                .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner())
-                .filterInputsBy(new FilterBuilder().includePackage("my.project.prefix")));
+        Reflections reflections = new Reflections(
+            new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forClass(TestModel.class))
+                .setScanners());
 
-        reflections.getSubTypesOf(String.class);
+        assertNull(reflections.getStore().get(SubTypes.index()));
+        assertTrue(reflections.getSubTypesOf(TestModel.C1.class).isEmpty());
+        assertTrue(reflections.get(SubTypes.of(TestModel.C1.class)).isEmpty());
     }
 
     @Test
     public void getAllAnnotated_returns_meta_annotations() {
         Reflections reflections = new Reflections(MoreTestsModel.class);
         for (Class<?> type: reflections.getTypesAnnotatedWith(Meta.class)) {
-            Set<Annotation> allAnnotations = ReflectionUtils.getAllAnnotations(type);
+            Set<Annotation> allAnnotations = ReflectionUtils.get(Annotations.of(type));
             List<? extends Class<? extends Annotation>> collect = allAnnotations.stream().map(Annotation::annotationType).collect(Collectors.toList());
-            Assert.assertTrue(collect.contains(Meta.class));
+            assertTrue(collect.contains(Meta.class));
         }
 
         Meta meta = new Meta() {
@@ -56,19 +59,10 @@ public class MoreTests {
             @Override public Class<? extends Annotation> annotationType() { return Meta.class; }
         };
         for (Class<?> type: reflections.getTypesAnnotatedWith(meta)) {
-            Set<Annotation> allAnnotations = ReflectionUtils.getAllAnnotations(type);
+            Set<Annotation> allAnnotations = ReflectionUtils.get(Annotations.of(type));
             List<? extends Class<? extends Annotation>> collect = allAnnotations.stream().map(Annotation::annotationType).collect(Collectors.toList());
-            Assert.assertTrue(collect.contains(Meta.class));
+            assertTrue(collect.contains(Meta.class));
         }
-    }
-
-    @Test
-    public void test_java_9_subtypes_of_Object() {
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forClass(Object.class))
-                .setScanners(new SubTypesScanner(false)));
-        Set<?> components = reflections.getSubTypesOf(Object.class);
-        assertFalse(components.isEmpty());
     }
 
     @Test
@@ -94,24 +88,23 @@ public class MoreTests {
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
 
         Class<?> aClass = Class.forName("another.project.AnotherTestModel$C2", true, classLoader);
-        assertEquals(toStringSorted(ReflectionUtils.getAllSuperTypes(aClass)),
-                "[class another.project.AnotherTestModel$C2, " +
-                        "class org.reflections.TestModel$C1, " +
+        assertEquals(toStringSorted(ReflectionUtils.get(SuperTypes.of(aClass), t -> !Object.class.equals(t))),
+                "[class org.reflections.TestModel$C1, " +
                         "interface org.reflections.TestModel$I1, " +
                         "interface org.reflections.TestModel$I2]");
     }
 
     @Test
     public void resources_scanner_filters_classes() {
-        Reflections reflections = new Reflections(new ResourcesScanner());
-        Set<String> keys = reflections.getStore().keys(ResourcesScanner.class.getSimpleName());
-        assertTrue(keys.stream().noneMatch(res -> res.endsWith(".class")));
+        Reflections reflections = new Reflections(Scanners.Resources);
+        Collection<String> resources = reflections.getResources(".*");
+        assertTrue(resources.stream().noneMatch(res -> res.endsWith(".class")));
     }
 
     @Test
     public void test_repeatable() {
         Reflections ref = new Reflections(MoreTestsModel.class);
-        Set<Class<?>> clazzes = ref.getTypesAnnotatedWith(Name.class);
+        Collection<Class<?>> clazzes = ref.getTypesAnnotatedWith(Name.class);
         assertTrue(clazzes.contains(SingleName.class));
         assertFalse(clazzes.contains(MultiName.class));
 
@@ -125,13 +118,13 @@ public class MoreTests {
         Reflections reflections = new Reflections(MoreTestsModel.class, new MethodParameterNamesScanner());
 
         Class<ParamNames> clazz = ParamNames.class;
-        assertEquals(reflections.getConstructorParamNames(clazz.getConstructor(String.class)).toString(),
+        assertEquals(reflections.getMemberParameterNames(clazz.getConstructor(String.class)).toString(),
                 "[param1]");
-        assertEquals(reflections.getMethodParamNames(clazz.getMethod("test", String.class, String.class)).toString(),
+        assertEquals(reflections.getMemberParameterNames(clazz.getMethod("test", String.class, String.class)).toString(),
                 "[testParam1, testParam2]");
-        assertEquals(reflections.getMethodParamNames(clazz.getMethod("test", String.class)).toString(),
+        assertEquals(reflections.getMemberParameterNames(clazz.getMethod("test", String.class)).toString(),
                 "[testParam]");
-        assertEquals(reflections.getMethodParamNames(clazz.getMethod("test2", String.class)).toString(),
+        assertEquals(reflections.getMemberParameterNames(clazz.getMethod("test2", String.class)).toString(),
                 "[testParam]");
 
     }

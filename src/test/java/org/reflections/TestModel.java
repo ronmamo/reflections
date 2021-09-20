@@ -1,12 +1,10 @@
 package org.reflections;
 
-import java.lang.annotation.Retention;
 import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- *
- */
 @SuppressWarnings({"ALL"})
 public interface TestModel {
     public @Retention(RUNTIME) @Inherited @interface MAI1 {}
@@ -22,8 +20,8 @@ public interface TestModel {
         public abstract String value();
     }
 
-    public @AC2("grr...") class C2 extends C1 {}
-    public @AC2("ugh?!") class C3 extends C1 {}
+    public @AC2("") class C2 extends C1 {}
+    public @AC2("ac2") class C3 extends C1 {}
 
     public @Retention(RUNTIME) @interface AM1 {
         public abstract String value();
@@ -49,28 +47,10 @@ public interface TestModel {
     }
     
     public class C5 extends C3 {}
-    public @AC2("ugh?!") interface I3 {}
+    public @AC2("ac2") interface I3 {}
     public class C6 implements I3 {}
 
-    public @Retention(RUNTIME) @AC2("ugh?!") @interface AC3 { }
+    public @Retention(RUNTIME) @AC2("ac2") @interface AC3 { }
     public @AC3 class C7 {}
 
-    public interface Usage {
-        public static class C1 {
-            C2 c2 = new C2();
-            public C1() { }
-            public C1(C2 c2) { this.c2 = c2; }
-            public void method() { c2.method(); }
-            public void method(String string) { c2.method(); }
-        }
-        public static class C2 {
-            C1 c1 = new C1();
-            public void method() {
-                c1 = new C1();
-                c1 = new C1(this);
-                c1.method();
-                c1.method("");
-            }
-        }
-    }
 }

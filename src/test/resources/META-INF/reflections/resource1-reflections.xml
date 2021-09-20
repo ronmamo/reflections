@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <Reflections>
-    <MethodAnnotationsScanner>
+    <MethodsAnnotated>
         <entry>
             <key>org.reflections.TestModel$AM1</key>
             <values>
@@ -12,5 +12,5 @@
                 <value>org.reflections.TestModel$C4.m1()</value>
             </values>
         </entry>
-    </MethodAnnotationsScanner>
+    </MethodsAnnotated>
 </Reflections>

@@ -1,124 +1,90 @@
 package org.reflections.serializers;
 
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.Store;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-/** serialization of Reflections to xml
- *
- * <p>an example of produced xml:
- * <pre>
- * &#60?xml version="1.0" encoding="UTF-8"?>
- *
- * &#60Reflections>
- *  &#60SubTypesScanner>
- *      &#60entry>
- *          &#60key>com.google.inject.Module&#60/key>
- *          &#60values>
- *              &#60value>fully.qualified.name.1&#60/value>
- *              &#60value>fully.qualified.name.2&#60/value>
- * ...
- * </pre>
- * */
+/**
+ * xml serialization for {@link org.reflections.Reflections} <pre>{@code reflections.save(file, new XmlSerializer())}</pre>
+ * <p></p>an example of produced xml:
+ * <pre>{@code
+ * <Reflections>
+ *   <SubTypes>
+ *     <entry>
+ *       <key>org.reflections.TestModel$C1</key>
+ *       <values>
+ *         <value>org.reflections.TestModel$C2</value>
+ *         <value>org.reflections.TestModel$C3</value>
+ *       </values>
+ *     </entry>
+ *   </SubTypes>
+ *   <TypesAnnotated>
+ *     <entry>
+ *       <key>org.reflections.TestModel$AC2</key>
+ *       <values>
+ *         <value>org.reflections.TestModel$C2</value>
+ *         <value>org.reflections.TestModel$C3</value>
+ *       </values>
+ *     </entry>
+ *   </TypesAnnotated>
+ * </Reflections>
+ * }</pre>
+ */
 public class XmlSerializer implements Serializer {
 
-    public Reflections read(InputStream inputStream) {
-        Reflections reflections;
-        try {
-            Constructor<Reflections> constructor = Reflections.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            reflections = constructor.newInstance();
-        } catch (Exception e) {
-            reflections = new Reflections(new ConfigurationBuilder());
-        }
+	public Reflections read(InputStream inputStream) {
+		try {
+			Document document = new SAXReader().read(inputStream);
+			Map<String, Map<String, Set<String>>> storeMap =
+				document.getRootElement()
+					.elements().stream()
+					.collect(Collectors.toMap(Node::getName,
+						index -> index.elements().stream().collect(Collectors.toMap(
+							entry -> entry.element("key").getText(),
+							entry -> entry.element("values").elements().stream().map(Element::getText).collect(Collectors.toSet())))));
+			return new Reflections(new Store(storeMap));
+		} catch (Exception e) {
+			throw new ReflectionsException("could not read.", e);
+		}
+	}
 
-        try {
-            Document document = new SAXReader().read(inputStream);
-            for (Object e1 : document.getRootElement().elements()) {
-                Element index = (Element) e1;
-                for (Object e2 : index.elements()) {
-                    Element entry = (Element) e2;
-                    Element key = entry.element("key");
-                    Element values = entry.element("values");
-                    for (Object o3 : values.elements()) {
-                        Element value = (Element) o3;
-                        reflections.getStore().put(index.getName(), key.getText(), value.getText());
-                    }
-                }
-            }
-        } catch (DocumentException e) {
-            throw new ReflectionsException("could not read.", e);
-        } catch (Throwable e) {
-            throw new RuntimeException("Could not read. Make sure relevant dependencies exist on classpath.", e);
-        }
+	public File save(Reflections reflections, String filename) {
+		File file = Serializer.prepareFile(filename);
+		try (FileOutputStream out = new FileOutputStream(file)) {
+			new XMLWriter(out, OutputFormat.createPrettyPrint())
+				.write(createDocument(reflections.getStore()));
+		} catch (Exception e) {
+			throw new ReflectionsException("could not save to file " + filename, e);
+		}
+		return file;
+	}
 
-        return reflections;
-    }
-
-    public File save(final Reflections reflections, final String filename) {
-        File file = Utils.prepareFile(filename);
-
-
-        try {
-            Document document = createDocument(reflections);
-            XMLWriter xmlWriter = new XMLWriter(new FileOutputStream(file), OutputFormat.createPrettyPrint());
-            xmlWriter.write(document);
-            xmlWriter.close();
-        } catch (IOException e) {
-            throw new ReflectionsException("could not save to file " + filename, e);
-        } catch (Throwable e) {
-            throw new RuntimeException("Could not save to file " + filename + ". Make sure relevant dependencies exist on classpath.", e);
-        }
-
-        return file;
-    }
-
-    public String toString(final Reflections reflections) {
-        Document document = createDocument(reflections);
-
-        try {
-            StringWriter writer = new StringWriter();
-            XMLWriter xmlWriter = new XMLWriter(writer, OutputFormat.createPrettyPrint());
-            xmlWriter.write(document);
-            xmlWriter.close();
-            return writer.toString();
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
-    }
-
-    private Document createDocument(final Reflections reflections) {
-        Store map = reflections.getStore();
-
-        Document document = DocumentFactory.getInstance().createDocument();
-        Element root = document.addElement("Reflections");
-        for (String indexName : map.keySet()) {
-            Element indexElement = root.addElement(indexName);
-            for (String key : map.keys(indexName)) {
-                Element entryElement = indexElement.addElement("entry");
-                entryElement.addElement("key").setText(key);
-                Element valuesElement = entryElement.addElement("values");
-                for (String value : map.get(indexName, key)) {
-                    valuesElement.addElement("value").setText(value);
-                }
-            }
-        }
-        return document;
-    }
+	private Document createDocument(Store store) {
+		Document document = DocumentFactory.getInstance().createDocument();
+		Element root = document.addElement("Reflections");
+		store.forEach((index, map) -> {
+			Element indexElement = root.addElement(index);
+			map.forEach((key, values) -> {
+				Element entryElement = indexElement.addElement("entry");
+				entryElement.addElement("key").setText(key);
+				Element valuesElement = entryElement.addElement("values");
+				values.forEach(value -> valuesElement.addElement("value").setText(value));
+			});
+		});
+		return document;
+	}
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <Reflections>
-    <FieldAnnotationsScanner>
+    <FieldsAnnotated>
         <entry>
             <key>org.reflections.TestModel$AF1</key>
             <values>
@@ -9,5 +9,5 @@
                 <value>org.reflections.TestModel$C4.f2</value>
             </values>
         </entry>
-    </FieldAnnotationsScanner>
+    </FieldsAnnotated>
 </Reflections>
