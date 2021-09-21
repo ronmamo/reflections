@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
  *   <li>{@link #MethodsSignature}</li>
  *   <li>{@link #MethodsReturn}</li>
  * </ul>
+ * <i>note that scanners must be configured in {@link org.reflections.Configuration} in order to be queried</i>
  * */
 public enum Scanners implements Scanner, QueryBuilder, NameHelper {
 
