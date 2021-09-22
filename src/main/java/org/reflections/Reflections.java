@@ -73,22 +73,21 @@ import static org.reflections.scanners.Scanners.*;
  * }</pre>
  * <p>{@link Scanners} provided for scan and query using {@link Reflections#get(QueryFunction)}
  * <pre>{@code
- * Set<Class<? extends Module>> modules = reflections.get(SubTypes.of(com.google.inject.Module.class));
- * Set<Class<?>> singletons = reflections.get(TypesAnnotated.with(javax.inject.Singleton.class));
+ * Set<Class<? extends Module>> modules = reflections.get(SubTypes.of(com.google.inject.Module.class).asClass());
+ * Set<Class<?>> singletons = reflections.get(TypesAnnotated.with(javax.inject.Singleton.class).asClass());
  *
  * Set<String> properties =   reflections.get(Resources.with(".*\\.properties"));
- * Set<Constructor> injects = reflections.get(ConstructorsAnnotated.with(javax.inject.Inject.class));
- * Set<Method> deprecated =   reflections.get(MethodsAnnotated.with(javax.ws.rs.Path.class));
- * Set<Field> ids =           reflections.get(FieldsAnnotated.with(javax.persistence.Id.class));
+ * Set<Constructor> injects = reflections.get(ConstructorsAnnotated.with(javax.inject.Inject.class).as(Constructor.class));
+ * Set<Method> deprecated =   reflections.get(MethodsAnnotated.with(javax.ws.rs.Path.class).as(Method.class));
+ * Set<Field> ids =           reflections.get(FieldsAnnotated.with(javax.persistence.Id.class).as(Field.class));
  *
- * Set<Method> voidMethods =  reflections.get(MethodsReturn.with(void.class));
- * Set<Method> someMethods =  reflections.get(MethodsSignature.of(long.class, int.class));
- * Set<Method> pathMethods =  reflections.get(MethodsParameter.of(PathParam.class));
+ * Set<Method> voidMethods =  reflections.get(MethodsReturn.with(void.class).as(Method.class));
+ * Set<Method> someMethods =  reflections.get(MethodsSignature.of(long.class, int.class).as(Method.class));
+ * Set<Method> pathMethods =  reflections.get(MethodsParameter.of(PathParam.class).as(Method.class));
  * }</pre>
  * <p>Other scanners provided such as {@link MethodParameterNamesScanner}, {@link MemberUsageScanner}.
  * <p><i>Note that previous 0.9.x API is still supported though marked for removal</i>
  * <p></p>
- * <p>Use {@link #getStore()} to access and query the {@link Store} multimap directly
  * <p>Persist scanned metadata using {@link #save(String)}, and collect saved metadata using {@link #collect(String, java.util.function.Predicate, org.reflections.serializers.Serializer)}
  * <p><i>Make sure to scan all the transitively relevant packages, see more {@link #expandSuperTypes(Map)}
  * <p><p><p>For Javadoc, source code, and more information about Reflections Library, see http://github.com/ronmamo/reflections/

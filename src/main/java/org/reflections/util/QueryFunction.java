@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * sam function for store query {@link #apply(C)} -> {@code Set<T>}
+ * sam function for store query {@code apply(C) -> Set<T>}
  * <pre>{@code QueryFunction<T> query = ctx -> ctx.get(key) }</pre>
  * <p>supports functional composition {@link #filter(Predicate)}, {@link #map(Function)}, {@link #flatMap(Function)}, ...
  */
@@ -67,7 +67,7 @@ public interface QueryFunction<C, T> extends Function<C, Set<T>>, NameHelper {
 			.flatMap(Collection::stream).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
-	/** convert to given @{code type}, uses {@link NameHelper#forName(java.lang.String, java.lang.Class, java.lang.ClassLoader...)}
+	/** convert to given {@code type}, uses {@link NameHelper#forName(java.lang.String, java.lang.Class, java.lang.ClassLoader...)}
 	 * <pre>{@code Methods.of(type).as(Method.class)}</pre>*/
 	default <R> QueryFunction<C, R> as(Class<? extends R> type, ClassLoader... loaders) {
 		return ctx -> {

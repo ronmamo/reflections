@@ -72,33 +72,39 @@ Note that:
 
 ### Query
 Once Reflections was instantiated and scanning was successful, it can be used for querying the indexed metadata.  
-Standard [Scanners](src/main/java/org/reflections/scanners/Scanners.java) are provided for query using `reflections.get()`  
+Standard [Scanners](src/main/java/org/reflections/scanners/Scanners.java) are provided for query using `reflections.get()`, for example:  
 
 ```java
 import static org.reflections.scanners.Scanners.*;
 
 // SubTypes
 Set<Class<? extends Module>> modules = 
-    reflections.get(SubTypes.of(com.google.inject.Module.class));
+  reflections.get(
+    SubTypes.of(Module.class).asClass());
 
 // TypesAnnotated
 Set<Class<?>> singletons = 
-    reflections.get(TypesAnnotated.with(javax.inject.Singleton.class));
+  reflections.get(
+    TypesAnnotated.with(Singleton.class).asClass());
 
 // MethodAnnotated
 Set<Method> resources =
-    reflections.get(MethodsAnnotated.with(javax.ws.rs.Path.class));
+  reflections.get(
+    MethodsAnnotated.with(GetMapping.class).as(Method.class));
 
 Set<Constructor> injectables = 
-    reflections.get(ConstructorsAnnotated.with(javax.inject.Inject.class));
+  reflections.get(
+    ConstructorsAnnotated.with(Inject.class).as(Constructor.class));
 
 // FieldsAnnotated
 Set<Field> ids = 
-    reflections.get(FieldsAnnotated.with(javax.persistence.Id.class));
+  reflections.get(
+    FieldsAnnotated.with(javax.persistence.Id.class).as(Field.class));
 
 // Resources
 Set<String> properties = 
-    reflections.get(Resources.with(".*\\.properties"));
+  reflections.get(
+    Resources.with(".*\\.properties"));
 ```
 
 Member scanners:
@@ -106,23 +112,28 @@ Member scanners:
 ```java
 // MethodsReturn
 Set<Method> voidMethods = 
-  reflections.get(MethodsReturn.with(void.class));
+  reflections.get(
+    MethodsReturn.with(void.class).as(Method.class));
 
 // MethodsSignature
 Set<Method> someMethods = 
-  reflections.get(MethodsSignature.of(long.class, int.class));
+  reflections.get(
+    MethodsSignature.of(long.class, int.class).as(Method.class));
 
 // MethodsParameter
 Set<Method> pathParam = 
-  reflections.get(MethodsParameter.of(PathParam.class));
+  reflections.get(
+    MethodsParameter.of(PathParam.class).as(Method.class));
 
 // ConstructorsSignature
 Set<Constructor> someConstructors = 
-  reflections.get(ConstructorsSignature.of(String.class));
+  reflections.get(
+    ConstructorsSignature.of(String.class).as(Constructor.class));
 
 // ConstructorsParameter
 Set<Constructor> pathParam = 
-  reflections.get(ConstructorsParameter.of(PathParam.class));
+  reflections.get(
+    ConstructorsParameter.of(PathParam.class).as(Constructor.class));
 ```
 
 See more examples in [ReflectionsQueryTest](src/test/java/org/reflections/ReflectionsQueryTest.java)
@@ -157,20 +168,11 @@ Apart from scanned classpath metadata, ReflectionsUtils provides convenient way 
 ```java
 import static org.reflections.ReflectionUtils.*;
 
-// SuperTypes
-Set<Class<?>> superTypes = get(SuperTypes.of(T));
-
-// Annotations
-Set<Annotation> annotations = get(Annotations.of(T));
-
-// Methods
-Set<Methods> methods = get(Methods.of(T));
-
-// Constructors
+Set<Class<?>>    superTypes   = get(SuperTypes.of(T));
+Set<Annotation>  annotations  = get(Annotations.of(T));
+Set<Methods>     methods      = get(Methods.of(T));
 Set<Constructor> constructors = get(Constructors.of(T));
-
-// Fields
-Set<Field> fields = get(Fields.of(T));
+Set<Field>       fields       = get(Fields.of(T));
 ```
 
 *Previous ReflectionUtils 0.9.x API is still supported though marked for removal, more info in the javadocs.*
@@ -182,7 +184,7 @@ Each Scanner and ReflectionUtils helper implements
 * `with()` or `of()` - function returns all transitive values
 
 For example, `Scanners.SubTypes.get(T)` return direct subtypes of T, 
-while `Scanners.SubTypes.of(T)` return all subtypes of subtypes hierarchy of T.
+while `Scanners.SubTypes.of(T)` return all subtypes of subtypes hierarchy of T. 
 Same goes for `Scanners.TypesAnnotated` and `ReflectionUtils.SuperTypes` etc.
 
 Next, each function implements [QueryFunction](src/main/java/org/reflections/util/QueryFunction.java), 
@@ -196,14 +198,15 @@ QueryFunction<Store, Method> queryGetters =
     .as(Method.class);
 ```
 
-Query function can be composed, for example getting annotations of methods of type:
+Query functions can be composed, for example getting annotations of methods of type:
 ```java
 QueryFunction<Store, Class<? extends Annotation>> queryAnnotations = 
   Annotations.of(Methods.of(C4.class))
     .map(Annotation::annotationType);
 ```
 
-More advanced queries in [ReflectionUtilsQueryTest](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections/ReflectionUtilsQueryTest.java).  
+See more examples in [ReflectionUtilsQueryTest](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections/ReflectionUtilsQueryTest.java).
+
 For example, getting merged annotations of controllers endpoint methods: 
 
 ```java
@@ -240,7 +243,7 @@ and then collect it on bootstrap with `Reflections.collect()` and avoid scanning
 
 - [AnnotationMergeCollector](src/main/java/org/reflections/util/AnnotationMergeCollector.java) - can be used to merge similar annotations.
 
-- [MemberUsageScanner](src/main/java/org/reflections/scanners/JavaCodeSerializer.java) - experimental scanner allow querying for static usages of packages/types/elements within the project.  
+- [MemberUsageScanner](src/main/java/org/reflections/scanners/MemberUsageScanner.java) - experimental scanner allow querying for static usages of packages/types/elements within the project.  
 
 ### Contribute
 Pull requests are welcomed!!
@@ -249,7 +252,7 @@ Dual licenced with Apache 2 and [WTFPL](http://www.wtfpl.net/), just do what the
 
 *This library is published as an act of giving and generosity, from developers to developers,
 to promote knowledge sharing and a--hole free working environments.  
-Please feel free to use it, and to contribute to the developers community in the same manner.*  
+Please feel free to use it, and to contribute to the developers' community in the same manner.*  
 
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WLN75KYSR6HAY) 
 
