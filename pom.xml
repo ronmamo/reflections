@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.reflections</groupId>
-    <artifactId>reflections14</artifactId>
+    <artifactId>reflections</artifactId>
     <version>0.10-SNAPSHOT</version>
 
     <name>Reflections</name>
@@ -127,6 +127,7 @@
     </dependencies>
 
     <!-- Release -->
+    <!-- mvn clean package source:jar javadoc:jar gpg:sign install -Dgpg.keyname=${GPG_KEYNAME} -Dgpg.passphrase=${GPG_PASSPHRASE} -->
     <profiles>
         <profile>
             <id>release</id>
