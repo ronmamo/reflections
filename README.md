@@ -32,10 +32,10 @@ Create Reflections instance and use the query functions:
 Reflections reflections = new Reflections("com.my.project");
 
 Set<Class<? extends SomeType>> subTypes =
-  reflections.get(SubTypes.of(SomeType.class));
+  reflections.get(SubTypes.of(SomeType.class).asClass());
 
 Set<Class<?>> annotated = 
-  reflections.get(TypesAnnotated.with(SomeAnnotation.class));
+  reflections.get(TypesAnnotated.with(SomeAnnotation.class).asClass());
 ```
 
 *Note that there are some breaking changes with Reflections 0.10, along with performance improvements and more functional API. Migration is encouraged and should be easy though.*
@@ -184,31 +184,36 @@ Each Scanner and ReflectionUtils helper implements
 * `with()` or `of()` - function returns all transitive values
 
 For example, `Scanners.SubTypes.get(T)` return direct subtypes of T, 
-while `Scanners.SubTypes.of(T)` return all subtypes of subtypes hierarchy of T. 
+while `Scanners.SubTypes.of(T)` return all subtypes hierarchy of T. 
 Same goes for `Scanners.TypesAnnotated` and `ReflectionUtils.SuperTypes` etc.
 
 Next, each function implements [QueryFunction](src/main/java/org/reflections/util/QueryFunction.java), 
 and provides fluent functional interface for composing `filter()`, `map()`, `flatMap()`, `as()` and more, such that:
 
 ```java
-QueryFunction<Store, Method> queryGetters =
+QueryFunction<Store, Method> getters =
   Methods.of(C1.class)
     .filter(withModifier(Modifier.PUBLIC))
     .filter(withPrefix("get").and(withParametersCount(0)))
     .as(Method.class);
 ```
 
-Query functions can be composed, for example getting annotations of methods of type:
+Query functions can be composed, for example:
 ```java
+// compose Scanner and ReflectionUtils functions 
+QueryFunction<Store, Method> methods = 
+  SubTypes.of(type).asClass()
+    .flatMap(Methods::of);
+
+// compose function of function
 QueryFunction<Store, Class<? extends Annotation>> queryAnnotations = 
   Annotations.of(Methods.of(C4.class))
     .map(Annotation::annotationType);
 ```
 
-See more examples in [ReflectionUtilsQueryTest](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections/ReflectionUtilsQueryTest.java).
+See more in [ReflectionUtilsQueryTest](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections/ReflectionUtilsQueryTest.java)  
 
-For example, getting merged annotations of controllers endpoint methods: 
-
+A more complex example demonstrates how to get merged annotations of rest controllers endpoint:
 ```java
 // get all annotations of RequestMapping hierarchy (GetMapping, PostMapping, ...)
 Set<Class<?>> metaAnnotations =

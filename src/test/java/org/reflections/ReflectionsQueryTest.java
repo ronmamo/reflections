@@ -40,20 +40,20 @@ public class ReflectionsQueryTest implements NameHelper {
 		assertThat(reflections.get(SubTypes.of(I1.class)),
 			equalToNames(I2.class, C1.class, C2.class, C3.class, C5.class));
 
-		assertThat(reflections.get(SubTypes.of(C1.class)),
-			equalToNames(C2.class, C3.class, C5.class));
+		assertThat(reflections.get(SubTypes.of(C1.class).asClass()),
+			equalTo(C2.class, C3.class, C5.class));
 	}
 
 	@Test
 	public void testTypesAnnotated() {
-		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(MAI1.class))),
-			equalToNames(AI1.class, I1.class, I2.class, C1.class, C2.class, C3.class, C5.class));
+		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(MAI1.class)).asClass()),
+			equalTo(AI1.class, I1.class, I2.class, C1.class, C2.class, C3.class, C5.class));
 
-		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(AI1.class))),
-			equalToNames(I1.class, I2.class, C1.class, C2.class, C3.class, C5.class));
+		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(AI1.class)).asClass()),
+			equalTo(I1.class, I2.class, C1.class, C2.class, C3.class, C5.class));
 
-		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(AI2.class))),
-			equalToNames(I2.class, C1.class, C2.class, C3.class, C5.class));
+		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(AI2.class)).asClass()),
+			equalTo(I2.class, C1.class, C2.class, C3.class, C5.class));
 
 		//annotation member value matching
 		AC2 ac2 = new AC2() {
@@ -70,7 +70,7 @@ public class ReflectionsQueryTest implements NameHelper {
 
 	@Test
 	public void testTypesAnnotatedInherited() {
-		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(MAI1.class)).as(Class.class).filter(withAnnotation(MAI1.class))),
+		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(MAI1.class)).asClass().filter(withAnnotation(MAI1.class))),
 			equalTo(AI1.class));
 
 		AC2 ac2 = new AC2() {
@@ -78,7 +78,7 @@ public class ReflectionsQueryTest implements NameHelper {
 			public Class<? extends Annotation> annotationType() { return AC2.class; }
 		};
 
-		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(AC2.class)).as(Class.class).filter(withAnnotation(ac2))),
+		assertThat(reflections.get(SubTypes.of(TypesAnnotated.with(AC2.class)).asClass().filter(withAnnotation(ac2))),
 			equalTo(C3.class, I3.class, AC3.class));
 	}
 
