@@ -69,7 +69,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.32</version>
-            <optional>true</optional> <!-- case: when logging is not needed -->
         </dependency>
 
         <dependency>
@@ -94,7 +93,6 @@
             <optional>true</optional> <!-- case: when no servlet environment -->
         </dependency>
 
-        <!-- use any implementation you like -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
