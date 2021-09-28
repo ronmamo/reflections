@@ -13,15 +13,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.reflections.util.JavassistHelper.toName;
-
 public class MethodParameterNamesScanner implements Scanner {
 
     @Override
     public List<Map.Entry<String, String>> scan(ClassFile classFile) {
         List<Map.Entry<String, String>> entries = new ArrayList<>();
         for (MethodInfo method : classFile.getMethods()) {
-            String key = toName(classFile, method);
+            String key = JavassistHelper.methodName(classFile, method);
             String value = getString(method);
             if (!value.isEmpty()) {
                 entries.add(entry(key, value));

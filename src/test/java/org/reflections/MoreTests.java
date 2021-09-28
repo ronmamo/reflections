@@ -38,7 +38,7 @@ public class MoreTests {
         Reflections reflections = new Reflections(
             new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forClass(TestModel.class))
-                .setScanners());
+                .setScanners(Scanners.Resources));
 
         assertNull(reflections.getStore().get(SubTypes.index()));
         assertTrue(reflections.getSubTypesOf(TestModel.C1.class).isEmpty());

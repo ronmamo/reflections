@@ -48,27 +48,33 @@ Creating Reflections instance requires providing scanning configuration:
 //   urls in classpath that contain 'com.my.project' package
 //   filter types starting with 'com.my.project'
 //   use the default scanners SubTypes and TypesAnnotated
-Reflections reflections = new Reflections("com.my.project");
-
-// this is equivalent to using ConfigurationBuilder:
 Reflections reflections = new Reflections(
   new ConfigurationBuilder()
-    .setUrls(ClasspathHelper.forPackage("com.my.project"))
-    .filterInputsBy(new FilterBuilder().includePackage("com.my.project"))
-    .setScanners(Scanners.SubTypes, Scanners.TypesAnnotated));
+    .forPackage("com.my.project")
+	.filterInputsBy(new FilterBuilder().includePackage("com.my.project")));
 
-// or another example
-new Reflections("com.my.project", Scanners.values()) // all standard scanners
+// or similarly
+Reflections reflections = new Reflections("com.my.project");
+
+// another example
+Reflections reflections = new Reflections(
+  new ConfigurationBuilder()
+    .addUrls(ClasspathHelper.forPackage("com.my.project")) // same as forPackage
+    .setScanners(Scanners.values())     // all standard scanners
+    .filterInputsBy(new FilterBuilder() // optionally include/exclude packages 
+      .includePackage("com.my.project")
+      .excludePackage("com.my.project.exclude")));
 ```
 
-*See more in [Configuration](src/main/java/org/reflections/Configuration.java)
-and [ConfigurationBuilder](src/main/java/org/reflections/util/ConfigurationBuilder.java)*
+*See more in [ConfigurationBuilder](src/main/java/org/reflections/util/ConfigurationBuilder.java).*
 
 Note that:
-* Scanners must be configured in order to be queried, otherwise an empty result is returned.
-* If no scanners are configured, the default will be used - `SubTypes` and `TypeAnnotated`.
-* Reflections [expands super types](http://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes(Map)) by default. This solves some [problems](https://github.com/ronmamo/reflections/issues/65#issuecomment-95036047) with transitive urls are not scanned.
-* Classloader can also be configured, which will be used for resolving runtime classes from names.
+* **Scanners must be configured in order to be queried, otherwise an empty result is returned.**  
+If not specified, default scanners are `SubTypes` and `TypesAnnotated`. For all standard [Scanners](src/main/java/org/reflections/scanners/Scanners.java) use `Scanners.values()`.
+* **All relevant URLs should be configured.**   
+If required, Reflections will [expand super types](http://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes(Map)) in order to get the transitive closure metadata without scanning large 3rd party urls.  
+Consider adding inputs filter in case too many classes are scanned.  
+* Classloader can optionally be used for resolving runtime classes from names.
 
 ### Query
 Once Reflections was instantiated and scanning was successful, it can be used for querying the indexed metadata.  
@@ -79,32 +85,27 @@ import static org.reflections.scanners.Scanners.*;
 
 // SubTypes
 Set<Class<? extends Module>> modules = 
-  reflections.get(
-    SubTypes.of(Module.class).asClass());
+  reflections.get(SubTypes.of(Module.class).asClass());
 
 // TypesAnnotated
 Set<Class<?>> singletons = 
-  reflections.get(
-    TypesAnnotated.with(Singleton.class).asClass());
+  reflections.get(TypesAnnotated.with(Singleton.class).asClass());
 
 // MethodAnnotated
 Set<Method> resources =
-  reflections.get(
-    MethodsAnnotated.with(GetMapping.class).as(Method.class));
+  reflections.get(MethodsAnnotated.with(GetMapping.class).as(Method.class));
 
+// ConstructorsAnnotated
 Set<Constructor> injectables = 
-  reflections.get(
-    ConstructorsAnnotated.with(Inject.class).as(Constructor.class));
+  reflections.get(ConstructorsAnnotated.with(Inject.class).as(Constructor.class));
 
 // FieldsAnnotated
 Set<Field> ids = 
-  reflections.get(
-    FieldsAnnotated.with(javax.persistence.Id.class).as(Field.class));
+  reflections.get(FieldsAnnotated.with(Id.class).as(Field.class));
 
 // Resources
 Set<String> properties = 
-  reflections.get(
-    Resources.with(".*\\.properties"));
+  reflections.get(Resources.with(".*\\.properties"));
 ```
 
 Member scanners:
@@ -112,37 +113,43 @@ Member scanners:
 ```java
 // MethodsReturn
 Set<Method> voidMethods = 
-  reflections.get(
-    MethodsReturn.with(void.class).as(Method.class));
+  reflections.get(MethodsReturn.with(void.class).as(Method.class));
 
 // MethodsSignature
 Set<Method> someMethods = 
-  reflections.get(
-    MethodsSignature.of(long.class, int.class).as(Method.class));
+  reflections.get(MethodsSignature.of(long.class, int.class).as(Method.class));
 
 // MethodsParameter
 Set<Method> pathParam = 
-  reflections.get(
-    MethodsParameter.of(PathParam.class).as(Method.class));
+  reflections.get(MethodsParameter.of(PathParam.class).as(Method.class));
 
 // ConstructorsSignature
 Set<Constructor> someConstructors = 
-  reflections.get(
-    ConstructorsSignature.of(String.class).as(Constructor.class));
+  reflections.get(ConstructorsSignature.of(String.class).as(Constructor.class));
 
 // ConstructorsParameter
 Set<Constructor> pathParam = 
-  reflections.get(
-    ConstructorsParameter.of(PathParam.class).as(Constructor.class));
+  reflections.get(ConstructorsParameter.of(PathParam.class).as(Constructor.class));
 ```
 
-See more examples in [ReflectionsQueryTest](src/test/java/org/reflections/ReflectionsQueryTest.java)
+*See more examples in [ReflectionsQueryTest](src/test/java/org/reflections/ReflectionsQueryTest.java).*
 
-Other scanners included in [scanners](src/main/java/org/reflections/scanners) package are
-[MemberUsageScanner](src/main/java/org/reflections/scanners/MemberUsageScanner.java), 
-[MethodParameterNamesScanner](src/main/java/org/reflections/scanners/MethodParameterNamesScanner.java). Custom scanners can be added. 
+Scanner queries return `Set<String>` by default, if not using `as() / asClass()` mappers:
+```java
+Set<String> moduleNames = 
+  reflections.get(SubTypes.of(Module.class));
 
-*Note that previous 0.9.x API is still supported though marked for removal*
+Set<String> singleNames = 
+  reflections.get(TypesAnnotated.with(Singleton.class));
+```
+Note that previous 0.9.x API is still supported, for example:
+```java
+Set<Class<? extends Module>> modules = 
+  reflections.getSubTypesOf(Module.class);
+
+Set<Class<?>> singletons = 
+  reflections.getTypesAnnotatedWith(Singleton.class);
+```
 <details>
   <summary>Compare Scanners and previous 0.9.x API</summary>
 
@@ -163,7 +170,9 @@ Other scanners included in [scanners](src/main/java/org/reflections/scanners) pa
 </details>
 
 ## ReflectionUtils
-Apart from scanned classpath metadata, ReflectionsUtils provides convenient way to query Java Reflection metadata using `ReflectionUtils.get()`:
+Apart from scanning classpath metadata using [Javassist](https://github.com/jboss-javassist/javassist), 
+Java Reflection convenient methods are available using 
+[ReflectionsUtils](src/main/java/org/reflections/ReflectionUtils.java):
 
 ```java
 import static org.reflections.ReflectionUtils.*;

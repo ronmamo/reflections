@@ -12,19 +12,19 @@ import java.util.function.Predicate;
  * <p>it is preferred to use {@link org.reflections.util.ConfigurationBuilder}
  */
 public interface Configuration {
-    /** the scanner instances used for indexing metadata */
+    /** the scanner instances used for indexing metadata. defaults to {@code SubTypes} and {@code TypesAnnotated}. */
     Set<Scanner> getScanners();
 
-    /** the urls to be scanned */
+    /** the urls to be scanned. required. */
     Set<URL> getUrls();
 
-    /** the fully qualified name filter used to filter types to be scanned */
+    /** the fully qualified name filter used to filter types to be scanned. defaults to accept all inputs (if null). */
     Predicate<String> getInputsFilter();
 
-    /** scan urls in parallel, defaults to true */
+    /** scan urls in parallel. defaults to true. */
     boolean isParallel();
 
-    /** get class loaders, might be used for resolving methods/fields */
+    /** optional class loaders used for resolving types. */
     ClassLoader[] getClassLoaders();
 
     /** if true (default), expand super types after scanning, for super types that were not scanned.

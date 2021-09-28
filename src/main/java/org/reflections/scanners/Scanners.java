@@ -5,13 +5,13 @@ import javassist.bytecode.FieldInfo;
 import javassist.bytecode.MethodInfo;
 import org.reflections.Store;
 import org.reflections.util.FilterBuilder;
-import org.reflections.util.JavassistHelper;
 import org.reflections.util.NameHelper;
 import org.reflections.util.QueryBuilder;
 import org.reflections.util.QueryFunction;
 import org.reflections.vfs.Vfs;
 
 import java.lang.annotation.Inherited;
+import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static org.reflections.util.JavassistHelper.*;
 
 /**
  * base Reflections {@link Scanner}s such as:
@@ -64,7 +66,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
 
         @Override
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            return entries(JavassistHelper.getAnnotations(classFile::getAttribute), classFile.getName());
+            return entries(getAnnotations(classFile::getAttribute), classFile.getName());
         }
     },
 
@@ -74,13 +76,13 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
             List<Map.Entry<String, String>> entries = new ArrayList<>();
             for (MethodInfo method : classFile.getMethods()) {
-                entries.addAll(entries(JavassistHelper.getAnnotations(method::getAttribute), JavassistHelper.toName(classFile, method)));
+                entries.addAll(entries(getAnnotations(method::getAttribute), methodName(classFile, method)));
             }
             return filtered(entries);
         }
 
         @Override
-        public QueryFunction<Store, String> with(Class<?>... keys) {
+        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
             return super.with(keys).filter(this::isMethod);
         }
     },
@@ -98,7 +100,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
 
         @Override
-        public QueryFunction<Store, String> with(Class<?>... keys) {
+        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
             return super.with(keys).filter(this::isConstructor);
         }
     },
@@ -109,7 +111,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
             List<Map.Entry<String, String>> entries = new ArrayList<>();
             for (FieldInfo field : classFile.getFields()) {
-                entries.addAll(entries(JavassistHelper.getAnnotations(field::getAttribute), JavassistHelper.toName(classFile, field)));
+                entries.addAll(entries(getAnnotations(field::getAttribute), fieldName(classFile, field)));
             }
             return filtered(entries);
         }
@@ -145,16 +147,17 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
             List<Map.Entry<String, String>> entries = new ArrayList<>();
             for (MethodInfo method : classFile.getMethods()) {
-                entries.addAll(entries(JavassistHelper.getParameters(method), JavassistHelper.toName(classFile, method)));
-                for (List<String> annotations : JavassistHelper.getParametersAnnotations(method)) {
-                    entries.addAll(entries(annotations, JavassistHelper.toName(classFile, method)));
+                String value = methodName(classFile, method);
+                entries.addAll(entries(getParameters(method), value));
+                for (List<String> annotations : getParametersAnnotations(method)) {
+                    entries.addAll(entries(annotations, value));
                 }
             }
             return filtered(entries);
         }
 
         @Override
-        public QueryFunction<Store, String> with(Class<?>... keys) {
+        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
             return super.with(keys).filter(this::isMethod);
         }
     },
@@ -173,7 +176,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
 
         @Override
-        public QueryFunction<Store, String> with(Class<?>... keys) {
+        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
             return super.with(keys).filter(this::isConstructor);
         }
     },
@@ -184,13 +187,13 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         public List<Map.Entry<String, String>> scan(ClassFile classFile) {
             List<Map.Entry<String, String>> entries = new ArrayList<>();
             for (MethodInfo method : classFile.getMethods()) {
-                entries.add(entry(JavassistHelper.getParameters(method).toString(), JavassistHelper.toName(classFile, method)));
+                entries.add(entry(getParameters(method).toString(), methodName(classFile, method)));
             }
             return entries;
         }
 
         @Override
-        public QueryFunction<Store, String> with(Class<?>... keys) {
+        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
             return QueryFunction.single(toNames(keys).toString()).getAll(this::get).filter(this::isMethod);
         }
     },
@@ -209,7 +212,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
 
         @Override
-        public QueryFunction<Store, String> with(Class<?>... keys) {
+        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
             return QueryFunction.single(toNames(keys).toString()).getAll(this::get).filter(this::isConstructor);
         }
     },
@@ -221,7 +224,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
             List<Map.Entry<String, String>> entries = new ArrayList<>();
             for (MethodInfo method : classFile.getMethods()) {
                 if (method.isMethod()) {
-                    entries.add(entry(JavassistHelper.getReturnType(method), JavassistHelper.toName(classFile, method)));
+                    entries.add(entry(getReturnType(method), methodName(classFile, method)));
                 }
             }
             return filtered(entries);

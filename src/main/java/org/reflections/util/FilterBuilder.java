@@ -5,6 +5,7 @@ import org.reflections.ReflectionsException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
  * new FilterBuilder().includePattern("java\\..*").excludePackage("java\\.lang\\..*")
  * }</pre>
  * <i>note that includePackage/excludePackage value is mapped into a prefix pattern with a trailing dot, for example: {@code includePackage("a.b")} is equivalent to {@code includePattern("a\\.b\\..*)}
- * </pre>
  */
 public class FilterBuilder implements Predicate<String> {
     private final List<Predicate<String>> chain = new ArrayList<>();
@@ -105,6 +105,18 @@ public class FilterBuilder implements Predicate<String> {
         return accept;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        return Objects.equals(chain, ((FilterBuilder) o).chain);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chain);
+    }
+
     @Override public String toString() {
         return chain.stream().map(Object::toString).collect(Collectors.joining(", "));
     }
@@ -117,21 +129,23 @@ public class FilterBuilder implements Predicate<String> {
 
     abstract static class Matcher implements Predicate<String> {
         final Pattern pattern;
-        Matcher(final String regex) {pattern = Pattern.compile(regex);}
-        @Override public String toString() {return pattern.pattern();}
+        Matcher(String regex) { pattern = Pattern.compile(regex); }
+        @Override public int hashCode() { return Objects.hash(pattern); }
+        @Override public boolean equals(Object o) {
+            return this == o || o != null && getClass() == o.getClass() && Objects.equals(pattern.pattern(), ((Matcher) o).pattern.pattern());
+        }
+        @Override public String toString() { return pattern.pattern(); }
     }
 
-    static class Include implements Predicate<String> {
-        final Pattern pattern;
-        Include(final String regex) {pattern = Pattern.compile(regex);}
-        @Override public boolean test(final String regex) {return pattern.matcher(regex).matches();}
-        @Override public String toString() {return "+" + pattern;}
+    static class Include extends Matcher {
+        Include(String regex) { super(regex); }
+        @Override public boolean test(String regex) { return pattern.matcher(regex).matches(); }
+        @Override public String toString() { return "+" + pattern; }
     }
 
-    static class Exclude implements Predicate<String> {
-        final Pattern pattern;
-        Exclude(final String regex) {pattern = Pattern.compile(regex);}
-        @Override public boolean test(final String regex) {return !pattern.matcher(regex).matches();}
-        @Override public String toString() {return "-" + pattern;}
+    static class Exclude extends Matcher {
+        Exclude(String regex) { super(regex); }
+        @Override public boolean test(String regex) { return !pattern.matcher(regex).matches(); }
+        @Override public String toString() { return "-" + pattern; }
     }
 }

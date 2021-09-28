@@ -12,9 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReflectionsExpandSupertypesTest {
 
-    private final static String packagePrefix =
-            "org\\.reflections\\.ReflectionsExpandSupertypesTest\\$TestModel\\$ScannedScope\\$.*";
-    private final FilterBuilder inputsFilter = new FilterBuilder().includePattern(packagePrefix);
+    private final FilterBuilder inputsFilter = new FilterBuilder()
+        .includePattern("org\\.reflections\\.ReflectionsExpandSupertypesTest\\$TestModel\\$ScannedScope\\$.*");
 
     @SuppressWarnings("unused")
     public interface TestModel {
@@ -40,9 +39,10 @@ public class ReflectionsExpandSupertypesTest {
 
     @Test
     public void testNotExpandSupertypes() {
-        Reflections refDontExpand = new Reflections(new ConfigurationBuilder().
-                setUrls(ClasspathHelper.forClass(TestModel.ScannedScope.C.class)).
-                filterInputsBy(inputsFilter).
+        Reflections refDontExpand = new Reflections(
+            new ConfigurationBuilder()
+                .forPackage("org.reflections")
+                .filterInputsBy(inputsFilter).
                 setExpandSuperTypes(false));
         assertFalse(refDontExpand.getConfiguration().shouldExpandSuperTypes());
         Collection<Class<? extends TestModel.A>> subTypesOf1 = refDontExpand.getSubTypesOf(TestModel.A.class);

@@ -27,9 +27,12 @@ public class JavassistHelper {
 		return list;
 	}
 
-	public static String toName(ClassFile classFile, Object object) {
-		return object instanceof FieldInfo ? String.format("%s.%s", classFile.getName(), ((FieldInfo) object).getName()) :
-			object instanceof MethodInfo ? String.format("%s.%s(%s)", classFile.getName(), ((MethodInfo) object).getName(), String.join(", ", getParameters(((MethodInfo) object)))) : "";
+	public static String fieldName(ClassFile classFile, FieldInfo object) {
+		return String.format("%s.%s", classFile.getName(), object.getName());
+	}
+
+	public static String methodName(ClassFile classFile, MethodInfo object) {
+		return String.format("%s.%s(%s)", classFile.getName(), object.getName(), String.join(", ", getParameters(object)));
 	}
 
 	public static boolean isPublic(Object object) {

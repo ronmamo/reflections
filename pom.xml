@@ -5,6 +5,7 @@
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
     <version>0.10-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <name>Reflections</name>
     <description>Reflections - Java runtime metadata analysis</description>

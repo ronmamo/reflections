@@ -11,8 +11,10 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -157,7 +159,7 @@ public interface NameHelper {
 	}
 
 	default <T> Collection<T> forNames(Collection<String> names, Class<T> resultType, ClassLoader... loaders) {
-		return names.stream().map(name -> forName(name, resultType, loaders)).filter(Objects::nonNull).collect(Collectors.toSet());
+		return names.stream().map(name -> forName(name, resultType, loaders)).filter(Objects::nonNull).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})

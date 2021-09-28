@@ -3,6 +3,7 @@ package org.reflections;
 import org.junit.jupiter.api.Test;
 import org.reflections.scanners.Scanners;
 import org.reflections.serializers.JsonSerializer;
+import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,11 +14,12 @@ public class ReflectionsCollectTest {
 	@Test
 	public void testCollect() {
 		Reflections reflections = new Reflections(
-			TestModel.class,
-			new FilterBuilder()
-				.includePattern("org\\.reflections\\.TestModel\\$.*")
-				.includePattern(".*\\.xml"),
-			Scanners.values());
+			new ConfigurationBuilder()
+				.forPackage("org.reflections")
+				.filterInputsBy(new FilterBuilder()
+					.includePattern("org\\.reflections\\.TestModel\\$.*")
+					.includePattern(".*\\.xml"))
+				.addScanners(Scanners.values()));
 
 		String targetDir = getUserDir() + "/target/test-classes";
 
