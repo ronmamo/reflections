@@ -1,22 +1,28 @@
 package com.tvd12.reflections.testing;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.tvd12.reflections.Reflections;
-import com.tvd12.reflections.scanners.*;
-import com.tvd12.reflections.serializers.JsonSerializer;
-import com.tvd12.reflections.util.ClasspathHelper;
-import com.tvd12.reflections.util.ConfigurationBuilder;
-import com.tvd12.reflections.util.FilterBuilder;
+import static com.tvd12.reflections.util.Utils.index;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static com.tvd12.reflections.util.Utils.index;
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertThat;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.tvd12.reflections.Reflections;
+import com.tvd12.reflections.scanners.MemberUsageScanner;
+import com.tvd12.reflections.scanners.MethodAnnotationsScanner;
+import com.tvd12.reflections.scanners.MethodParameterNamesScanner;
+import com.tvd12.reflections.scanners.MethodParameterScanner;
+import com.tvd12.reflections.scanners.ResourcesScanner;
+import com.tvd12.reflections.scanners.SubTypesScanner;
+import com.tvd12.reflections.scanners.TypeAnnotationsScanner;
+import com.tvd12.reflections.serializers.JsonSerializer;
+import com.tvd12.reflections.util.ClasspathHelper;
+import com.tvd12.reflections.util.ConfigurationBuilder;
+import com.tvd12.reflections.util.FilterBuilder;
 
 /** */
 public class ReflectionsCollectTest extends ReflectionsTest {

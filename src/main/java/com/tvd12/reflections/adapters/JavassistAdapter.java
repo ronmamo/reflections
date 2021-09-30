@@ -22,7 +22,6 @@ import static javassist.bytecode.AccessFlag.isProtected;
 /**
  *
  */
-@SuppressWarnings("unchecked")
 public class JavassistAdapter implements MetadataAdapter<ClassFile, FieldInfo, MethodInfo> {
 
     /**setting this to false will result in returning only visible annotations from the relevant methods here (only {@link java.lang.annotation.RetentionPolicy#RUNTIME})*/

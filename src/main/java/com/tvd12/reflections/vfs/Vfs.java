@@ -239,10 +239,7 @@ public abstract class Vfs {
                     }
                 } catch (Throwable e) { /*fallback*/ }
                 java.io.File file = getFile(url);
-                if (file != null) {
-                    return new ZipDir(new JarFile(file));
-                }
-                return null;
+                return file != null ? new ZipDir(new JarFile(file)) : null;
             }
         },
 

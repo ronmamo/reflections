@@ -1,15 +1,31 @@
 package com.tvd12.reflections.testing;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.Test;
+import static com.tvd12.reflections.ReflectionUtils.getAllAnnotations;
+import static com.tvd12.reflections.ReflectionUtils.getAllConstructors;
+import static com.tvd12.reflections.ReflectionUtils.getAllFields;
+import static com.tvd12.reflections.ReflectionUtils.getAllMethods;
+import static com.tvd12.reflections.ReflectionUtils.getAllSuperTypes;
+import static com.tvd12.reflections.ReflectionUtils.getAnnotations;
+import static com.tvd12.reflections.ReflectionUtils.getMethods;
+import static com.tvd12.reflections.ReflectionUtils.withAnnotation;
+import static com.tvd12.reflections.ReflectionUtils.withAnyParameterAnnotation;
+import static com.tvd12.reflections.ReflectionUtils.withModifier;
+import static com.tvd12.reflections.ReflectionUtils.withName;
+import static com.tvd12.reflections.ReflectionUtils.withParameters;
+import static com.tvd12.reflections.ReflectionUtils.withParametersAssignableFrom;
+import static com.tvd12.reflections.ReflectionUtils.withParametersAssignableTo;
+import static com.tvd12.reflections.ReflectionUtils.withParametersCount;
+import static com.tvd12.reflections.ReflectionUtils.withPattern;
+import static com.tvd12.reflections.ReflectionUtils.withReturnType;
+import static com.tvd12.reflections.ReflectionUtils.withReturnTypeAssignableTo;
+import static com.tvd12.reflections.ReflectionUtils.withTypeAssignableTo;
+import static com.tvd12.reflections.testing.Collections2.transform;
+import static com.tvd12.reflections.testing.ReflectionsTest.are;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import com.tvd12.reflections.ReflectionUtils;
-import com.tvd12.reflections.Reflections;
-import com.tvd12.reflections.scanners.FieldAnnotationsScanner;
-import com.tvd12.reflections.util.Sets;
-
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -21,10 +37,16 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.tvd12.reflections.ReflectionUtils.*;
-import static com.tvd12.reflections.testing.Collections2.transform;
-import static com.tvd12.reflections.testing.ReflectionsTest.are;
-import static org.junit.Assert.*;
+import javax.annotation.Nullable;
+
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.junit.Test;
+
+import com.tvd12.reflections.ReflectionUtils;
+import com.tvd12.reflections.Reflections;
+import com.tvd12.reflections.scanners.FieldAnnotationsScanner;
+import com.tvd12.reflections.util.Sets;
 
 /**
  * @author mamo
