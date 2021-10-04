@@ -69,19 +69,19 @@ Reflections reflections = new Reflections(
       .excludePackage("com.my.project.exclude")));
 ```
 
-*See more in [ConfigurationBuilder](src/main/java/org/reflections/util/ConfigurationBuilder.java).*
+*See more in [ConfigurationBuilder](https://ronmamo.github.io/reflections/org/reflections/util/ConfigurationBuilder.html).*
 
 Note that:
 * **Scanners must be configured in order to be queried, otherwise an empty result is returned.**  
-If not specified, default scanners are `SubTypes` and `TypesAnnotated`. For all standard [Scanners](src/main/java/org/reflections/scanners/Scanners.java) use `Scanners.values()`.
+If not specified, default scanners are `SubTypes` and `TypesAnnotated`. For all standard [Scanners](https://ronmamo.github.io/reflections/org/reflections/scanners/Scanners.html) use `Scanners.values()` [(src)](src/main/java/org/reflections/scanners/Scanners.java).
 * **All relevant URLs should be configured.**   
-If required, Reflections will [expand super types](http://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes(Map)) in order to get the transitive closure metadata without scanning large 3rd party urls.  
+If required, Reflections will [expand super types](https://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes(java.util.Map)) in order to get the transitive closure metadata without scanning large 3rd party urls.  
 Consider adding inputs filter in case too many classes are scanned.  
 * Classloader can optionally be used for resolving runtime classes from names.
 
 ### Query
 Once Reflections was instantiated and scanning was successful, it can be used for querying the indexed metadata.  
-Standard [Scanners](src/main/java/org/reflections/scanners/Scanners.java) are provided for query using `reflections.get()`, for example:  
+Standard [Scanners](https://ronmamo.github.io/reflections/org/reflections/scanners/Scanners.html) are provided for query using `reflections.get()`, for example:  
 
 ```java
 import static org.reflections.scanners.Scanners.*;
@@ -176,7 +176,7 @@ Set<Class<?>> singletons =
 ## ReflectionUtils
 Apart from scanning classpath metadata using [Javassist](https://github.com/jboss-javassist/javassist), 
 Java Reflection convenient methods are available using 
-[ReflectionsUtils](src/main/java/org/reflections/ReflectionUtils.java):
+[ReflectionsUtils](https://ronmamo.github.io/reflections/org/reflections/ReflectionUtils.html):
 
 ```java
 import static org.reflections.ReflectionUtils.*;
@@ -192,8 +192,7 @@ Set<Class<? extends Annotation>> annotationTypes = get(AnnotationTypess.of(T));
 *Previous ReflectionUtils 0.9.x API is still supported though marked for removal, more info in the javadocs.*
 
 ## QueryBuilder and QueryFunction
-Each Scanner and ReflectionUtils function implements
-[QueryBuilder](src/main/java/org/reflections/util/QueryBuilder.java), and supports:
+Each Scanner and ReflectionUtils function implements [QueryBuilder](https://ronmamo.github.io/reflections/org/reflections/util/QueryBuilder.html), and supports:
 * `get()` - function returns direct values 
 * `with()` or `of()` - function returns all transitive values
 
@@ -201,7 +200,7 @@ Each Scanner and ReflectionUtils function implements
 while `Scanners.SubTypes.of(T)` return transitive subtypes hierarchy. 
 Same goes for `Scanners.TypesAnnotated` and `ReflectionUtils.SuperTypes` etc.*
 
-Next, each function implements [QueryFunction](src/main/java/org/reflections/util/QueryFunction.java), 
+Next, each function implements [QueryFunction](https://ronmamo.github.io/reflections/org/reflections/util/QueryFunction.html), 
 and provides fluent functional interface for composing `filter()`, `map()`, `flatMap()`, `as()` and more, such that:
 
 ```java
@@ -257,10 +256,10 @@ Check the [tests](src/test/java/org/reflections) folder for more examples and AP
 - **Integrating with build lifecycle**  
 It is sometime useful to save the scanned metadata into xml/json as part of the build lifecycle for generating resources, 
 and then collect it on bootstrap with `Reflections.collect()` and avoid scanning. *See [reflections-maven](https://github.com/ronmamo/reflections-maven/) for example*.
-- [JavaCodeSerializer](src/main/java/org/reflections/scanners/JavaCodeSerializer.java) - scanned metadata can be persisted into a generated Java source code. 
+- [JavaCodeSerializer](https://ronmamo.github.io/reflections/org/reflections/serializers/JavaCodeSerializer.html) - scanned metadata can be persisted into a generated Java source code. 
 Although less common, it can be useful for accessing types and members in a strongly typed manner. *(see [example](src/test/java/org/reflections/MyTestModelStore.java))*
-- [AnnotationMergeCollector](src/main/java/org/reflections/util/AnnotationMergeCollector.java) - can be used to merge similar annotations, for example for finding effective REST controller endpoints. *(see [test](src/test/java/org/reflections/ReflectionUtilsQueryTest.java#L216))*
-- [MemberUsageScanner](src/main/java/org/reflections/scanners/MemberUsageScanner.java) - experimental scanner allow querying for member usages `getMemberUsages()` of packages/types/elements in the classpath.
+- [AnnotationMergeCollector](https://ronmamo.github.io/reflections/org/reflections/util/AnnotationMergeCollector.html) - can be used to merge similar annotations, for example for finding effective REST controller endpoints. *(see [test](src/test/java/org/reflections/ReflectionUtilsQueryTest.java#L216))*
+- `MemberUsageScanner` - experimental scanner allow querying for member usages `getMemberUsages()` of packages/types/elements in the classpath.
 Can be used for finding usages between packages, layers, modules, types etc.  
 
 ### Contribute
