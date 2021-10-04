@@ -1,12 +1,10 @@
 package org.reflections;
 
-import org.reflections.adapters.MetadataAdapter;
 import org.reflections.scanners.Scanner;
-import org.reflections.serializers.Serializer;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 
 /**
@@ -14,29 +12,22 @@ import java.util.function.Predicate;
  * <p>it is preferred to use {@link org.reflections.util.ConfigurationBuilder}
  */
 public interface Configuration {
-    /** the scanner instances used for scanning different metadata */
+    /** the scanner instances used for indexing metadata. defaults to {@code SubTypes} and {@code TypesAnnotated}. */
     Set<Scanner> getScanners();
 
-    /** the urls to be scanned */
+    /** the urls to be scanned. required. */
     Set<URL> getUrls();
 
-    /** the metadata adapter used to fetch metadata from classes */
-    @SuppressWarnings({"RawUseOfParameterizedType"})
-    MetadataAdapter getMetadataAdapter();
-
-    /** get the fully qualified name filter used to filter types to be scanned */
+    /** the fully qualified name filter used to filter types to be scanned. defaults to accept all inputs (if null). */
     Predicate<String> getInputsFilter();
 
-    /** executor service used to scan files. if null, scanning is done in a simple for loop */
-    ExecutorService getExecutorService();
+    /** scan urls in parallel. defaults to true. */
+    boolean isParallel();
 
-    /** the default serializer to use when saving Reflection */
-    Serializer getSerializer();
-
-    /** get class loaders, might be used for resolving methods/fields */
+    /** optional class loaders used for resolving types. */
     ClassLoader[] getClassLoaders();
 
     /** if true (default), expand super types after scanning, for super types that were not scanned.
-     * <p>see {@link org.reflections.Reflections#expandSuperTypes()}*/
+     * <p>see {@link org.reflections.Reflections#expandSuperTypes(Map)}*/
     boolean shouldExpandSuperTypes();
 }

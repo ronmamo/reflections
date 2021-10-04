@@ -1,8 +1,6 @@
 package org.reflections;
 
-import javassist.bytecode.ClassFile;
-import org.junit.Test;
-import org.reflections.adapters.JavassistAdapter;
+import org.junit.jupiter.api.Test;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
@@ -11,14 +9,13 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static java.text.MessageFormat.format;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- *
- */
 public class VfsTest {
 
     @Test
@@ -83,7 +80,7 @@ public class VfsTest {
         try {
             testVfsDir(Vfs.DefaultUrlTypes.jarInputStream.createDir(url));
             fail();
-        } catch (NullPointerException e) {
+        } catch (AssertionError e) {
             // expected
         }
     }
@@ -118,17 +115,10 @@ public class VfsTest {
     }
 
     private void testVfsDir(Vfs.Dir dir) {
-        JavassistAdapter mdAdapter = new JavassistAdapter();
-        Vfs.File file = null;
-        for (Vfs.File f : dir.getFiles()) {
-            if (f.getRelativePath().endsWith(".class")) {
-                file = f;
-                break;
-            }
+        List<Vfs.File> files = new ArrayList<>();
+        for (Vfs.File file : dir.getFiles()) {
+            files.add(file);
         }
-
-        ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
-        String className = mdAdapter.getClassName(stringCF);
-        assertFalse(className.isEmpty());
+        assertFalse(files.isEmpty());
     }
 }

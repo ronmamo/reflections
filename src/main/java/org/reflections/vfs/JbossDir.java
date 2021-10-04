@@ -2,7 +2,6 @@ package org.reflections.vfs;
 
 import org.jboss.vfs.VirtualFile;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Stack;
@@ -12,7 +11,7 @@ public class JbossDir implements Vfs.Dir {
 
     private final VirtualFile virtualFile;
 
-    private JbossDir(VirtualFile virtualFile) throws IOException {
+    private JbossDir(VirtualFile virtualFile) {
         this.virtualFile = virtualFile;
     }
 
@@ -61,15 +60,8 @@ public class JbossDir implements Vfs.Dir {
                         return new JbossFile(JbossDir.this, file);
                     }
                 }
-
                 return null;
             }
         };
     }
-
-    @Override
-    public void close() {
-
-    }
-
 }

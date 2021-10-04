@@ -1,48 +1,50 @@
 package org.reflections.scanners;
 
-import org.reflections.Store;
+import javassist.bytecode.ClassFile;
+import org.reflections.util.JavassistHelper;
 
-import static org.reflections.util.Utils.join;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
-/** scans fields and methods and stores fqn as key and elements as values */
-@SuppressWarnings({"unchecked"})
-public class TypeElementsScanner extends AbstractScanner {
+/** scan types, annotations, methods and fields, and stores fqn as key and elements as values */
+public class TypeElementsScanner implements Scanner {
     private boolean includeFields = true;
     private boolean includeMethods = true;
     private boolean includeAnnotations = true;
     private boolean publicOnly = true;
+    private Predicate<String> resultFilter = s -> true; //accept all by default
 
-    public void scan(Object cls, Store store) {
-        String className = getMetadataAdapter().getClassName(cls);
-        if (!acceptResult(className)) return;
-
-        put(store, className, "");
-
-        if (includeFields) {
-            for (Object field : getMetadataAdapter().getFields(cls)) {
-                String fieldName = getMetadataAdapter().getFieldName(field);
-                put(store, className, fieldName);
+    public List<Map.Entry<String, String>> scan(ClassFile classFile) {
+        List<Map.Entry<String, String>> entries = new ArrayList<>();
+        String className = classFile.getName();
+        if (resultFilter.test(className) && isPublic(classFile)) {
+            entries.add(entry(className, ""));
+            if (includeFields) {
+                classFile.getFields().forEach(field -> entries.add(entry(className, field.getName())));
+            }
+            if (includeMethods) {
+                classFile.getMethods().stream().filter(this::isPublic)
+                    .forEach(method -> entries.add(entry(className, method.getName() + "(" + String.join(", ", JavassistHelper.getParameters(method)) + ")")));
+            }
+            if (includeAnnotations) {
+                JavassistHelper.getAnnotations(classFile::getAttribute).stream().filter(resultFilter)
+                    .forEach(annotation -> entries.add(entry(className, "@" + annotation)));
             }
         }
-
-        if (includeMethods) {
-            for (Object method : getMetadataAdapter().getMethods(cls)) {
-                if (!publicOnly || getMetadataAdapter().isPublic(method)) {
-                    String methodKey = getMetadataAdapter().getMethodName(method) + "(" +
-                            join(getMetadataAdapter().getParameterNames(method), ", ") + ")";
-                    put(store, className, methodKey);
-                }
-            }
-        }
-
-        if (includeAnnotations) {
-            for (Object annotation : getMetadataAdapter().getClassAnnotationNames(cls)) {
-                put(store, className, "@" + annotation);
-            }
-        }
+        return entries;
     }
 
-    //
+    private boolean isPublic(Object object) {
+        return !publicOnly || JavassistHelper.isPublic(object);
+    }
+
+    public TypeElementsScanner filterResultsBy(Predicate<String> filter) {
+        this.resultFilter = filter;
+        return this;
+    }
+
     public TypeElementsScanner includeFields() { return includeFields(true); }
     public TypeElementsScanner includeFields(boolean include) { includeFields = include; return this; }
     public TypeElementsScanner includeMethods() { return includeMethods(true); }

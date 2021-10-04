@@ -29,7 +29,7 @@ public class JarInputFile implements Vfs.File {
         return entry.getName();
     }
 
-    public InputStream openInputStream() throws IOException {
+    public InputStream openInputStream() {
         return new InputStream() {
             @Override
             public int read() throws IOException {

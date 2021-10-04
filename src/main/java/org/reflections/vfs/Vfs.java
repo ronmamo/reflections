@@ -3,7 +3,6 @@ package org.reflections.vfs;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.util.ClasspathHelper;
-import org.reflections.util.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +59,7 @@ public abstract class Vfs {
     public interface Dir {
         String getPath();
         Iterable<File> getFiles();
-        void close();
+        default void close() {}
     }
 
     /** an abstract vfs file */
@@ -128,12 +127,11 @@ public abstract class Vfs {
             String path = file.getRelativePath();
             if (path.startsWith(packagePrefix)) {
                 String filename = path.substring(path.indexOf(packagePrefix) + packagePrefix.length());
-                return !Utils.isEmpty(filename) && nameFilter.test(filename.substring(1));
+                return !filename.isEmpty() && nameFilter.test(filename.substring(1));
             } else {
                 return false;
             }
         };
-
         return findFiles(inUrls, fileNamePredicate);
     }
 
@@ -149,8 +147,7 @@ public abstract class Vfs {
                         }
                         return Stream.of();
                     }
-                })
-                .filter(filePredicate).iterator();
+                }).filter(filePredicate).iterator();
     }
 
     /**try to get {@link java.io.File} from url*/
@@ -191,7 +188,7 @@ public abstract class Vfs {
     }
     
     private static boolean hasJarFileInPath(URL url) {
-		return url.toExternalForm().matches(".*\\.jar(\\!.*|$)");
+		return url.toExternalForm().matches(".*\\.jar(!.*|$)");
 	}
 
     /** default url types used by {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)}
