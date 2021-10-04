@@ -5,13 +5,16 @@ Thank you for your continuous support! And apologize for the issues. We're looki
 
 # Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
 
-Reflections scans and indexes your project's classpath, allowing reverse transitive query of the type system metadata on runtime.
+[![Build Status](https://travis-ci.org/ronmamo/reflections.svg?branch=master)](https://travis-ci.org/ronmamo/reflections)
+
+Reflections scans and indexes your project's classpath metadata, allowing reverse transitive query of the type system on runtime.
 
 Using Reflections you can query for example:
   * Subtypes of a type
   * Types annotated with an annotation
   * Methods with annotation, parameters, return type
   * Resources found in classpath  
+And more...
 
 ## Usage
 Add Reflections dependency to your project:
@@ -31,7 +34,7 @@ Create Reflections instance and use the query functions:
 ```java
 Reflections reflections = new Reflections("com.my.project");
 
-Set<Class<? extends SomeType>> subTypes =
+Set<Class<?>> subTypes =
   reflections.get(SubTypes.of(SomeType.class).asClass());
 
 Set<Class<?>> annotated = 
@@ -51,7 +54,7 @@ Creating Reflections instance requires providing scanning configuration:
 Reflections reflections = new Reflections(
   new ConfigurationBuilder()
     .forPackage("com.my.project")
-	.filterInputsBy(new FilterBuilder().includePackage("com.my.project")));
+    .filterInputsBy(new FilterBuilder().includePackage("com.my.project")));
 
 // or similarly
 Reflections reflections = new Reflections("com.my.project");
@@ -84,7 +87,7 @@ Standard [Scanners](src/main/java/org/reflections/scanners/Scanners.java) are pr
 import static org.reflections.scanners.Scanners.*;
 
 // SubTypes
-Set<Class<? extends Module>> modules = 
+Set<Class<?>> modules = 
   reflections.get(SubTypes.of(Module.class).asClass());
 
 // TypesAnnotated
@@ -144,7 +147,7 @@ Set<String> singleNames =
 ```
 Note that previous 0.9.x API is still supported, for example:
 ```java
-Set<Class<? extends Module>> modules = 
+Set<Class<?>> modules = 
   reflections.getSubTypesOf(Module.class);
 
 Set<Class<?>> singletons = 
@@ -167,6 +170,7 @@ Set<Class<?>> singletons =
 | `get(ConstructorsParameter.with(P))` | getConstructorsWithParameter(P) |
 | `get(ConstructorsSignature.of(P, ...))` | getConstructorsWithSignature(P, ...) |
 
+*Note: `asClass()` and `as()` mappings were omitted*
 </details>
 
 ## ReflectionUtils
@@ -178,23 +182,24 @@ Java Reflection convenient methods are available using
 import static org.reflections.ReflectionUtils.*;
 
 Set<Class<?>>    superTypes   = get(SuperTypes.of(T));
-Set<Annotation>  annotations  = get(Annotations.of(T));
-Set<Methods>     methods      = get(Methods.of(T));
-Set<Constructor> constructors = get(Constructors.of(T));
 Set<Field>       fields       = get(Fields.of(T));
+Set<Constructor> constructors = get(Constructors.of(T));
+Set<Methods>     methods      = get(Methods.of(T));
+Set<Annotation>  annotations  = get(Annotations.of(T));
+Set<Class<? extends Annotation>> annotationTypes = get(AnnotationTypess.of(T));
 ```
 
 *Previous ReflectionUtils 0.9.x API is still supported though marked for removal, more info in the javadocs.*
 
 ## QueryBuilder and QueryFunction
-Each Scanner and ReflectionUtils helper implements
-[QueryBuilder](src/main/java/org/reflections/util/QueryBuilder.java), and provides function for:
+Each Scanner and ReflectionUtils function implements
+[QueryBuilder](src/main/java/org/reflections/util/QueryBuilder.java), and supports:
 * `get()` - function returns direct values 
 * `with()` or `of()` - function returns all transitive values
 
-For example, `Scanners.SubTypes.get(T)` return direct subtypes of T, 
-while `Scanners.SubTypes.of(T)` return all subtypes hierarchy of T. 
-Same goes for `Scanners.TypesAnnotated` and `ReflectionUtils.SuperTypes` etc.
+*For example, `Scanners.SubTypes.get(T)` return direct subtypes, 
+while `Scanners.SubTypes.of(T)` return transitive subtypes hierarchy. 
+Same goes for `Scanners.TypesAnnotated` and `ReflectionUtils.SuperTypes` etc.*
 
 Next, each function implements [QueryFunction](src/main/java/org/reflections/util/QueryFunction.java), 
 and provides fluent functional interface for composing `filter()`, `map()`, `flatMap()`, `as()` and more, such that:
@@ -211,8 +216,8 @@ Query functions can be composed, for example:
 ```java
 // compose Scanner and ReflectionUtils functions 
 QueryFunction<Store, Method> methods = 
-  SubTypes.of(type).asClass()
-    .flatMap(Methods::of);
+  SubTypes.of(type).asClass()  // <-- classpath scanned metadata
+    .flatMap(Methods::of);     // <-- java reflection api
 
 // compose function of function
 QueryFunction<Store, Class<? extends Annotation>> queryAnnotations = 
@@ -222,7 +227,7 @@ QueryFunction<Store, Class<? extends Annotation>> queryAnnotations =
 
 See more in [ReflectionUtilsQueryTest](https://github.com/ronmamo/reflections/tree/master/src/test/java/org/reflections/ReflectionUtilsQueryTest.java)  
 
-A more complex example demonstrates how to get merged annotations of rest controllers endpoint:
+A more complex example demonstrates getting merged annotations of rest controllers endpoints:
 ```java
 // get all annotations of RequestMapping hierarchy (GetMapping, PostMapping, ...)
 Set<Class<?>> metaAnnotations =
@@ -240,9 +245,9 @@ QueryFunction<Store, Map<String, Object>> queryAnnotations =
         // merge annotations' member values into a single hash map
         .collect(new AnnotationMergeCollector(method)));
 
+// apply query and map merged hashmap into java annotation proxy
 Set<RequestMapping> mergedAnnotations = 
   reflections.get(mergedAnnotation
-    // map to Java annotation proxy    
     .map(map -> ReflectionUtils.toAnnotation(map, metaAnnotation)));
 ```
 
@@ -252,12 +257,11 @@ Check the [tests](src/test/java/org/reflections) folder for more examples and AP
 - **Integrating with build lifecycle**  
 It is sometime useful to save the scanned metadata into xml/json as part of the build lifecycle for generating resources, 
 and then collect it on bootstrap with `Reflections.collect()` and avoid scanning. *See [reflections-maven](https://github.com/ronmamo/reflections-maven/) for example*.
-
-- [JavaCodeSerializer](src/main/java/org/reflections/scanners/JavaCodeSerializer.java) - scanned metadata can be persisted into a generated Java source code. Can be used Although less common, it might be useful for accessing type members in a strongly typed manner.
-
-- [AnnotationMergeCollector](src/main/java/org/reflections/util/AnnotationMergeCollector.java) - can be used to merge similar annotations.
-
-- [MemberUsageScanner](src/main/java/org/reflections/scanners/MemberUsageScanner.java) - experimental scanner allow querying for static usages of packages/types/elements within the project.  
+- [JavaCodeSerializer](src/main/java/org/reflections/scanners/JavaCodeSerializer.java) - scanned metadata can be persisted into a generated Java source code. 
+Although less common, it can be useful for accessing types and members in a strongly typed manner. *(see [example](src/test/java/org/reflections/MyTestModelStore.java))*
+- [AnnotationMergeCollector](src/main/java/org/reflections/util/AnnotationMergeCollector.java) - can be used to merge similar annotations, for example for finding effective REST controller endpoints. *(see [test](src/test/java/org/reflections/ReflectionUtilsQueryTest.java#L216))*
+- [MemberUsageScanner](src/main/java/org/reflections/scanners/MemberUsageScanner.java) - experimental scanner allow querying for member usages `getMemberUsages()` of packages/types/elements in the classpath.
+Can be used for finding usages between packages, layers, modules, types etc.  
 
 ### Contribute
 Pull requests are welcomed!!
@@ -267,7 +271,6 @@ Dual licenced with Apache 2 and [WTFPL](http://www.wtfpl.net/), just do what the
 *This library is published as an act of giving and generosity, from developers to developers,
 to promote knowledge sharing and a--hole free working environments.  
 Please feel free to use it, and to contribute to the developers' community in the same manner.*  
-
-[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WLN75KYSR6HAY) 
+[PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WLN75KYSR6HAY) / [Patreon](https://www.patreon.com/ronma)  
 
 _Cheers_

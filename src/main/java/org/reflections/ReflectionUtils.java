@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 /**
- * utils for querying java reflection meta types {@link #SuperTypes}, {@link #Annotations}, {@link #Methods}, {@link #Constructors}, {@link #Fields}.
+ * utils for querying java reflection meta types {@link #SuperTypes}, {@link #Annotations}, {@link #AnnotationTypes}, {@link #Methods}, {@link #Constructors}, {@link #Fields}.
  * <pre>{@code Set<Class<?>> supertypes = get(SuperTypes.of(type))
  * Set<Annotation> annotations = get(Annotations.of(type))
  * }</pre>
@@ -115,8 +115,21 @@ public abstract class ReflectionUtils extends ReflectionUtilsPredicates {
 
             @Override
             public QueryFunction<Store, Annotation> of(AnnotatedElement element) {
-                return ReflectionUtils.extendType().get(element)
-                    .getAll(Annotations::get, Annotation::annotationType);
+                return ReflectionUtils.extendType().get(element).getAll(Annotations::get, Annotation::annotationType);
+            }
+        };
+
+    /** query annotation types <pre>{@code get(AnnotationTypes.of(element)) -> Set<Class<? extends Annotation>> }</pre> */
+    public static final UtilQueryBuilder<AnnotatedElement, Class<? extends Annotation>> AnnotationTypes =
+        new UtilQueryBuilder<AnnotatedElement, Class<? extends Annotation>>() {
+            @Override
+            public QueryFunction<Store, Class<? extends Annotation>> get(AnnotatedElement element) {
+                return Annotations.get(element).map(Annotation::annotationType);
+            }
+
+            @Override
+            public QueryFunction<Store, Class<? extends Annotation>> of(AnnotatedElement element) {
+                return ReflectionUtils.extendType().get(element).getAll(AnnotationTypes::get, a -> a);
             }
         };
 
@@ -203,7 +216,7 @@ public abstract class ReflectionUtils extends ReflectionUtilsPredicates {
         return get(Annotations.get(type), predicates);
     }
 
-    /** map {@code annotation} to hash map of member values recursively <pre>{@code Annotations.of(type).map(ReflectionUtils::toValueMap)} </pre>*/
+    /** map {@code annotation} to hash map of member values recursively <pre>{@code Annotations.of(type).map(ReflectionUtils::toMap)} </pre>*/
     public static Map<String, Object> toMap(Annotation annotation) {
         return get(Methods.of(annotation.annotationType())
             .filter(notObjectMethod.and(withParametersCount(0))))
@@ -215,25 +228,30 @@ public abstract class ReflectionUtils extends ReflectionUtilsPredicates {
             }));
     }
 
-    /** map {@code annotation} and {@code annotatedElement} to hash map of member values <pre>{@code Annotations.of(type).map(a -> toValueMap(type, a))} </pre>*/
+    /** map {@code annotation} and {@code annotatedElement} to hash map of member values
+     * <pre>{@code Annotations.of(type).map(a -> toMap(type, a))} </pre>*/
     public static Map<String, Object> toMap(Annotation annotation, AnnotatedElement element) {
         Map<String, Object> map = toMap(annotation);
         if (element != null) map.put("annotatedElement", element);
         return map;
     }
 
+    /** create new annotation proxy with member values from the given {@code map} <pre>{@code toAnnotation(Map.of("annotationType", annotationType, "value", ""))}</pre> */
     public static Annotation toAnnotation(Map<String, Object> map) {
         return toAnnotation(map, (Class<? extends Annotation>) map.get("annotationType"));
     }
 
+    /** create new annotation proxy with member values from the given {@code map} and member values from the given {@code map}
+     * <pre>{@code toAnnotation(Map.of("value", ""), annotationType)}</pre> */
     public static <T extends Annotation> T toAnnotation(Map<String, Object> map, Class<T> annotationType) {
         return (T) Proxy.newProxyInstance(annotationType.getClassLoader(), new Class<?>[]{annotationType},
             (proxy, method, args) -> notObjectMethod.test(method) ? map.get(method.getName()) : method.invoke(map));
     }
 
-    public static Object invoke(Method a, Object o) {
+    /** invoke the given {@code method} with {@code args}, return either the result or an exception if occurred */
+    public static Object invoke(Method method, Object obj, Object... args) {
         try {
-            return a.invoke(o);
+            return method.invoke(obj, args);
         } catch (Exception e) {
             return e;
         }

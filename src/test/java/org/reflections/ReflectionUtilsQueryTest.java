@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.reflections.ReflectionUtils.*;
 import static org.reflections.ReflectionsQueryTest.equalTo;
 import static org.reflections.TestModel.*;
@@ -56,10 +57,8 @@ public class ReflectionUtilsQueryTest {
 				AC1.class, AC1n.class, AC2.class, AI1.class, AI2.class, MAI1.class));
 
 		assertThat(
-			get(Annotations.of(C3.class)
-				.map(Annotation::annotationType)
-				.filter(a -> !a.getName().startsWith("java."))
-				.as()),
+			get(AnnotationTypes.of(C3.class)
+				.filter(a -> !a.getName().startsWith("java."))),
 			equalTo(
 				AC1.class, AC1n.class, AC2.class, AI1.class, AI2.class, MAI1.class));
 
@@ -100,17 +99,13 @@ public class ReflectionUtilsQueryTest {
 			equalTo(C4.class.getDeclaredField("f1"),
 				C4.class.getDeclaredField("f2")));
 
+		AF1 af12 = new AF1() {
+			public String value() { return "2"; }
+			public Class<? extends Annotation> annotationType() { return AF1.class; }
+		};
 		assertThat(
 			get(Fields.of(C4.class)
-				.filter(withAnnotation(new AF1() {
-					public String value() {
-						return "2";
-					}
-
-					public Class<? extends Annotation> annotationType() {
-						return AF1.class;
-					}
-				}))),
+				.filter(withAnnotation(af12))),
 			equalTo(C4.class.getDeclaredField("f2")));
 
 		assertThat(
@@ -142,12 +137,12 @@ public class ReflectionUtilsQueryTest {
 	@Test
 	public void addQuery() {
 		Set<Class<? extends Annotation>> annotations =
-			get(Annotations.of(C1.class)
-				.add(Annotations.of(C2.class))
-				.map(Annotation::annotationType));
+			get(AnnotationTypes.of(C1.class)
+				.add(AnnotationTypes.of(C2.class)));
 
 		assertThat(annotations,
-			equalTo(Retention.class, Target.class, Documented.class, Inherited.class,
+			equalTo(
+				Retention.class, Target.class, Documented.class, Inherited.class,
 				AC1.class, AC2.class, AC1n.class, AI2.class, AI1.class, MAI1.class));
 	}
 
@@ -185,12 +180,17 @@ public class ReflectionUtilsQueryTest {
 				.flatMap(annotation ->
 					Methods.of(annotation.annotationType())));
 
+		Set<Method> query1 =
+			get(AnnotationTypes.of(Methods.of(CombinedTestModel.Impl.class)).flatMap(Methods::of));
+
 		assertThat(query,
 			equalTo(
 				CombinedTestModel.Post.class.getDeclaredMethod("value"),
 				CombinedTestModel.Requests.class.getDeclaredMethod("value"),
 				CombinedTestModel.Get.class.getDeclaredMethod("value"),
 				Annotation.class.getDeclaredMethod("annotationType")));
+
+		assertEquals(query, query1);
 	}
 
 	@Test

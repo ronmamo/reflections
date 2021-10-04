@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JavassistHelper {
 	/** setting this static to false will result in returning only {@link java.lang.annotation.RetentionPolicy#RUNTIME} visible annotation */
@@ -40,6 +41,14 @@ public class JavassistHelper {
 		if (object instanceof FieldInfo) return AccessFlag.isPublic(((FieldInfo) object).getAccessFlags());
 		if (object instanceof MethodInfo) return AccessFlag.isPublic(((MethodInfo) object).getAccessFlags());
 		return false;
+	}
+
+	public static Stream<MethodInfo> getMethods(ClassFile classFile) {
+		return classFile.getMethods().stream().filter(MethodInfo::isMethod);
+	}
+
+	public static Stream<MethodInfo> getConstructors(ClassFile classFile) {
+		return classFile.getMethods().stream().filter(methodInfo -> !methodInfo.isMethod());
 	}
 
 	public static List<String> getParameters(MethodInfo method) {

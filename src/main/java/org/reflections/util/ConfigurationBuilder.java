@@ -49,8 +49,7 @@ public class ConfigurationBuilder implements Configuration {
     }
 
     /** constructs a {@link ConfigurationBuilder}.
-     * <br>prefer using the explicit methods and not this convenient builder.
-     * <p></p>each parameter in {@code params} is referred by its type:
+     * <p>each parameter in {@code params} is referred by its type:
      * <ul>
      *     <li>{@link String} - add urls using {@link ClasspathHelper#forPackage(String, ClassLoader...)} and an input filter
      *     <li>{@link Class} - add urls using {@link ClasspathHelper#forClass(Class, ClassLoader...)} and an input filter
@@ -61,7 +60,9 @@ public class ConfigurationBuilder implements Configuration {
      *     <li>{@code Object[]} - flatten and use each element as above
      * </ul>
      * input filter will be set according to given packages
-     * */
+     * <p></p><i>prefer using the explicit accessor methods instead:</i>
+     * <pre>{@code new ConfigurationBuilder().forPackage(...).setScanners(...)}</pre>
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static ConfigurationBuilder build(Object... params) {
         final ConfigurationBuilder builder = new ConfigurationBuilder();

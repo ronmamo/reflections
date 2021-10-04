@@ -88,64 +88,51 @@ public class ReflectionsTest implements NameHelper {
     }
 
     @Test
-    public void testMethodsAnnotatedWith() {
-        try {
-            assertThat(reflections.getMethodsAnnotatedWith(AM1.class),
-                    are(C4.class.getDeclaredMethod("m1"),
-                        C4.class.getDeclaredMethod("m1", int.class, String[].class),
-                        C4.class.getDeclaredMethod("m1", int[][].class, String[][].class),
-                        C4.class.getDeclaredMethod("m3")));
+    public void testMethodsAnnotatedWith() throws NoSuchMethodException {
+        assertThat(reflections.getMethodsAnnotatedWith(AM1.class),
+                are(C4.class.getDeclaredMethod("m1"),
+                    C4.class.getDeclaredMethod("m1", int.class, String[].class),
+                    C4.class.getDeclaredMethod("m1", int[][].class, String[][].class),
+                    C4.class.getDeclaredMethod("m3")));
 
-            AM1 am1 = new AM1() {
-                public String value() {return "1";}
-                public Class<? extends Annotation> annotationType() {return AM1.class;}
-            };
-            assertThat(reflections.getMethodsAnnotatedWith(am1),
-                    are(C4.class.getDeclaredMethod("m1"),
-                        C4.class.getDeclaredMethod("m1", int.class, String[].class),
-                        C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
-        } catch (NoSuchMethodException e) {
-            fail();
-        }
+        AM1 am1 = new AM1() {
+            public String value() {return "1";}
+            public Class<? extends Annotation> annotationType() {return AM1.class;}
+        };
+        assertThat(reflections.getMethodsAnnotatedWith(am1),
+                are(C4.class.getDeclaredMethod("m1"),
+                    C4.class.getDeclaredMethod("m1", int.class, String[].class),
+                    C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
     }
 
     @Test
-    public void testConstructorsAnnotatedWith() {
-        try {
-            assertThat(reflections.getConstructorsAnnotatedWith(AM1.class),
-                    are(C4.class.getDeclaredConstructor(String.class)));
+    public void testConstructorsAnnotatedWith() throws NoSuchMethodException {
+        assertThat(reflections.getConstructorsAnnotatedWith(AM1.class),
+                are(C4.class.getDeclaredConstructor(String.class)));
 
-            AM1 am1 = new AM1() {
-                public String value() {return "1";}
-                public Class<? extends Annotation> annotationType() {return AM1.class;}
-            };
-            assertThat(reflections.getConstructorsAnnotatedWith(am1),
-                    are(C4.class.getDeclaredConstructor(String.class)));
-        } catch (NoSuchMethodException e) {
-            fail();
-        }
+        AM1 am1 = new AM1() {
+            public String value() {return "1";}
+            public Class<? extends Annotation> annotationType() {return AM1.class;}
+        };
+        assertThat(reflections.getConstructorsAnnotatedWith(am1),
+                are(C4.class.getDeclaredConstructor(String.class)));
     }
 
     @Test
-    public void testFieldsAnnotatedWith() {
-        try {
-            assertThat(reflections.getFieldsAnnotatedWith(AF1.class),
-                    are(C4.class.getDeclaredField("f1"),
-                        C4.class.getDeclaredField("f2")
-                        ));
+    public void testFieldsAnnotatedWith() throws NoSuchFieldException {
+        assertThat(reflections.getFieldsAnnotatedWith(AF1.class),
+                are(C4.class.getDeclaredField("f1"),
+                    C4.class.getDeclaredField("f2")
+                    ));
 
-            assertThat(reflections.getFieldsAnnotatedWith(new AF1() {
-                            public String value() {return "2";}
-                            public Class<? extends Annotation> annotationType() {return AF1.class;}}),
-                    are(C4.class.getDeclaredField("f2")));
-        } catch (NoSuchFieldException e) {
-            fail();
-        }
+        assertThat(reflections.getFieldsAnnotatedWith(new AF1() {
+                        public String value() {return "2";}
+                        public Class<? extends Annotation> annotationType() {return AF1.class;}}),
+                are(C4.class.getDeclaredField("f2")));
     }
 
     @Test
-    public void testMethodParameter() {
-        try {
+    public void testMethodParameter() throws NoSuchMethodException {
             assertThat(reflections.getMethodsWithParameter(String.class),
                     are(C4.class.getDeclaredMethod("m4", String.class), UsageTestModel.C1.class.getDeclaredMethod("method", String.class)));
 
@@ -171,16 +158,6 @@ public class ReflectionsTest implements NameHelper {
 
             assertThat(reflections.getMethodsWithParameter(AM1.class),
                     are(C4.class.getDeclaredMethod("m4", String.class)));
-
-            assertThat(reflections.getMethodsWithParameter(
-                    new AM1() {
-                        public String value() { return "2"; }
-                        public Class<? extends Annotation> annotationType() { return AM1.class; }
-                    }),
-                    are(C4.class.getDeclaredMethod("m4", String.class)));
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -194,13 +171,6 @@ public class ReflectionsTest implements NameHelper {
                         C7.class.getDeclaredConstructor(), UsageTestModel.C1.class.getDeclaredConstructor(), UsageTestModel.C2.class.getDeclaredConstructor()));
 
         assertThat(reflections.getConstructorsWithParameter(AM1.class),
-                are(C4.class.getDeclaredConstructor(String.class)));
-
-        assertThat(reflections.getConstructorsWithParameter(
-                new AM1() {
-                    public String value() { return "1"; }
-                    public Class<? extends Annotation> annotationType() { return AM1.class; }
-                }),
                 are(C4.class.getDeclaredConstructor(String.class)));
     }
 

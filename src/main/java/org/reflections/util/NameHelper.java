@@ -14,13 +14,16 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Helper methods for converting between annotated elements and their names
  */
 public interface NameHelper {
+
+	List<String> primitiveNames = Arrays.asList("boolean", "char", "byte", "short", "int", "long", "float", "double", "void");
+	List<Class<?>> primitiveTypes = Arrays.asList(boolean.class, char.class, byte.class, short.class, int.class, long.class, float.class, double.class, void.class);
+	List<String> primitiveDescriptors = Arrays.asList("Z", "C", "B", "S", "I", "J", "F", "D", "V");
 
 	// toName
 	default String toName(AnnotatedElement element) {
@@ -125,7 +128,7 @@ public interface NameHelper {
 			try {
 				if (!descriptor.contains("(")) {
 					return aClass.isInterface() ? aClass.getField(memberName) : aClass.getDeclaredField(memberName);
-				} else if (isConstructor(descriptor)) {
+				} else if (descriptor.contains("init>")) {
 					return aClass.isInterface() ? aClass.getConstructor(parameterTypes) : aClass.getDeclaredConstructor(parameterTypes);
 				} else {
 					return aClass.isInterface() ? aClass.getMethod(memberName, parameterTypes) : aClass.getDeclaredMethod(memberName, parameterTypes);
@@ -165,17 +168,5 @@ public interface NameHelper {
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	default Collection<Class<?>> forNames(Collection<String> names, ClassLoader... loaders) {
 		return forNames(names, (Class) Class.class, loaders);
-	}
-
-	List<String> primitiveNames = Arrays.asList("boolean", "char", "byte", "short", "int", "long", "float", "double", "void");
-	List<Class<?>> primitiveTypes = Arrays.asList(boolean.class, char.class, byte.class, short.class, int.class, long.class, float.class, double.class, void.class);
-	List<String> primitiveDescriptors = Arrays.asList("Z", "C", "B", "S", "I", "J", "F", "D", "V");
-
-	default boolean isConstructor(String fqn) {
-		return fqn.contains("init>");
-	}
-
-	default boolean isMethod(String fqn) {
-		return !isConstructor(fqn);
 	}
 }

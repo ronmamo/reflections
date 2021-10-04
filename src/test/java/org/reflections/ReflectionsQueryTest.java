@@ -297,6 +297,12 @@ public class ReflectionsQueryTest implements NameHelper {
 
 	@Test
 	public void testGetAll() {
+		reflections = new Reflections(
+			new ConfigurationBuilder()
+				.forPackage("org.reflections")
+				.filterInputsBy(new FilterBuilder().includePattern("org\\.reflections\\.TestModel\\$.*"))
+				.setScanners(Scanners.SubTypes.filterResultsBy(t -> true)));
+
 		assertThat("all (sub) types",
 			reflections.getAll(SubTypes),
 			equalTo("java.lang.Object", "java.lang.annotation.Annotation",

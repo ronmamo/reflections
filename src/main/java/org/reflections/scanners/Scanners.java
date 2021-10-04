@@ -1,8 +1,6 @@
 package org.reflections.scanners;
 
 import javassist.bytecode.ClassFile;
-import javassist.bytecode.FieldInfo;
-import javassist.bytecode.MethodInfo;
 import org.reflections.Store;
 import org.reflections.util.FilterBuilder;
 import org.reflections.util.NameHelper;
@@ -42,18 +40,16 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
     /** scan type superclasses and interfaces
      * <p></p>
      * <i>Note that {@code Object} class is excluded by default, in order to reduce store size.
-     * Use {@link #filterResultsBy(Predicate)} to change, i.e. {@code filterResultsBy(c -> true)}</i>
+     * <br>Use {@link #filterResultsBy(Predicate)} to change, for example {@code SubTypes.filterResultsBy(c -> true)}</i>
      * */
     SubTypes {
         /* Object class is excluded by default from subtypes indexing */
         { filterResultsBy(new FilterBuilder().excludePattern("java\\.lang\\.Object")); }
 
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            List<Map.Entry<String, String>> entries = new ArrayList<>();
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
             entries.add(entry(classFile.getSuperclass(), classFile.getName()));
             entries.addAll(entries(Arrays.asList(classFile.getInterfaces()), classFile.getName()));
-            return filtered(entries);
         }
     },
 
@@ -65,55 +61,35 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
 
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            return entries(getAnnotations(classFile::getAttribute), classFile.getName());
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            entries.addAll(entries(getAnnotations(classFile::getAttribute), classFile.getName()));
         }
     },
 
     /** scan method annotations */
     MethodsAnnotated {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            List<Map.Entry<String, String>> entries = new ArrayList<>();
-            for (MethodInfo method : classFile.getMethods()) {
-                entries.addAll(entries(getAnnotations(method::getAttribute), methodName(classFile, method)));
-            }
-            return filtered(entries);
-        }
-
-        @Override
-        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
-            return super.with(keys).filter(this::isMethod);
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            getMethods(classFile).forEach(method ->
+                entries.addAll(entries(getAnnotations(method::getAttribute), methodName(classFile, method))));
         }
     },
 
     /** scan constructor annotations */
     ConstructorsAnnotated {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            return null;
-        }
-
-        @Override
-        public String index() {
-            return MethodsAnnotated.index();
-        }
-
-        @Override
-        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
-            return super.with(keys).filter(this::isConstructor);
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            getConstructors(classFile).forEach(constructor ->
+                entries.addAll(entries(getAnnotations(constructor::getAttribute), methodName(classFile, constructor))));
         }
     },
 
     /** scan field annotations */
     FieldsAnnotated {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            List<Map.Entry<String, String>> entries = new ArrayList<>();
-            for (FieldInfo field : classFile.getFields()) {
-                entries.addAll(entries(getAnnotations(field::getAttribute), fieldName(classFile, field)));
-            }
-            return filtered(entries);
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            classFile.getFields().forEach(field ->
+                entries.addAll(entries(getAnnotations(field::getAttribute), fieldName(classFile, field))));
         }
     },
 
@@ -130,7 +106,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
         }
 
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
             throw new IllegalStateException();
         }
 
@@ -144,108 +120,84 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
     /** scan method parameters types and annotations */
     MethodsParameter {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            List<Map.Entry<String, String>> entries = new ArrayList<>();
-            for (MethodInfo method : classFile.getMethods()) {
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            getMethods(classFile).forEach(method -> {
                 String value = methodName(classFile, method);
                 entries.addAll(entries(getParameters(method), value));
-                for (List<String> annotations : getParametersAnnotations(method)) {
-                    entries.addAll(entries(annotations, value));
-                }
-            }
-            return filtered(entries);
-        }
-
-        @Override
-        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
-            return super.with(keys).filter(this::isMethod);
+                getParametersAnnotations(method).forEach(annotations -> entries.addAll(entries(annotations, value)));
+            });
         }
     },
 
-    /** scan constructor parameters types and annotations
-     * <p><i>requires {@link #MethodsParameter} configured</i> */
+    /** scan constructor parameters types and annotations */
     ConstructorsParameter {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            return null;
-        }
-
-        @Override
-        public String index() {
-            return MethodsParameter.index();
-        }
-
-        @Override
-        public QueryFunction<Store, String> with(AnnotatedElement... keys) {
-            return super.with(keys).filter(this::isConstructor);
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            getConstructors(classFile).forEach(constructor -> {
+                String value = methodName(classFile, constructor);
+                entries.addAll(entries(getParameters(constructor), value));
+                getParametersAnnotations(constructor).forEach(annotations -> entries.addAll(entries(annotations, value)));
+            });
         }
     },
 
-    /** scan method parameters types */
+    /** scan methods signature */
     MethodsSignature {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            List<Map.Entry<String, String>> entries = new ArrayList<>();
-            for (MethodInfo method : classFile.getMethods()) {
-                entries.add(entry(getParameters(method).toString(), methodName(classFile, method)));
-            }
-            return entries;
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            getMethods(classFile).forEach(method ->
+                entries.add(entry(getParameters(method).toString(), methodName(classFile, method))));
         }
 
         @Override
         public QueryFunction<Store, String> with(AnnotatedElement... keys) {
-            return QueryFunction.single(toNames(keys).toString()).getAll(this::get).filter(this::isMethod);
+            return QueryFunction.single(toNames(keys).toString()).getAll(this::get);
         }
     },
 
-    /** scan constructor parameters types
-     * <p><i>requires {@link #MethodsSignature} configured</i> */
+    /** scan constructors signature */
     ConstructorsSignature {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            return null;
-        }
-
-        @Override
-        public String index() {
-            return MethodsSignature.index();
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            getConstructors(classFile).forEach(constructor ->
+                entries.add(entry(getParameters(constructor).toString(), methodName(classFile, constructor))));
         }
 
         @Override
         public QueryFunction<Store, String> with(AnnotatedElement... keys) {
-            return QueryFunction.single(toNames(keys).toString()).getAll(this::get).filter(this::isConstructor);
+            return QueryFunction.single(toNames(keys).toString()).getAll(this::get);
         }
     },
 
     /** scan method return type */
     MethodsReturn {
         @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            List<Map.Entry<String, String>> entries = new ArrayList<>();
-            for (MethodInfo method : classFile.getMethods()) {
-                if (method.isMethod()) {
-                    entries.add(entry(getReturnType(method), methodName(classFile, method)));
-                }
-            }
-            return filtered(entries);
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            getMethods(classFile).forEach(method ->
+                entries.add(entry(getReturnType(method), methodName(classFile, method))));
         }
     };
+
+    private Predicate<String> resultFilter = s -> true; //accept all by default
 
     @Override
     public String index() {
         return name();
     }
 
-    private Predicate<String> resultFilter = s -> true; //accept all by default
-
     public Scanners filterResultsBy(Predicate<String> filter) {
         this.resultFilter = filter;
         return this;
     }
 
-    protected List<Map.Entry<String, String>> filtered(List<Map.Entry<String, String>> entries) {
-        return entries.stream().filter(a -> acceptResult(a.getValue())).collect(Collectors.toList());
+    @Override
+    public final List<Map.Entry<String, String>> scan(ClassFile classFile) {
+        List<Map.Entry<String, String>> entries = new ArrayList<>();
+        scan(classFile, entries);
+        return entries.stream().filter(a -> acceptResult(a.getKey())).collect(Collectors.toList());
     }
+
+    abstract void scan(ClassFile classFile, List<Map.Entry<String, String>> entries);
 
     protected boolean acceptResult(String fqn) {
         return fqn != null && resultFilter.test(fqn);
