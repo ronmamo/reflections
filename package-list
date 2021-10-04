@@ -1,6 +1,0 @@
-org.reflections
-org.reflections.adapters
-org.reflections.scanners
-org.reflections.serializers
-org.reflections.util
-org.reflections.vfs
