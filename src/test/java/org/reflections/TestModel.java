@@ -3,7 +3,7 @@ package org.reflections;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.lang.annotation.RetentionPolicy.*;
 
 @SuppressWarnings({"ALL"})
 public interface TestModel {
@@ -26,6 +26,7 @@ public interface TestModel {
     public @Retention(RUNTIME) @interface AM1 {
         public abstract String value();
     }
+    public @interface AM2 {}
     public @Retention(RUNTIME) @interface AF1 {
         public abstract String value();
     }
@@ -38,10 +39,10 @@ public interface TestModel {
         @AM1("1") public C4(@AM1("1") String f1) { this.f1 = f1; }
 
         @AM1("1") protected void m1() {}
-        @AM1("1") public void m1(int integer, String... strings) {}
+        @AM1("1") public void m1(int integer, @AM2 String... strings) {}
         @AM1("1") public void m1(int[][] integer, String[][] strings) {}
         @AM1("2") public String m3() {return null;}
-        public String m4(@AM1("2") String string) {return null;}
+        public String m4(@AM1("2") @AM2 String string) {return null;}
         public C3 c2toC3(C2 c2) {return null;}
         public int add(int i1, int i2) { return i1+i2; }
     }
@@ -50,7 +51,6 @@ public interface TestModel {
     public @AC2("ac2") interface I3 {}
     public class C6 implements I3 {}
 
-    public @Retention(RUNTIME) @AC2("ac2") @interface AC3 { }
+    public @AC2("ac2") @interface AC3 { } // not @Retention(RUNTIME)
     public @AC3 class C7 {}
-
 }

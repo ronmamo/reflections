@@ -64,7 +64,8 @@ import static org.reflections.scanners.Scanners.*;
  * </ul>
  *
  * <p>Create Reflections instance, preferably using {@link ConfigurationBuilder}:
- * <pre>{@code Reflections reflections = new Reflections(
+ * <pre>{@code
+ * Reflections reflections = new Reflections(
  *   new ConfigurationBuilder()
  *     .forPackage("com.my.project"));
  *
@@ -87,7 +88,8 @@ import static org.reflections.scanners.Scanners.*;
  * <p>Classloader can optionally be used for resolving runtime classes from names.
  *
  * <p></p>Query using {@link Reflections#get(QueryFunction)}, such as:
- * <pre>{@code Set<Class<?>> modules = reflections.get(SubTypes.of(Module.class).asClass());
+ * <pre>{@code
+ * Set<Class<?>> modules = reflections.get(SubTypes.of(Module.class).asClass());
  * Set<Class<?>> singletons = reflections.get(TypesAnnotated.with(Singleton.class).asClass());
  * Set<String> properties   = reflections.get(Resources.with(".*\\.properties"));
  * Set<Method> requests     = reflections.get(MethodsAnnotated.with(RequestMapping.class).as(Method.class));

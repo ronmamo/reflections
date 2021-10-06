@@ -1,9 +1,9 @@
-*Released `org.reflections:reflections:0.10`*
+*Released `org.reflections:reflections:0.10.1`*
 
 *Reflections library has ~4 million downloads per month from Maven Central, and is being used by thousands of [projects](https://github.com/ronmamo/reflections/network/dependents) and [libraries](https://mvnrepository.com/artifact/org.reflections/reflections/usages).  
 Thank you for your continuous support! And apologize for the issues. We're looking for community collaborators to assist in reviewing pull requests and issues, please reach out.*
 
-# Java runtime metadata analysis, in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/)
+# Java runtime metadata analysis
 
 [![Build Status](https://travis-ci.org/ronmamo/reflections.svg?branch=master)](https://travis-ci.org/ronmamo/reflections)
 
@@ -16,6 +16,8 @@ Using Reflections you can query for example:
   * Resources found in classpath  
 And more...
 
+*Reflections was written in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/) library*
+
 ## Usage
 Add Reflections dependency to your project:
 ```xml
@@ -23,11 +25,11 @@ Add Reflections dependency to your project:
 <dependency>
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.10</version>
+    <version>0.10.1</version>
 </dependency>
 
 # Gradle
-implementation 'org.reflections:reflections:0.10'
+implementation 'org.reflections:reflections:0.10.1'
 ```
 
 Create Reflections instance and use the query functions: 
@@ -41,7 +43,7 @@ Set<Class<?>> annotated =
   reflections.get(TypesAnnotated.with(SomeAnnotation.class).asClass());
 ```
 
-*Note that there are some breaking changes with Reflections 0.10, along with performance improvements and more functional API. Migration is encouraged and should be easy though.*
+*Note that there are some breaking changes with Reflections 0.10+, along with performance improvements and more functional API. Migration is encouraged and should be easy though.*
 
 ### Scan
 Creating Reflections instance requires providing scanning configuration:
@@ -263,7 +265,9 @@ Although less common, it can be useful for accessing types and members in a stro
 Can be used for finding usages between packages, layers, modules, types etc.  
 
 ### Contribute
-Pull requests are welcomed!!
+Pull requests are welcomed!!  
+Here are some issues labeled with [please contribute :heart:](https://github.com/ronmamo/reflections/issues?q=is%3Aissue+is%3Aopen+label%3A%22please+contribute+%E2%9D%A4%EF%B8%8F%22+label%3A%22good+first+issue%22)  
+*We're looking for community collaborators to assist in reviewing pull requests and issues, please reach out.*
 
 Dual licenced with Apache 2 and [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to.  
 

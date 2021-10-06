@@ -158,6 +158,10 @@ public class ReflectionsTest implements NameHelper {
 
             assertThat(reflections.getMethodsWithParameter(AM1.class),
                     are(C4.class.getDeclaredMethod("m4", String.class)));
+
+            assertThat(reflections.getMethodsWithParameter(AM2.class),
+                    are(C4.class.getDeclaredMethod("m4", String.class),
+                            C4.class.getDeclaredMethod("m1", int.class, String[].class)));
     }
 
     @Test

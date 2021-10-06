@@ -23,11 +23,13 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 /**
- * utils for querying java reflection meta types {@link #SuperTypes}, {@link #Annotations}, {@link #AnnotationTypes}, {@link #Methods}, {@link #Constructors}, {@link #Fields}.
- * <pre>{@code Set<Class<?>> supertypes = get(SuperTypes.of(type))
+ * utils for querying java reflection meta types
+ * <p>see {@link #SuperTypes}, {@link #Annotations}, {@link #AnnotationTypes}, {@link #Methods}, {@link #Constructors} and {@link #Fields}.
+ * <pre>{@code
+ * Set<Class<?>> supertypes = get(SuperTypes.of(type))
  * Set<Annotation> annotations = get(Annotations.of(type))
  * }</pre>
- * <p>generally, apply {@link #get(QueryFunction)} on {@link QueryFunction} created by {@link UtilQueryBuilder}, and optionally use the functional methods in QueryFunction
+ * <p>generally, apply {@link #get(QueryFunction)} on {@link QueryFunction} created by {@link UtilQueryBuilder}, and optionally use the functional methods in QueryFunction.
  * <pre>{@code get(Methods.of(type)
  *   .filter(withPublic().and(withPrefix("get")).and(withParameterCount(0)))
  *   .as(Method.class)
