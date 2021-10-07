@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.reflections.scanners.Scanners;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -14,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,6 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.reflections.ReflectionUtils.*;
 import static org.reflections.ReflectionsTest.are;
+import static org.reflections.ReflectionsTest.equalTo;
 
 @SuppressWarnings("unchecked")
 public class ReflectionUtilsTest {
@@ -48,17 +54,11 @@ public class ReflectionUtilsTest {
 
         assertThat(getAllConstructors(TestModel.C4.class, withParametersCount(0)), names(TestModel.C4.class.getName()));
 
-        assertEquals(toStringSorted(getAllAnnotations(TestModel.C3.class)),
-                "[@java.lang.annotation.Documented(), " +
-                        "@java.lang.annotation.Inherited(), " +
-                        "@java.lang.annotation.Retention(value=RUNTIME), " +
-                        "@java.lang.annotation.Target(value=ANNOTATION_TYPE), " +
-                        "@org.reflections.TestModel$AC1(), " +
-                        "@org.reflections.TestModel$AC1n(), " +
-                        "@org.reflections.TestModel$AC2(value=ac2), " +
-                        "@org.reflections.TestModel$AI1(), " +
-                        "@org.reflections.TestModel$AI2(), " +
-                        "@org.reflections.TestModel$MAI1()]");
+        Set<Annotation> allAnnotations = getAllAnnotations(TestModel.C3.class);
+        assertThat(allAnnotations.stream().map(Annotation::annotationType).collect(Collectors.toSet()),
+            equalTo(Documented.class, Inherited.class, Retention.class, Target.class,
+                TestModel.MAI1.class, TestModel.AI1.class, TestModel.AI2.class,
+                TestModel.AC1.class, TestModel.AC1n.class, TestModel.AC2.class));
 
         Method m4 = getMethods(TestModel.C4.class, withName("m4")).iterator().next();
         assertEquals(m4.getName(), "m4");

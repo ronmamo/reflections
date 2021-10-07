@@ -107,7 +107,7 @@ public class VfsTest {
         try {
             Vfs.Dir dir = Vfs.fromURL(new URL(format("file:{0}", dirWithJarInName)));
 
-            assertEquals(dirWithJarInName, dir.getPath());
+            assertEquals(dirWithJarInName.replace("\\", "/"), dir.getPath());
             assertEquals(SystemDir.class, dir.getClass());
         } finally {
             newDir.delete();

@@ -92,6 +92,10 @@ public class ReflectionsQueryTest implements NameHelper {
 			reflections.get(TypesAnnotated.with(AC2.class).asClass()),
 			equalTo(C2.class, C3.class, I3.class, AC3.class, C7.class));
 
+		assertThat("direct types annotated with annotation with Retention(CLASS)",
+			reflections.get(TypesAnnotated.get(AC3.class).asClass()),
+			equalTo(C7.class));
+
 		assertThat("transitive subtypes of types annotated with annotation",
 			reflections.get(SubTypes.of(TypesAnnotated.with(AC2.class)).asClass()),
 			equalTo(C2.class, C3.class, I3.class, AC3.class, C7.class, C5.class, C6.class));
@@ -221,7 +225,8 @@ public class ReflectionsQueryTest implements NameHelper {
 
 		assertThat("methods with return type void",
 			reflections.get(MethodsReturn.of(void.class)),
-			equalToNames(C4.class.getDeclaredMethod("m1"),
+			equalToNames(
+				C4.class.getDeclaredMethod("m1"),
 				C4.class.getDeclaredMethod("m1", int.class, String[].class),
 				C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
 
@@ -241,6 +246,12 @@ public class ReflectionsQueryTest implements NameHelper {
 		assertThat("methods with parameter annotation filter by member matching",
 			reflections.get(MethodsParameter.with(AM1.class).as(Method.class).filter(withAnyParameterAnnotation(am1))),
 			equalTo(C4.class.getDeclaredMethod("m4", String.class)));
+
+		assertThat("methods with parameter annotation visible/invisible",
+			reflections.get(MethodsParameter.with(AM2.class)),
+			equalToNames(
+				C4.class.getDeclaredMethod("m4", String.class),
+				C4.class.getDeclaredMethod("m1", int.class, String[].class)));
 	}
 
 	@Test
@@ -308,7 +319,7 @@ public class ReflectionsQueryTest implements NameHelper {
 			equalTo("java.lang.Object", "java.lang.annotation.Annotation",
 				"org.reflections.TestModel$MAI1", "org.reflections.TestModel$AI1", "org.reflections.TestModel$AI2",
 				"org.reflections.TestModel$I1", "org.reflections.TestModel$I2", "org.reflections.TestModel$I3",
-				"org.reflections.TestModel$AF1", "org.reflections.TestModel$AM1",
+				"org.reflections.TestModel$AF1", "org.reflections.TestModel$AM1", "org.reflections.TestModel$AM2",
 				"org.reflections.TestModel$AC1", "org.reflections.TestModel$AC1n", "org.reflections.TestModel$AC2", "org.reflections.TestModel$AC3",
 				"org.reflections.TestModel$C1", "org.reflections.TestModel$C2", "org.reflections.TestModel$C3", "org.reflections.TestModel$C4",
 				"org.reflections.TestModel$C5", "org.reflections.TestModel$C6", "org.reflections.TestModel$C7"));

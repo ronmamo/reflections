@@ -27,10 +27,13 @@ import static org.reflections.util.JavassistHelper.*;
  *   <li>{@link #SubTypes}</li>
  *   <li>{@link #TypesAnnotated}</li>
  *   <li>{@link #MethodsAnnotated}</li>
+ *   <li>{@link #ConstructorsAnnotated}</li>
  *   <li>{@link #FieldsAnnotated}</li>
  *   <li>{@link #Resources}</li>
  *   <li>{@link #MethodsParameter}</li>
+ *   <li>{@link #ConstructorsParameter}</li>
  *   <li>{@link #MethodsSignature}</li>
+ *   <li>{@link #ConstructorsSignature}</li>
  *   <li>{@link #MethodsReturn}</li>
  * </ul>
  * <i>note that scanners must be configured in {@link org.reflections.Configuration} in order to be queried</i>

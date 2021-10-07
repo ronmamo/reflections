@@ -11,7 +11,6 @@ import javassist.bytecode.ParameterAnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -21,12 +20,6 @@ import java.util.stream.Stream;
 public class JavassistHelper {
 	/** setting this static to false will result in returning only {@link java.lang.annotation.RetentionPolicy#RUNTIME} visible annotation */
 	public static boolean includeInvisibleTag = true;
-
-	public static List<String> getAnnotations(Function<String, AttributeInfo> function) {
-		List<String> list = getAnnotations((AnnotationsAttribute) function.apply(AnnotationsAttribute.visibleTag));
-		if (includeInvisibleTag) list.addAll(getAnnotations((AnnotationsAttribute) function.apply(AnnotationsAttribute.invisibleTag)));
-		return list;
-	}
 
 	public static String fieldName(ClassFile classFile, FieldInfo object) {
 		return String.format("%s.%s", classFile.getName(), object.getName());
@@ -70,22 +63,39 @@ public class JavassistHelper {
 		return Descriptor.toString(descriptor);
 	}
 
+	public static List<String> getAnnotations(Function<String, AttributeInfo> function) {
+		Function<String, List<String>> names = function
+			.andThen(attribute -> attribute != null ? ((AnnotationsAttribute) attribute).getAnnotations() : null)
+			.andThen(JavassistHelper::annotationNames);
+
+		List<String> result = new ArrayList<>(names.apply(AnnotationsAttribute.visibleTag));
+		if (includeInvisibleTag) result.addAll(names.apply(AnnotationsAttribute.invisibleTag));
+		return result;
+	}
+
 	public static List<List<String>> getParametersAnnotations(MethodInfo method) {
-		List<List<String>> list = getAnnotations((ParameterAnnotationsAttribute) method.getAttribute(ParameterAnnotationsAttribute.visibleTag));
-		if (includeInvisibleTag) list.addAll(getAnnotations((ParameterAnnotationsAttribute) method.getAttribute(ParameterAnnotationsAttribute.invisibleTag)));
-		return list;
+		Function<String, List<List<String>>> names = ((Function<String, AttributeInfo>) method::getAttribute)
+			.andThen(attribute -> attribute != null ? ((ParameterAnnotationsAttribute) attribute).getAnnotations() : null)
+			.andThen((Annotation[][] aa) -> aa != null ? Stream.of(aa).map(JavassistHelper::annotationNames).collect(Collectors.toList()) : Collections.emptyList());
+
+		List<List<String>> visibleAnnotations = names.apply(ParameterAnnotationsAttribute.visibleTag);
+		if (!includeInvisibleTag) return new ArrayList<>(visibleAnnotations);
+
+		List<List<String>> invisibleAnnotations = names.apply(ParameterAnnotationsAttribute.invisibleTag);
+		if (invisibleAnnotations.isEmpty()) return new ArrayList<>(visibleAnnotations);
+
+		// horror
+		List<List<String>> result = new ArrayList<>();
+		for (int i = 0; i < Math.max(visibleAnnotations.size(), invisibleAnnotations.size()); i++) {
+			List<String> concat = new ArrayList<>();
+			if (i < visibleAnnotations.size()) concat.addAll(visibleAnnotations.get(i));
+			if (i < invisibleAnnotations.size()) concat.addAll(invisibleAnnotations.get(i));
+			result.add(concat);
+		}
+		return result;
 	}
 
-	private static List<List<String>> getAnnotations(ParameterAnnotationsAttribute attribute) {
-		return mapList(attribute, ParameterAnnotationsAttribute::getAnnotations, aa -> mapList(aa, a -> a, Annotation::getTypeName));
-	}
-
-	private static List<String> getAnnotations(AnnotationsAttribute attribute) {
-		return mapList(attribute, AnnotationsAttribute::getAnnotations, Annotation::getTypeName);
-	}
-
-	// todo inline & simplify
-	private static <T, A, R> List<R> mapList(T t, Function<T, A[]> f1, Function<A, R> f2) {
-		return t != null ? Arrays.stream(f1.apply(t)).map(f2).collect(Collectors.toList()) : Collections.emptyList();
+	private static List<String> annotationNames(Annotation[] annotations) {
+		return annotations != null ? Stream.of(annotations).map(Annotation::getTypeName).collect(Collectors.toList()) : Collections.emptyList();
 	}
 }

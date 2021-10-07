@@ -36,6 +36,8 @@ public interface MyTestModelStore {
           interface value {}
         }
       }
+      interface TestModel$AM2 {
+      }
       interface TestModel$C1 {
         interface annotations {
           interface org_reflections_TestModel$AC1 {}
