@@ -14,9 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 15 and 16 not supported yet - test failures - see https://github.com/ronmamo/reflections/pull/332
-        java: [ '8', '9', '11', '13']
-        # doesn't work on Windows yet - see https://github.com/ronmamo/reflections/pull/331
+        java: [ '8', '9', '11', '13', '15', '17']
         os: [ ubuntu-latest ]
     name: Java ${{ matrix.Java }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -47,20 +45,4 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Test with Maven
-        run: mvn -Pci -B clean package ${{ matrix.jdk }}
-
-#     - name: Archive test results
-#       if: ${{ always() }}
-#       uses: actions/upload-artifact@v2
-#       with:
-#         name: test-reports
-#         path: target/**-reports/*
-#         retention-days: 14
-#
-#     - name: Archive surefire test results
-#       if: ${{ always() }}
-#       uses: actions/upload-artifact@v2
-#       with:
-#         name: test-reports
-#         path: target/surefire-reports/*
-#         retention-days: 14
+        run: mvn -B clean package ${{ matrix.jdk }}
