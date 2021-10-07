@@ -124,11 +124,9 @@ public class ReflectionUtilsQueryTest {
 	@Test
 	public void nestedQuery() {
 		Set<Class<? extends Annotation>> annotations =
-			get(Annotations.of(
+			get(AnnotationTypes.of(
 					Methods.of(C4.class))
-				.map(Annotation::annotationType)
-				.filter(a -> !a.getName().startsWith("java."))
-				.as());
+				.filter(withNamePrefix("org.reflections")));
 
 		assertThat(annotations,
 			equalTo(AM1.class));
@@ -198,6 +196,7 @@ public class ReflectionUtilsQueryTest {
 		Set<Map<String, Object>> valueMaps =
 			get(Annotations.of(
 					Methods.of(CombinedTestModel.Impl.class))
+				.filter(withNamePrefix("org.reflections"))
 				.map(ReflectionUtils::toMap));
 
 		// todo proper assert

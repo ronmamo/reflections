@@ -35,6 +35,13 @@ public class ReflectionUtilsPredicates {
 	}
 
 	/**
+	 * where annotated element name startsWith given {@code prefix}
+	 */
+	public static <T> Predicate<T> withNamePrefix(final String prefix) {
+		return input -> toName(input).startsWith(prefix);
+	}
+
+	/**
 	 * where member's {@code toString} matches given {@code regex}
 	 * <pre> get(Methods.of(someClass).filter(withPattern("public void .*"))) </pre>
 	 */
@@ -200,6 +207,14 @@ public class ReflectionUtilsPredicates {
 	}
 
 	//
+	private static String toName(Object input) {
+		return input == null ? "" :
+			input.getClass().equals(Class.class) ? ((Class<?>) input).getName() :
+			input instanceof Member ? ((Member) input).getName() :
+			input instanceof Annotation ? ((Annotation) input).annotationType().getName() :
+				input.toString();
+	}
+
 	private static Class[] parameterTypes(Member member) {
 		return member != null ?
 			member.getClass() == Method.class ? ((Method) member).getParameterTypes() :
