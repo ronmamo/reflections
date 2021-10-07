@@ -28,13 +28,7 @@ jobs:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
 
-      - name: Show java 13 home
-        run: which java
-
-      - name: Show java version
-        run: java -version
-
-      - name: Show mvn version
+      - name: Show version
         run: mvn -version
 
       - name: Cache Maven packages
