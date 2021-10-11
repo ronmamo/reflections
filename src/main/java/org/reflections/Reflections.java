@@ -333,7 +333,9 @@ public class Reflections implements NameHelper {
     private void expandSupertypes(Map<String, Set<String>> map, String key, Class<?> type) {
         for (Class<?> supertype : ReflectionUtils.getSuperTypes(type)) {
             String supertypeName = supertype.getName();
-            if (!map.containsKey(supertypeName)) {
+            if (map.containsKey(supertypeName)) {
+                map.get(supertypeName).add(key);
+            } else {
                 map.computeIfAbsent(supertypeName, s -> new HashSet<>()).add(key);
                 expandSupertypes(map, supertypeName, supertype);
             }
