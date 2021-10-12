@@ -230,7 +230,7 @@ public class ConfigurationBuilder implements Configuration {
     }
 
     /** if set to true, Reflections will expand super types after scanning.
-     * <p>see {@link org.reflections.Reflections#expandSuperTypes(Map)} */
+     * <p>see {@link org.reflections.Reflections#expandSuperTypes(Map, Map)} */
     public ConfigurationBuilder setExpandSuperTypes(boolean expandSuperTypes) {
         this.expandSuperTypes = expandSuperTypes;
         return this;
