@@ -18,14 +18,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.reflections.ReflectionUtils.*;
-import static org.reflections.ReflectionsTest.are;
 import static org.reflections.ReflectionsTest.equalTo;
 
 @SuppressWarnings("unchecked")
@@ -33,7 +31,8 @@ public class ReflectionUtilsTest {
 
     @Test
     public void getAllTest() {
-        assertThat(getAllSuperTypes(TestModel.C3.class, withAnnotation(TestModel.AI1.class)), are(TestModel.I1.class));
+        assertThat(getAllSuperTypes(TestModel.C3.class, withAnnotation(TestModel.AI1.class)),
+            equalTo(TestModel.I1.class));
 
         Set<Method> allMethods = getAllMethods(TestModel.C4.class, withModifier(Modifier.PUBLIC), withReturnType(void.class));
         Set<Method> allMethods1 = getAllMethods(TestModel.C4.class, withPattern("public.*.void .*"));

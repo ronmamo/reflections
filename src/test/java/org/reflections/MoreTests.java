@@ -21,7 +21,8 @@ import static org.reflections.MoreTestsModel.*;
 import static org.reflections.ReflectionUtils.Annotations;
 import static org.reflections.ReflectionUtils.SuperTypes;
 import static org.reflections.ReflectionUtilsTest.toStringSorted;
-import static org.reflections.ReflectionsTest.are;
+import static org.reflections.ReflectionsTest.equalTo;
+import static org.reflections.scanners.Scanners.Resources;
 import static org.reflections.scanners.Scanners.SubTypes;
 
 public class MoreTests {
@@ -30,7 +31,7 @@ public class MoreTests {
     public void test_cyclic_annotation() {
         Reflections reflections = new Reflections(MoreTestsModel.class);
         assertThat(reflections.getTypesAnnotatedWith(CyclicAnnotation.class),
-                are(CyclicAnnotation.class));
+                equalTo(CyclicAnnotation.class));
     }
 
     @Test
@@ -38,11 +39,12 @@ public class MoreTests {
         Reflections reflections = new Reflections(
             new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forClass(TestModel.class))
-                .setScanners(Scanners.Resources));
+                .setScanners());
 
         assertNull(reflections.getStore().get(SubTypes.index()));
         assertTrue(reflections.getSubTypesOf(TestModel.C1.class).isEmpty());
         assertTrue(reflections.get(SubTypes.of(TestModel.C1.class)).isEmpty());
+        assertTrue(reflections.get(Resources.with(".*")).isEmpty());
     }
 
     @Test

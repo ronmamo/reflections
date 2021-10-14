@@ -115,7 +115,8 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
 
         @Override
         public QueryFunction<Store, String> with(String pattern) {
-            return store -> store.get(index()).entrySet().stream().filter(entry -> entry.getKey().matches(pattern))
+            return store -> store.getOrDefault(index(), Collections.emptyMap())
+                .entrySet().stream().filter(entry -> entry.getKey().matches(pattern))
                 .flatMap(entry -> entry.getValue().stream()).collect(Collectors.toCollection(LinkedHashSet::new));
         }
     },
