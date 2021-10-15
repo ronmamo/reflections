@@ -137,7 +137,7 @@ public abstract class ReflectionUtils extends ReflectionUtilsPredicates {
 
     /** query methods <pre>{@code get(Methods.of(type)) -> Set<Method>}</pre> */
     public static final UtilQueryBuilder<Class<?>, Method> Methods =
-        element -> ctx -> Arrays.stream(element.getMethods()).filter(notObjectMethod).collect(Collectors.toCollection(LinkedHashSet::new));
+        element -> ctx -> Arrays.stream(element.getDeclaredMethods()).filter(notObjectMethod).collect(Collectors.toCollection(LinkedHashSet::new));
 
     /** query constructors <pre>{@code get(Constructors.of(type)) -> Set<Constructor> }</pre> */
     public static final UtilQueryBuilder<Class<?>, Constructor> Constructors =
