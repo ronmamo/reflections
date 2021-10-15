@@ -93,12 +93,12 @@ public class JdkTests {
 				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
 					"com.sun.istack.internal.NotNull",
 					"com.sun.istack.internal.Nullable",
-					"sun.reflect.CallerSensitive",
-					"java.lang.invoke.LambdaForm$Hidden")));
+					"sun.reflect.CallerSensitive")));
 				break;
 			case 11:
+			case 13:
 				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"java.lang.invoke.LambdaForm$Hidden")));
+					"jdk.internal.reflect.CallerSensitive")));
 				break;
 			case 15:
 				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
