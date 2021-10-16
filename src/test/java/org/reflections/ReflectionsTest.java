@@ -6,9 +6,14 @@ import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.MemberUsageScanner;
+import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
+import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.Scanners;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
@@ -41,13 +46,24 @@ public class ReflectionsTest implements NameHelper {
 
     @BeforeAll
     public static void init() {
+        //noinspection deprecation
         reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(Collections.singletonList(ClasspathHelper.forClass(TestModel.class)))
                 .filterInputsBy(TestModelFilter)
                 .setScanners(
+                    new SubTypesScanner(),
+                    new TypeAnnotationsScanner(),
+                    new MethodAnnotationsScanner(),
+                    new FieldAnnotationsScanner(),
+                    Scanners.ConstructorsAnnotated,
+                    Scanners.MethodsParameter,
+                    Scanners.MethodsSignature,
+                    Scanners.MethodsReturn,
+                    Scanners.ConstructorsParameter,
+                    Scanners.ConstructorsSignature,
+                    new ResourcesScanner(),
                     new MethodParameterNamesScanner(),
-                    new MemberUsageScanner())
-                .addScanners(Scanners.values()));
+                    new MemberUsageScanner()));
     }
 
     @Test
@@ -234,8 +250,26 @@ public class ReflectionsTest implements NameHelper {
     }
 
     @Test
-    public void testScannerNotConfigured() {
-        assertTrue(new Reflections(TestModel.class, TestModelFilter).getMethodsAnnotatedWith(AC1.class).isEmpty());
+    public void testScannerNotConfigured() throws NoSuchMethodException {
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+            .setUrls(Collections.singletonList(ClasspathHelper.forClass(TestModel.class)))
+            .filterInputsBy(TestModelFilter.includePackage("org\\.reflections\\.UsageTestModel\\$.*"))
+            .setScanners());
+
+        assertTrue(reflections.getSubTypesOf(C1.class).isEmpty());
+        assertTrue(reflections.getTypesAnnotatedWith(AC1.class).isEmpty());
+        assertTrue(reflections.getMethodsAnnotatedWith(AC1.class).isEmpty());
+        assertTrue(reflections.getMethodsWithSignature().isEmpty());
+        assertTrue(reflections.getMethodsWithParameter(String.class).isEmpty());
+        assertTrue(reflections.getMethodsReturn(String.class).isEmpty());
+        assertTrue(reflections.getConstructorsAnnotatedWith(AM1.class).isEmpty());
+        assertTrue(reflections.getConstructorsWithSignature().isEmpty());
+        assertTrue(reflections.getConstructorsWithParameter(String.class).isEmpty());
+        assertTrue(reflections.getFieldsAnnotatedWith(AF1.class).isEmpty());
+        assertTrue(reflections.getResources(".*").isEmpty());
+        assertTrue(reflections.getMemberParameterNames(C4.class.getDeclaredMethod("m4", String.class)).isEmpty());
+        assertTrue(reflections.getMemberUsage(UsageTestModel.C1.class.getDeclaredConstructor()).isEmpty());
+        assertTrue(reflections.getAllTypes().isEmpty());
     }
 
     //

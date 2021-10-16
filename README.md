@@ -43,39 +43,57 @@ Set<Class<?>> annotated =
   reflections.get(TypesAnnotated.with(SomeAnnotation.class).asClass());
 ```
 
-*Note that there are some breaking changes with Reflections 0.10+, along with performance improvements and more functional API. Migration is encouraged and should be easy though.*
+*Note that there are some breaking changes with Reflections 0.10+, along with performance improvements and more functional API. Migration is encouraged and should be easy though, see below.*
 
 ### Scan
-Creating Reflections instance requires providing scanning configuration:
+Creating Reflections instance requires providing scanning configuration.  
+
+Typical example - scan package with default scanners:
 
 ```java
-// scan for:
-//   urls in classpath that contain 'com.my.project' package
-//   filter types starting with 'com.my.project'
-//   use the default scanners SubTypes and TypesAnnotated
+// typical usage: scan package with default scanners
+Reflections reflections = new Reflections("com.my.project");
+
+// or similarly using ConfigurationBuilder:
 Reflections reflections = new Reflections(
   new ConfigurationBuilder()
     .forPackage("com.my.project")
     .filterInputsBy(new FilterBuilder().includePackage("com.my.project")));
+```
 
-// or similarly
-Reflections reflections = new Reflections("com.my.project");
+Other examples:
+```java
+import static org.reflections.scanners.Scanners.*;
 
-// another example
-Reflections reflections = new Reflections(
+// scan package with specific scanners
+new Reflections(
   new ConfigurationBuilder()
+    .forPackage("com.my.project")
+    .filterInputsBy(new FilterBuilder().includePackage("com.my.project")))
+    .setScanners(MethodsAnnotated, MethodsSignature, MethodsReturn)
+
+// this is equivalent to
+new Reflections("com.my.project", MethodsAnnotated, MethodsSignature, MethodsReturn);
+
+// scan urls with all standard scanners, use include/exlude input filter 
+new Reflections(
+  new ConfigurationBuilder()
+    // scan given urls
     .addUrls(ClasspathHelper.forPackage("com.my.project")) // same as forPackage
-    .setScanners(Scanners.values())     // all standard scanners
-    .filterInputsBy(new FilterBuilder() // optionally include/exclude packages 
+    .addUrls(anotherUrl)
+    // filter include 'com.my.project', but exclude 'com.my.project.exclude'
+    .filterInputsBy(new FilterBuilder() 
       .includePackage("com.my.project")
-      .excludePackage("com.my.project.exclude")));
+      .excludePackage("com.my.project.exclude")))
+    // all standard scanners
+    .setScanners(Scanners.values());
 ```
 
 *See more in [ConfigurationBuilder](https://ronmamo.github.io/reflections/org/reflections/util/ConfigurationBuilder.html).*
 
 Note that:
 * **Scanners must be configured in order to be queried, otherwise an empty result is returned.**  
-If not specified, default scanners are `SubTypes` and `TypesAnnotated`. For all standard [Scanners](https://ronmamo.github.io/reflections/org/reflections/scanners/Scanners.html) use `Scanners.values()` [(src)](src/main/java/org/reflections/scanners/Scanners.java).
+If not specified, default scanners `SubTypes` and `TypesAnnotated` are used. For all standard [Scanners](https://ronmamo.github.io/reflections/org/reflections/scanners/Scanners.html) use `Scanners.values()` [(src)](src/main/java/org/reflections/scanners/Scanners.java).
 * **All relevant URLs should be configured.**   
 If required, Reflections will [expand super types](https://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes(java.util.Map)) in order to get the transitive closure metadata without scanning large 3rd party urls.  
 Consider adding inputs filter in case too many classes are scanned.  
@@ -96,7 +114,7 @@ Set<Class<?>> modules =
 Set<Class<?>> singletons = 
   reflections.get(TypesAnnotated.with(Singleton.class).asClass());
 
-// MethodAnnotated
+// MethodsAnnotated
 Set<Method> resources =
   reflections.get(MethodsAnnotated.with(GetMapping.class).as(Method.class));
 
@@ -144,7 +162,7 @@ Scanner queries return `Set<String>` by default, if not using `as() / asClass()`
 Set<String> moduleNames = 
   reflections.get(SubTypes.of(Module.class));
 
-Set<String> singleNames = 
+Set<String> singletonNames = 
   reflections.get(TypesAnnotated.with(Singleton.class));
 ```
 Note that previous 0.9.x API is still supported, for example:
@@ -163,16 +181,23 @@ Set<Class<?>> singletons =
 | `get(SubType.of(T))` | getSubTypesOf(T) |
 | `get(TypesAnnotated.with(A))` | getTypesAnnotatedWith(A) |
 | `get(MethodsAnnotated.with(A))` | getMethodsAnnotatedWith(A) |
-| `get(ConstructorsAnnotated.with(A))` | getConstructorsAnnotatedWith(A) |
+| `get(ConstructorsAnnotated.with(A))` | getConstructorsAnnotatedWith(A) *(1)*|
 | `get(FieldsAnnotated.with(A))` | getFieldsAnnotatedWith(A) |
 | `get(Resources.with(regex))` | getResources(regex) |
-| `get(MethodsParameter.with(P))` | getMethodsWithParameter(P) |
-| `get(MethodsSignature.of(P, ...))` | getMethodsWithSignature(P, ...) |
-| `get(MethodsReturn.of(T))` | getMethodsReturn(T) |
-| `get(ConstructorsParameter.with(P))` | getConstructorsWithParameter(P) |
-| `get(ConstructorsSignature.of(P, ...))` | getConstructorsWithSignature(P, ...) |
+| `get(MethodsParameter.with(P))` | getMethodsWithParameter(P) *(2)*|
+| `get(MethodsSignature.of(P, ...))` | getMethodsWithSignature(P, ...) *(2)*|
+| `get(MethodsReturn.of(T))` | getMethodsReturn(T) *(2)*|
+| `get(ConstructorsParameter.with(P))` | getConstructorsWithParameter(P) *(2)*|
+| `get(ConstructorsSignature.of(P, ...))` | getConstructorsWithSignature(P, ...) *(2)*|
 
 *Note: `asClass()` and `as()` mappings were omitted*
+
+*breaking change (1): MethodsAnnotatedScanner does not include Constructors scanning, use instead Scanners.ConstructorsAnnotated*  
+
+*breaking change (2): MethodParameterScanner was removed, use instead as required:  
+Scanners.MethodsParameter, Scanners.MethodsSignature, Scanners.MethodsReturn, Scanners.ConstructorsParameter, Scanners.ConstructorsSignature*
+
+*migration: use Scanners enum instead 
 </details>
 
 ## ReflectionUtils
