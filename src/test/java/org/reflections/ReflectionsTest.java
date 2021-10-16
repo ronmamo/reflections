@@ -3,59 +3,51 @@ package org.reflections;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.reflections.scanners.FieldAnnotationsScanner;
+import org.hamcrest.core.IsEqual;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.reflections.scanners.MemberUsageScanner;
-import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
-import org.reflections.scanners.MethodParameterScanner;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
+import org.reflections.util.NameHelper;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
+import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.reflections.TestModel.*;
-import static org.reflections.util.Utils.index;
 
-/**
- *
- */
 @SuppressWarnings("unchecked")
-public class ReflectionsTest {
-    public static final FilterBuilder TestModelFilter = new FilterBuilder().include("org.reflections.TestModel\\$.*");
+public class ReflectionsTest implements NameHelper {
+    private static final FilterBuilder TestModelFilter = new FilterBuilder()
+        .includePattern("org\\.reflections\\.TestModel\\$.*")
+        .includePattern("org\\.reflections\\.UsageTestModel\\$.*");
+
     static Reflections reflections;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(Collections.singletonList(ClasspathHelper.forClass(TestModel.class)))
                 .filterInputsBy(TestModelFilter)
                 .setScanners(
-                        new SubTypesScanner(false),
-                        new TypeAnnotationsScanner(),
-                        new FieldAnnotationsScanner(),
-                        new MethodAnnotationsScanner(),
-                        new MethodParameterScanner(),
-                        new MethodParameterNamesScanner(),
-                        new MemberUsageScanner()));
+                    new MethodParameterNamesScanner(),
+                    new MemberUsageScanner())
+                .addScanners(Scanners.values()));
     }
 
     @Test
@@ -63,8 +55,7 @@ public class ReflectionsTest {
         assertThat(reflections.getSubTypesOf(I1.class), are(I2.class, C1.class, C2.class, C3.class, C5.class));
         assertThat(reflections.getSubTypesOf(C1.class), are(C2.class, C3.class, C5.class));
 
-        assertFalse("getAllTypes should not be empty when Reflections is configured with SubTypesScanner(false)",
-                reflections.getAllTypes().isEmpty());
+        assertFalse(reflections.getAllTypes().isEmpty(), "getAllTypes should not be empty when Reflections is configured with SubTypesScanner(false)");
     }
 
     @Test
@@ -80,21 +71,15 @@ public class ReflectionsTest {
 
         assertThat(reflections.getTypesAnnotatedWith(AC1n.class, true), are(C1.class));
         assertThat(reflections.getTypesAnnotatedWith(AC1n.class, true), annotatedWith(AC1n.class));
-
         assertThat(reflections.getTypesAnnotatedWith(MAI1.class), are(AI1.class, I1.class, I2.class, C1.class, C2.class, C3.class, C5.class));
-        assertThat(reflections.getTypesAnnotatedWith(MAI1.class), metaAnnotatedWith(MAI1.class));
-
         assertThat(reflections.getTypesAnnotatedWith(AI1.class), are(I1.class, I2.class, C1.class, C2.class, C3.class, C5.class));
-        assertThat(reflections.getTypesAnnotatedWith(AI1.class), metaAnnotatedWith(AI1.class));
-
         assertThat(reflections.getTypesAnnotatedWith(AI2.class), are(I2.class, C1.class, C2.class, C3.class, C5.class));
-        assertThat(reflections.getTypesAnnotatedWith(AI2.class), metaAnnotatedWith(AI2.class));
 
         assertThat(reflections.getTypesAnnotatedWith(AM1.class), isEmpty);
 
         //annotation member value matching
         AC2 ac2 = new AC2() {
-            public String value() {return "ugh?!";}
+            public String value() {return "ac2";}
             public Class<? extends Annotation> annotationType() {return AC2.class;}};
 
         assertThat(reflections.getTypesAnnotatedWith(ac2), are(C3.class, C5.class, I3.class, C6.class, AC3.class, C7.class));
@@ -103,73 +88,60 @@ public class ReflectionsTest {
     }
 
     @Test
-    public void testMethodsAnnotatedWith() {
-        try {
-            assertThat(reflections.getMethodsAnnotatedWith(AM1.class),
-                    are(C4.class.getDeclaredMethod("m1"),
-                        C4.class.getDeclaredMethod("m1", int.class, String[].class),
-                        C4.class.getDeclaredMethod("m1", int[][].class, String[][].class),
-                        C4.class.getDeclaredMethod("m3")));
+    public void testMethodsAnnotatedWith() throws NoSuchMethodException {
+        assertThat(reflections.getMethodsAnnotatedWith(AM1.class),
+                are(C4.class.getDeclaredMethod("m1"),
+                    C4.class.getDeclaredMethod("m1", int.class, String[].class),
+                    C4.class.getDeclaredMethod("m1", int[][].class, String[][].class),
+                    C4.class.getDeclaredMethod("m3")));
 
-            AM1 am1 = new AM1() {
-                public String value() {return "1";}
-                public Class<? extends Annotation> annotationType() {return AM1.class;}
-            };
-            assertThat(reflections.getMethodsAnnotatedWith(am1),
-                    are(C4.class.getDeclaredMethod("m1"),
-                        C4.class.getDeclaredMethod("m1", int.class, String[].class),
-                        C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
-        } catch (NoSuchMethodException e) {
-            fail();
-        }
+        AM1 am1 = new AM1() {
+            public String value() {return "1";}
+            public Class<? extends Annotation> annotationType() {return AM1.class;}
+        };
+        assertThat(reflections.getMethodsAnnotatedWith(am1),
+                are(C4.class.getDeclaredMethod("m1"),
+                    C4.class.getDeclaredMethod("m1", int.class, String[].class),
+                    C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
     }
 
     @Test
-    public void testConstructorsAnnotatedWith() {
-        try {
-            assertThat(reflections.getConstructorsAnnotatedWith(AM1.class),
-                    are(C4.class.getDeclaredConstructor(String.class)));
+    public void testConstructorsAnnotatedWith() throws NoSuchMethodException {
+        assertThat(reflections.getConstructorsAnnotatedWith(AM1.class),
+                are(C4.class.getDeclaredConstructor(String.class)));
 
-            AM1 am1 = new AM1() {
-                public String value() {return "1";}
-                public Class<? extends Annotation> annotationType() {return AM1.class;}
-            };
-            assertThat(reflections.getConstructorsAnnotatedWith(am1),
-                    are(C4.class.getDeclaredConstructor(String.class)));
-        } catch (NoSuchMethodException e) {
-            fail();
-        }
+        AM1 am1 = new AM1() {
+            public String value() {return "1";}
+            public Class<? extends Annotation> annotationType() {return AM1.class;}
+        };
+        assertThat(reflections.getConstructorsAnnotatedWith(am1),
+                are(C4.class.getDeclaredConstructor(String.class)));
     }
 
     @Test
-    public void testFieldsAnnotatedWith() {
-        try {
-            assertThat(reflections.getFieldsAnnotatedWith(AF1.class),
-                    are(C4.class.getDeclaredField("f1"),
-                        C4.class.getDeclaredField("f2")
-                        ));
+    public void testFieldsAnnotatedWith() throws NoSuchFieldException {
+        assertThat(reflections.getFieldsAnnotatedWith(AF1.class),
+                are(C4.class.getDeclaredField("f1"),
+                    C4.class.getDeclaredField("f2")
+                    ));
 
-            assertThat(reflections.getFieldsAnnotatedWith(new AF1() {
-                            public String value() {return "2";}
-                            public Class<? extends Annotation> annotationType() {return AF1.class;}}),
-                    are(C4.class.getDeclaredField("f2")));
-        } catch (NoSuchFieldException e) {
-            fail();
-        }
+        assertThat(reflections.getFieldsAnnotatedWith(new AF1() {
+                        public String value() {return "2";}
+                        public Class<? extends Annotation> annotationType() {return AF1.class;}}),
+                are(C4.class.getDeclaredField("f2")));
     }
 
     @Test
-    public void testMethodParameter() {
-        try {
-            assertThat(reflections.getMethodsMatchParams(String.class),
-                    are(C4.class.getDeclaredMethod("m4", String.class), Usage.C1.class.getDeclaredMethod("method", String.class)));
+    public void testMethodParameter() throws NoSuchMethodException {
+            assertThat(reflections.getMethodsWithParameter(String.class),
+                    are(C4.class.getDeclaredMethod("m4", String.class), UsageTestModel.C1.class.getDeclaredMethod("method", String.class)));
 
-            assertThat(reflections.getMethodsMatchParams(),
+            assertThat(reflections.getMethodsWithSignature(),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m3"),
                             AC2.class.getMethod("value"), AF1.class.getMethod("value"), AM1.class.getMethod("value"),
-                            Usage.C1.class.getDeclaredMethod("method"), Usage.C2.class.getDeclaredMethod("method")));
+                            UsageTestModel.C1.class.getDeclaredMethod("method"), UsageTestModel.C2.class.getDeclaredMethod("method")));
 
-            assertThat(reflections.getMethodsMatchParams(int[][].class, String[][].class),
+            assertThat(reflections.getMethodsWithSignature(int[][].class, String[][].class),
                     are(C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
 
             assertThat(reflections.getMethodsReturn(int.class),
@@ -181,107 +153,89 @@ public class ReflectionsTest {
 
             assertThat(reflections.getMethodsReturn(void.class),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m1", int.class, String[].class),
-                            C4.class.getDeclaredMethod("m1", int[][].class, String[][].class), Usage.C1.class.getDeclaredMethod("method"),
-                            Usage.C1.class.getDeclaredMethod("method", String.class), Usage.C2.class.getDeclaredMethod("method")));
+                            C4.class.getDeclaredMethod("m1", int[][].class, String[][].class), UsageTestModel.C1.class.getDeclaredMethod("method"),
+                            UsageTestModel.C1.class.getDeclaredMethod("method", String.class), UsageTestModel.C2.class.getDeclaredMethod("method")));
 
-            assertThat(reflections.getMethodsWithAnyParamAnnotated(AM1.class),
+            assertThat(reflections.getMethodsWithParameter(AM1.class),
                     are(C4.class.getDeclaredMethod("m4", String.class)));
 
-            assertThat(reflections.getMethodsWithAnyParamAnnotated(
-                    new AM1() {
-                        public String value() { return "2"; }
-                        public Class<? extends Annotation> annotationType() { return AM1.class; }
-                    }),
-                    are(C4.class.getDeclaredMethod("m4", String.class)));
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+            assertThat(reflections.getMethodsWithParameter(AM2.class),
+                    are(C4.class.getDeclaredMethod("m4", String.class),
+                            C4.class.getDeclaredMethod("m1", int.class, String[].class)));
     }
 
     @Test
     public void testConstructorParameter() throws NoSuchMethodException {
-        assertThat(reflections.getConstructorsMatchParams(String.class),
+        assertThat(reflections.getConstructorsWithParameter(String.class),
                 are(C4.class.getDeclaredConstructor(String.class)));
 
-        assertThat(reflections.getConstructorsMatchParams(),
+        assertThat(reflections.getConstructorsWithSignature(),
                 are(C1.class.getDeclaredConstructor(), C2.class.getDeclaredConstructor(), C3.class.getDeclaredConstructor(),
                         C4.class.getDeclaredConstructor(), C5.class.getDeclaredConstructor(), C6.class.getDeclaredConstructor(),
-                        C7.class.getDeclaredConstructor(), Usage.C1.class.getDeclaredConstructor(), Usage.C2.class.getDeclaredConstructor()));
+                        C7.class.getDeclaredConstructor(), UsageTestModel.C1.class.getDeclaredConstructor(), UsageTestModel.C2.class.getDeclaredConstructor()));
 
-        assertThat(reflections.getConstructorsWithAnyParamAnnotated(AM1.class),
-                are(C4.class.getDeclaredConstructor(String.class)));
-
-        assertThat(reflections.getConstructorsWithAnyParamAnnotated(
-                new AM1() {
-                    public String value() { return "1"; }
-                    public Class<? extends Annotation> annotationType() { return AM1.class; }
-                }),
+        assertThat(reflections.getConstructorsWithParameter(AM1.class),
                 are(C4.class.getDeclaredConstructor(String.class)));
     }
 
     @Test
     public void testResourcesScanner() {
-        Predicate<String> filter = new FilterBuilder().include(".*\\.xml").exclude(".*testModel-reflections\\.xml");
+        Predicate<String> filter = new FilterBuilder().includePattern(".*\\.xml").excludePattern(".*testModel-reflections\\.xml");
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .filterInputsBy(filter)
-                .setScanners(new ResourcesScanner())
+                .setScanners(Scanners.Resources)
                 .setUrls(Collections.singletonList(ClasspathHelper.forClass(TestModel.class))));
 
-        Set<String> resolved = reflections.getResources(Pattern.compile(".*resource1-reflections\\.xml"));
+        Collection<String> resolved = reflections.getResources(Pattern.compile(".*resource1-reflections\\.xml"));
         assertThat(resolved, are("META-INF/reflections/resource1-reflections.xml"));
 
-        Set<String> resources = reflections.getStore().keys(index(ResourcesScanner.class));
-        assertThat(resources, are("resource1-reflections.xml", "resource2-reflections.xml"));
+        Collection<String> resources = reflections.getResources(".*");
+        assertThat(resources, are("META-INF/reflections/resource1-reflections.xml", "META-INF/reflections/inner/resource2-reflections.xml"));
     }
 
     @Test
     public void testMethodParameterNames() throws NoSuchMethodException {
-        assertEquals(reflections.getMethodParamNames(C4.class.getDeclaredMethod("m3")),
+        assertEquals(reflections.getMemberParameterNames(C4.class.getDeclaredMethod("m3")),
                 Collections.emptyList());
 
-        assertEquals(reflections.getMethodParamNames(C4.class.getDeclaredMethod("m4", String.class)),
+        assertEquals(reflections.getMemberParameterNames(C4.class.getDeclaredMethod("m4", String.class)),
                 Collections.singletonList("string"));
 
-        assertEquals(reflections.getMethodParamNames(C4.class.getDeclaredMethod("add", int.class, int.class)),
+        assertEquals(reflections.getMemberParameterNames(C4.class.getDeclaredMethod("add", int.class, int.class)),
                 Arrays.asList("i1", "i2"));
 
-        assertEquals(reflections.getConstructorParamNames(C4.class.getDeclaredConstructor(String.class)),
+        assertEquals(reflections.getMemberParameterNames(C4.class.getDeclaredConstructor(String.class)),
                 Collections.singletonList("f1"));
     }
 
     @Test
     public void testMemberUsageScanner() throws NoSuchFieldException, NoSuchMethodException {
         //field usage
-        assertThat(reflections.getFieldUsage(Usage.C1.class.getDeclaredField("c2")),
-                are(Usage.C1.class.getDeclaredConstructor(),
-                        Usage.C1.class.getDeclaredConstructor(Usage.C2.class),
-                        Usage.C1.class.getDeclaredMethod("method"),
-                        Usage.C1.class.getDeclaredMethod("method", String.class)));
+        assertThat(reflections.getMemberUsage(UsageTestModel.C1.class.getDeclaredField("c2")),
+                are(UsageTestModel.C1.class.getDeclaredConstructor(),
+                        UsageTestModel.C1.class.getDeclaredConstructor(UsageTestModel.C2.class),
+                        UsageTestModel.C1.class.getDeclaredMethod("method"),
+                        UsageTestModel.C1.class.getDeclaredMethod("method", String.class)));
 
         //method usage
-        assertThat(reflections.getMethodUsage(Usage.C1.class.getDeclaredMethod("method")),
-                are(Usage.C2.class.getDeclaredMethod("method")));
+        assertThat(reflections.getMemberUsage(UsageTestModel.C1.class.getDeclaredMethod("method")),
+                are(UsageTestModel.C2.class.getDeclaredMethod("method")));
 
-        assertThat(reflections.getMethodUsage(Usage.C1.class.getDeclaredMethod("method", String.class)),
-                are(Usage.C2.class.getDeclaredMethod("method")));
+        assertThat(reflections.getMemberUsage(UsageTestModel.C1.class.getDeclaredMethod("method", String.class)),
+                are(UsageTestModel.C2.class.getDeclaredMethod("method")));
 
         //constructor usage
-        assertThat(reflections.getConstructorUsage(Usage.C1.class.getDeclaredConstructor()),
-                are(Usage.C2.class.getDeclaredConstructor(),
-                        Usage.C2.class.getDeclaredMethod("method")));
+        assertThat(reflections.getMemberUsage(UsageTestModel.C1.class.getDeclaredConstructor()),
+                are(UsageTestModel.C2.class.getDeclaredConstructor(),
+                        UsageTestModel.C2.class.getDeclaredMethod("method")));
 
-        assertThat(reflections.getConstructorUsage(Usage.C1.class.getDeclaredConstructor(Usage.C2.class)),
-                are(Usage.C2.class.getDeclaredMethod("method")));
+        assertThat(reflections.getMemberUsage(UsageTestModel.C1.class.getDeclaredConstructor(UsageTestModel.C2.class)),
+                are(UsageTestModel.C2.class.getDeclaredMethod("method")));
     }
 
     @Test
     public void testScannerNotConfigured() {
-        try {
-            new Reflections(TestModel.class, TestModelFilter).getMethodsAnnotatedWith(AC1.class);
-            fail();
-        } catch (ReflectionsException e) {
-            assertEquals(e.getMessage(), "Scanner " + MethodAnnotationsScanner.class.getSimpleName() + " was not configured");
-        }
+        assertTrue(new Reflections(TestModel.class, TestModelFilter).getMethodsAnnotatedWith(AC1.class).isEmpty());
     }
 
     //
@@ -294,7 +248,7 @@ public class ReflectionsTest {
         return file.getAbsolutePath();
     }
 
-    private final BaseMatcher<Set<Class<?>>> isEmpty = new BaseMatcher<Set<Class<?>>>() {
+    private final BaseMatcher<Collection<Class<?>>> isEmpty = new BaseMatcher<Collection<Class<?>>>() {
         public boolean matches(Object o) {
             return ((Collection<?>) o).isEmpty();
         }
@@ -308,9 +262,9 @@ public class ReflectionsTest {
         public void describeTo(Description description) { }
     }
 
-    public static <T> Matcher<Set<? super T>> are(final T... ts) {
+    public static <T> Matcher<Collection<? super T>> are(final T... ts) {
         final Collection<?> c1 = Arrays.asList(ts);
-        return new Match<Set<? super T>>() {
+        return new Match<Collection<? super T>>() {
             public boolean matches(Object o) {
                 Collection<?> c2 = (Collection<?>) o;
                 return c1.containsAll(c2) && c2.containsAll(c1);
@@ -323,32 +277,21 @@ public class ReflectionsTest {
         };
     }
 
-    private Matcher<Set<Class<?>>> annotatedWith(final Class<? extends Annotation> annotation) {
-        return new Match<Set<Class<?>>>() {
+    @SafeVarargs
+    public static <T> Matcher<Collection<T>> equalTo(T... operand) {
+        return IsEqual.equalTo(new HashSet<>(Arrays.asList(operand)));
+    }
+
+    @SafeVarargs
+    public final <T extends AnnotatedElement> Matcher<Collection<String>> equalToNames(T... operand) {
+        return IsEqual.equalTo(new HashSet<>(toNames(operand)));
+    }
+
+    private Matcher<Collection<Class<?>>> annotatedWith(final Class<? extends Annotation> annotation) {
+        return new Match<Collection<Class<?>>>() {
             public boolean matches(Object o) {
                 for (Class<?> c : (Iterable<Class<?>>) o) {
                     if (!annotationTypes(Arrays.asList(c.getAnnotations())).contains(annotation)) return false;
-                }
-                return true;
-            }
-        };
-    }
-
-    private Matcher<Set<Class<?>>> metaAnnotatedWith(final Class<? extends Annotation> annotation) {
-        return new Match<Set<Class<?>>>() {
-            public boolean matches(Object o) {
-                for (Class<?> c : (Iterable<Class<?>>) o) {
-                    Set<Class> result = new HashSet<>();
-                    List<Class> stack = new ArrayList<>(ReflectionUtils.getAllSuperTypes(c));
-                    while (!stack.isEmpty()) {
-                        Class next = stack.remove(0);
-                        if (result.add(next)) {
-                            for (Class<? extends Annotation> ac : annotationTypes(Arrays.asList(next.getDeclaredAnnotations()))) {
-                                if (!result.contains(ac) && !stack.contains(ac)) stack.add(ac);
-                            }
-                        }
-                    }
-                    if (!result.contains(annotation)) return false;
                 }
                 return true;
             }

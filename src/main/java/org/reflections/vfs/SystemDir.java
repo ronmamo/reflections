@@ -17,21 +17,15 @@ public class SystemDir implements Vfs.Dir {
         if (file != null && (!file.isDirectory() || !file.canRead())) {
             throw new RuntimeException("cannot use dir " + file);
         }
-
         this.file = file;
     }
 
     public String getPath() {
-        if (file == null) {
-            return "/NO-SUCH-DIRECTORY/";
-        }
-        return file.getPath().replace("\\", "/");
+        return file != null ? file.getPath().replace("\\", "/") : "/NO-SUCH-DIRECTORY/";
     }
 
     public Iterable<Vfs.File> getFiles() {
-        if (file == null || !file.exists()) {
-            return Collections.emptyList();
-        }
+        if (file == null || !file.exists()) return Collections.emptyList();
         return () -> {
             try {
                 return Files.walk(file.toPath())
@@ -42,13 +36,5 @@ public class SystemDir implements Vfs.Dir {
                 throw new ReflectionsException("could not get files for " + file, e);
             }
         };
-    }
-
-    public void close() {
-    }
-
-    @Override
-    public String toString() {
-        return getPath();
     }
 }

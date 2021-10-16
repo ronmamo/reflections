@@ -2,10 +2,14 @@ package org.reflections;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.Test;
-import org.reflections.scanners.FieldAnnotationsScanner;
+import org.junit.jupiter.api.Test;
+import org.reflections.scanners.Scanners;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -14,16 +18,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.reflections.ReflectionUtils.*;
 import static org.reflections.ReflectionsTest.are;
+import static org.reflections.ReflectionsTest.equalTo;
 
-/**
- * @author mamo
- */
 @SuppressWarnings("unchecked")
 public class ReflectionUtilsTest {
 
@@ -50,17 +54,11 @@ public class ReflectionUtilsTest {
 
         assertThat(getAllConstructors(TestModel.C4.class, withParametersCount(0)), names(TestModel.C4.class.getName()));
 
-        assertEquals(toStringSorted(getAllAnnotations(TestModel.C3.class)),
-                "[@java.lang.annotation.Documented(), " +
-                        "@java.lang.annotation.Inherited(), " +
-                        "@java.lang.annotation.Retention(value=RUNTIME), " +
-                        "@java.lang.annotation.Target(value=ANNOTATION_TYPE), " +
-                        "@org.reflections.TestModel$AC1(), " +
-                        "@org.reflections.TestModel$AC1n(), " +
-                        "@org.reflections.TestModel$AC2(value=ugh?!), " +
-                        "@org.reflections.TestModel$AI1(), " +
-                        "@org.reflections.TestModel$AI2(), " +
-                        "@org.reflections.TestModel$MAI1()]");
+        Set<Annotation> allAnnotations = getAllAnnotations(TestModel.C3.class);
+        assertThat(allAnnotations.stream().map(Annotation::annotationType).collect(Collectors.toSet()),
+            equalTo(Documented.class, Inherited.class, Retention.class, Target.class,
+                TestModel.MAI1.class, TestModel.AI1.class, TestModel.AI2.class,
+                TestModel.AC1.class, TestModel.AC1n.class, TestModel.AC2.class));
 
         Method m4 = getMethods(TestModel.C4.class, withName("m4")).iterator().next();
         assertEquals(m4.getName(), "m4");
@@ -110,7 +108,7 @@ public class ReflectionUtilsTest {
     }
 
     @Test public void withReturn() {
-        Set<Method> returnMember = getAllMethods(Class.class, withReturnTypeAssignableTo(Member.class));
+        Set<Method> returnMember = getAllMethods(Class.class, withReturnTypeAssignableFrom(Member.class));
         Set<Method> returnsAssignableToMember = getAllMethods(Class.class, withReturnType(Method.class));
 
         assertTrue(returnMember.containsAll(returnsAssignableToMember));
@@ -123,10 +121,10 @@ public class ReflectionUtilsTest {
 
     @Test
     public void getAllAndReflections() {
-        Reflections reflections = new Reflections(TestModel.class, new FieldAnnotationsScanner());
+        Reflections reflections = new Reflections(TestModel.class, Scanners.FieldsAnnotated);
 
-        Set<Field> af1 = reflections.getFieldsAnnotatedWith(TestModel.AF1.class);
-        Set<? extends Field> allFields = ReflectionUtils.getAll(af1, withModifier(Modifier.PROTECTED));
+        Set<Field> allFields = reflections.getFieldsAnnotatedWith(TestModel.AF1.class)
+            .stream().filter(withModifier(Modifier.PROTECTED)).collect(Collectors.toSet());
         assertEquals(1, allFields.size());
         assertThat(allFields, names("f2"));
     }
@@ -149,7 +147,7 @@ public class ReflectionUtilsTest {
             };
     }
 
-    public static String toStringSorted(Set<?> set) {
+    public static String toStringSorted(Collection<?> set) {
         return set.stream()
                 .map(o -> o.toString().replace("[", "").replace("]", "").replace("{", "").replace("}", "").replace("\"", ""))
                 .sorted().collect(Collectors.toList()).toString();
