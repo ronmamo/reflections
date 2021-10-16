@@ -37,7 +37,7 @@ import static org.reflections.ReflectionUtils.get;
  * SubTypes/SuperTypes, TypesAnnotated/AnnotatedTypes, MethodsAnnotated/AnnotatedTypes, Resources etc...
  * <p></p>tested with AdoptOpenJDK
  */
-@SuppressWarnings({"ArraysAsListWithZeroOrOneArgument", "SwitchStatementWithTooFewBranches"})
+@SuppressWarnings({"ArraysAsListWithZeroOrOneArgument"})
 public class JdkTests {
 
 	private final URL urls = ClasspathHelper.forClass(Object.class);
@@ -66,18 +66,10 @@ public class JdkTests {
 			ReflectionUtils.AnnotationTypes,
 			Class.class);
 
-		switch (jdk()) {
-			case 15:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"jdk.internal.PreviewFeature")));
-				break;
-			case 17:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"jdk.internal.javac.PreviewFeature")));
-				break;
-			default:
-				assertEquals(diff, Collections.emptyMap());
-		}
+		Arrays.asList("jdk.internal.PreviewFeature", // jdk 15
+				"jdk.internal.javac.PreviewFeature") // jdk 17
+			.forEach(diff::remove);
+		assertEquals(diff, Collections.emptyMap());
 	}
 
 	@Test
@@ -87,31 +79,15 @@ public class JdkTests {
 			ReflectionUtils.AnnotationTypes,
 			Method.class);
 
-		switch (jdk()) {
-			case 8:
-				// todo fix differences @A2 such as - @A1 public @A2 result method(...)
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"com.sun.istack.internal.NotNull",
-					"com.sun.istack.internal.Nullable",
-					"sun.reflect.CallerSensitive")));
-				break;
-			case 11:
-			case 13:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"jdk.internal.reflect.CallerSensitive")));
-				break;
-			case 15:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"jdk.internal.reflect.CallerSensitive",
-					"jdk.internal.PreviewFeature")));
-				break;
-			case 17:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"jdk.internal.reflect.CallerSensitive")));
-				break;
-			default:
-				assertEquals(diff, Collections.emptyMap());
-		}
+		// todo fix differences @A2 such as - @A1 public @A2 result method(...)
+		Arrays.asList("com.sun.istack.internal.NotNull", // jdk 8
+				"com.sun.istack.internal.Nullable",
+				"sun.reflect.CallerSensitive",
+				"java.lang.invoke.LambdaForm$Hidden",
+				"jdk.internal.reflect.CallerSensitive",  // jdk 11, 13, 15
+				"jdk.internal.PreviewFeature")           // jdk 15
+			.forEach(diff::remove);
+		assertEquals(diff, Collections.emptyMap());
 	}
 
 	@Test
@@ -131,23 +107,12 @@ public class JdkTests {
 			ReflectionUtils.AnnotationTypes,
 			Field.class);
 
-		switch (jdk()) {
-			case 8:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"com.sun.istack.internal.NotNull",
-					"com.sun.istack.internal.Nullable")));
-				break;
-			case 15:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"jdk.internal.PreviewFeature")));
-				break;
-			case 17:
-				assertEquals(diff.keySet(), new HashSet<>(Arrays.asList(
-					"jdk.internal.vm.annotation.Stable")));
-				break;
-			default:
-				assertEquals(diff, Collections.emptyMap());
-		}
+		Arrays.asList("com.sun.istack.internal.NotNull", // jdk 8
+				"com.sun.istack.internal.Nullable",
+				"jdk.internal.PreviewFeature",           // jdk 15
+				"jdk.internal.vm.annotation.Stable")     // jdk 17
+			.forEach(diff::remove);
+		assertEquals(diff, Collections.emptyMap());
 	}
 
 	@Test
@@ -163,24 +128,14 @@ public class JdkTests {
 				resources.forEach(resource -> {
 					Set<URL> urls = get(ReflectionUtils.Resources.get(resource));
 					for (URL url : urls) {
-						try {
-							if (!Files.exists(JrtUrlType.getJrtRealPath(url))) {
-								diff.add(resource);
-							}
-						} catch (Exception e) {
-							diff.add(resource);
-						}
+						try { if (!Files.exists(JrtUrlType.getJrtRealPath(url))) diff.add(resource); }
+						catch (Exception e) { diff.add(resource); }
 					}
 				}));
 
-		switch (jdk()) {
-			case 8:
-				assertEquals(diff, new HashSet<>(Arrays.asList("META-INF/MANIFEST.MF")));
-				break;
-			default:
-				assertEquals(diff, Collections.emptySet());
-		}
-
+		Arrays.asList("META-INF/MANIFEST.MF") // jdk 8
+			.forEach(diff::remove);
+		assertEquals(diff, Collections.emptySet());
 	}
 
 	@Test
@@ -249,12 +204,6 @@ public class JdkTests {
 
 	private String kb(long mem2) {
 		return (mem2 / 1024) + "kb";
-	}
-
-	private int jdk() {
-		String[] versionElements = System.getProperty("java.version").split("\\.");
-		int discard = Integer.parseInt(versionElements[0]);
-		return discard == 1 ? Integer.parseInt(versionElements[1]) : discard;
 	}
 
 	public static class JrtUrlType implements Vfs.UrlType {
