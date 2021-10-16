@@ -333,7 +333,7 @@ public class Reflections implements NameHelper {
     private void expandSupertypes(Map<String, Set<String>> subTypesStore,
               Map<String, Set<String>> typesAnnotatedStore, String key, Class<?> type) {
         Set<Annotation> typeAnnotations = ReflectionUtils.getAnnotations(type);
-        if (!typeAnnotations.isEmpty()) {
+        if (typesAnnotatedStore != null && !typeAnnotations.isEmpty()) {
             String typeName = type.getName();
             for (Annotation typeAnnotation : typeAnnotations) {
                 String annotationName = typeAnnotation.annotationType().getName();
