@@ -81,7 +81,7 @@ import static org.reflections.scanners.Scanners.*;
  * }</pre>
  *
  * <p>All relevant URLs should be configured.
- * <br>If required, Reflections will {@link #expandSuperTypes(Map)} in order to get the transitive closure metadata without scanning large 3rd party urls.
+ * <br>If required, Reflections will {@link #expandSuperTypes(Map, Map)} in order to get the transitive closure metadata without scanning large 3rd party urls.
  * <p>{@link Scanners} must be configured in order to be queried, otherwise an empty result is returned.
  * <br>Default scanners are {@code SubTypes} and {@code TypesAnnotated}.
  * For all standard scanners use {@code Scanners.values()}.
@@ -125,7 +125,7 @@ public class Reflections implements NameHelper {
         this.configuration = configuration;
         Map<String, Map<String, Set<String>>> storeMap = scan();
         if (configuration.shouldExpandSuperTypes()) {
-            expandSuperTypes(storeMap.get(SubTypes.index()));
+            expandSuperTypes(storeMap.get(SubTypes.index()), storeMap.get(TypesAnnotated.index()));
         }
         store = new Store(storeMap);
     }
@@ -317,25 +317,36 @@ public class Reflections implements NameHelper {
      *     <li>if expanding supertypes, B will be expanded with A (A->B in store) - then getSubTypes(A) will return C</li>
      * </ul>
      */
-    public void expandSuperTypes(Map<String, Set<String>> map) {
-        if (map == null || map.isEmpty()) return;
-        Set<String> keys = new LinkedHashSet<>(map.keySet());
-        keys.removeAll(map.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()));
+    public void expandSuperTypes(Map<String, Set<String>> subTypesStore, Map<String, Set<String>> typesAnnotatedStore) {
+        if (subTypesStore == null || subTypesStore.isEmpty()) return;
+        Set<String> keys = new LinkedHashSet<>(subTypesStore.keySet());
+        keys.removeAll(subTypesStore.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()));
         keys.remove("java.lang.Object");
         for (String key : keys) {
             Class<?> type = forClass(key, loaders());
             if (type != null) {
-                expandSupertypes(map, key, type);
+                expandSupertypes(subTypesStore, typesAnnotatedStore, key, type);
             }
         }
     }
 
-    private void expandSupertypes(Map<String, Set<String>> map, String key, Class<?> type) {
+    private void expandSupertypes(Map<String, Set<String>> subTypesStore,
+              Map<String, Set<String>> typesAnnotatedStore, String key, Class<?> type) {
+        Set<Annotation> typeAnnotations = ReflectionUtils.getAnnotations(type);
+        if (!typeAnnotations.isEmpty()) {
+            String typeName = type.getName();
+            for (Annotation typeAnnotation : typeAnnotations) {
+                String annotationName = typeAnnotation.annotationType().getName();
+                typesAnnotatedStore.computeIfAbsent(annotationName, s -> new HashSet<>()).add(typeName);
+            }
+        }
         for (Class<?> supertype : ReflectionUtils.getSuperTypes(type)) {
             String supertypeName = supertype.getName();
-            if (!map.containsKey(supertypeName)) {
-                map.computeIfAbsent(supertypeName, s -> new HashSet<>()).add(key);
-                expandSupertypes(map, supertypeName, supertype);
+            if (subTypesStore.containsKey(supertypeName)) {
+                subTypesStore.get(supertypeName).add(key);
+            } else {
+                subTypesStore.computeIfAbsent(supertypeName, s -> new HashSet<>()).add(key);
+                expandSupertypes(subTypesStore, typesAnnotatedStore, supertypeName, supertype);
             }
         }
     }
