@@ -21,16 +21,15 @@ import org.reflections.util.NameHelper;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -316,23 +315,15 @@ public class ReflectionsTest implements NameHelper {
         return IsEqual.equalTo(new HashSet<>(Arrays.asList(operand)));
     }
 
-    @SafeVarargs
-    public final <T extends AnnotatedElement> Matcher<Collection<String>> equalToNames(T... operand) {
-        return IsEqual.equalTo(new HashSet<>(toNames(operand)));
-    }
-
     private Matcher<Collection<Class<?>>> annotatedWith(final Class<? extends Annotation> annotation) {
         return new Match<Collection<Class<?>>>() {
             public boolean matches(Object o) {
                 for (Class<?> c : (Iterable<Class<?>>) o) {
-                    if (!annotationTypes(Arrays.asList(c.getAnnotations())).contains(annotation)) return false;
+                    List<Class<? extends Annotation>> annotationTypes = Stream.of(c.getAnnotations()).map(Annotation::annotationType).collect(Collectors.toList());
+                    if (!annotationTypes.contains(annotation)) return false;
                 }
                 return true;
             }
         };
-    }
-
-    private List<Class<? extends Annotation>> annotationTypes(Collection<Annotation> annotations) {
-        return annotations.stream().filter(Objects::nonNull).map(Annotation::annotationType).collect(Collectors.toList());
     }
 }
