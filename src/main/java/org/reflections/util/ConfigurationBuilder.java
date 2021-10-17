@@ -199,8 +199,9 @@ public class ConfigurationBuilder implements Configuration {
     }
 
     /** if true, scan urls in parallel. */
-    public void setParallel(boolean parallel) {
+    public ConfigurationBuilder setParallel(boolean parallel) {
         isParallel = parallel;
+        return this;
     }
 
     @Override
