@@ -309,7 +309,7 @@ public class Reflections implements NameHelper {
 
     /**
      * expand super types after scanning, for super types that were not scanned.
-     * <br>this is helpful in finding the transitive closure without scanning all 3rd party dependencies.
+     * <br>this is helpful for finding the transitive closure without scanning all 3rd party dependencies.
      * <p></p>
      * for example, for classes A,B,C where A supertype of B, B supertype of C (A -> B -> C):
      * <ul>
