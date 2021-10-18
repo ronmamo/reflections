@@ -114,6 +114,23 @@ public class VfsTest {
         }
     }
 
+    @Test
+    public void vfsFromDirWithJarInJar() {
+        try {
+            URL innerjarurl = new URL(format("jar:file:{0}!/BOOT-INF/lib/{1}", ReflectionsTest.getUserDir() + "/src/test/resources/jarInJar.jar", "slf4j-api-1.7.30.jar"));
+
+            assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(innerjarurl));
+            assertTrue(Vfs.DefaultUrlTypes.jarInputStream.matches(innerjarurl));
+
+            Vfs.Dir jarUrlDir = Vfs.DefaultUrlTypes.jarUrl.createDir(innerjarurl);
+            assertNotEquals(innerjarurl.getPath(), jarUrlDir.getPath());
+
+            Vfs.Dir jarInputStreamDir = Vfs.DefaultUrlTypes.jarInputStream.createDir(innerjarurl);
+            assertEquals(innerjarurl.getPath(), jarInputStreamDir.getPath());
+        }  catch (Exception e) {
+        }
+    }
+
     private void testVfsDir(Vfs.Dir dir) {
         List<Vfs.File> files = new ArrayList<>();
         for (Vfs.File file : dir.getFiles()) {
