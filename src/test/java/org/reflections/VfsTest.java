@@ -1,17 +1,22 @@
 package org.reflections;
 
+import javassist.bytecode.ClassFile;
 import org.junit.jupiter.api.Test;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
 import org.slf4j.Logger;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.text.MessageFormat.format;
 import static org.junit.jupiter.api.Assertions.*;
@@ -115,19 +120,31 @@ public class VfsTest {
     }
 
     @Test
-    public void vfsFromDirWithJarInJar() {
-        try {
-            URL innerjarurl = new URL(format("jar:file:{0}!/BOOT-INF/lib/{1}", ReflectionsTest.getUserDir() + "/src/test/resources/jarInJar.jar", "slf4j-api-1.7.30.jar"));
+    public void vfsFromDirWithJarInJar() throws Exception {
+        URL resource = ClasspathHelper.contextClassLoader().getResource("jarWithBootLibJar.jar");
+        URL innerJarUrl = new URL("jar:" + resource.toExternalForm() + "!/BOOT-INF/lib/jarWithManifest.jar");
 
-            assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(innerjarurl));
-            assertTrue(Vfs.DefaultUrlTypes.jarInputStream.matches(innerjarurl));
+        assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(innerJarUrl));
+        Vfs.Dir jarUrlDir = Vfs.DefaultUrlTypes.jarUrl.createDir(innerJarUrl);
+        assertNotEquals(innerJarUrl.getPath(), jarUrlDir.getPath());
 
-            Vfs.Dir jarUrlDir = Vfs.DefaultUrlTypes.jarUrl.createDir(innerjarurl);
-            assertNotEquals(innerjarurl.getPath(), jarUrlDir.getPath());
+        assertTrue(Vfs.DefaultUrlTypes.jarInputStream.matches(innerJarUrl));
+        Vfs.Dir jarInputStreamDir = Vfs.DefaultUrlTypes.jarInputStream.createDir(innerJarUrl);
+        assertEquals(innerJarUrl.getPath(), jarInputStreamDir.getPath());
 
-            Vfs.Dir jarInputStreamDir = Vfs.DefaultUrlTypes.jarInputStream.createDir(innerjarurl);
-            assertEquals(innerjarurl.getPath(), jarInputStreamDir.getPath());
-        }  catch (Exception e) {
+        List<Vfs.File> files = StreamSupport.stream(jarInputStreamDir.getFiles().spliterator(), false).collect(Collectors.toList());
+        assertEquals(1, files.size());
+        Vfs.File file1 = files.get(0);
+        assertEquals("empty.class", file1.getName());
+        assertEquals("pack/empty.class", file1.getRelativePath());
+
+        for (Vfs.File file : jarInputStreamDir.getFiles()) {
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(file.openInputStream()))) {
+                ClassFile classFile = new ClassFile(dis);
+                assertEquals("org.reflections.empty", classFile.getName());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
