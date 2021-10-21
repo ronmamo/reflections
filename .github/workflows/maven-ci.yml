@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         # todo re-add jdk '9' after missing certificate issue on ubuntu is resolved
-        java: [ '8', '11', '13', '15', '17']
+        java: [ '8.0.192', '8', '11.0.3', '11', '13', '15', '17', '18-ea' ]
         os: [ ubuntu-latest, windows-latest ]
     name: Java ${{ matrix.Java }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -26,7 +26,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
+          distribution: 'zulu'
           java-version: ${{ matrix.java }}
 
       - name: Show version
