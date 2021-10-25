@@ -5,7 +5,6 @@ import org.reflections.util.QueryFunction;
 import org.reflections.util.ReflectionUtilsPredicates;
 import org.reflections.util.UtilQueryBuilder;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -15,7 +14,6 @@ import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -152,23 +150,9 @@ public abstract class ReflectionUtils extends ReflectionUtilsPredicates {
     public static final UtilQueryBuilder<Class<?>, Field> Fields =
         element -> ctx -> Arrays.stream(element.getDeclaredFields()).collect(Collectors.toCollection(LinkedHashSet::new));
 
-    /** query resources using {@link ClasspathHelper#contextClassLoader()} <pre>{@code get(Resources.with(name)) -> Set<URL> }</pre> */
+    /** query url resources using {@link ClassLoader#getResources(java.lang.String)} <pre>{@code get(Resources.with(name)) -> Set<URL> }</pre> */
     public static final UtilQueryBuilder<String, URL> Resources =
-        element -> ctx -> {
-            try {
-                ClassLoader classLoader = ClasspathHelper.contextClassLoader();
-                Enumeration<URL> resources = classLoader.getResources(element);
-                Set<URL> urls = new HashSet<>();
-                while (resources.hasMoreElements()) urls.add(resources.nextElement());
-                if (urls.isEmpty()) {
-                    URL resource = Class.class.getResource(element);
-                    if (resource != null) urls.add(resource);
-                }
-                return urls;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        };
+        element -> ctx -> new HashSet<>(ClasspathHelper.forResource(element));
 
     public static <T extends AnnotatedElement> UtilQueryBuilder<AnnotatedElement, T> extendType() {
         return element -> {

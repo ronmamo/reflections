@@ -1,5 +1,6 @@
 package org.reflections;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.reflections.scanners.Scanner;
@@ -28,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.reflections.ReflectionUtils.get;
 
 /**
@@ -40,17 +40,35 @@ import static org.reflections.ReflectionUtils.get;
 @SuppressWarnings({"ArraysAsListWithZeroOrOneArgument"})
 public class JdkTests {
 
-	private final URL urls = ClasspathHelper.forClass(Object.class);
+	private static Reflections reflections;
 
 	@BeforeAll
-	static void initJrtUrlType() {
+	static void init() {
 		if (!Vfs.getDefaultUrlTypes().get(0).getClass().equals(JrtUrlType.class)) {
 			Vfs.addDefaultURLTypes(new JrtUrlType());
 		}
+		URL urls = ClasspathHelper.forClass(Object.class);
+		measure("before");
+
+		reflections = new Reflections(
+			new ConfigurationBuilder()
+				.addUrls(urls)
+				.setScanners(Scanners.values()));
+
+		measure("scan");
+	}
+
+	@AfterAll
+	static void cleanup() {
+		if (Vfs.getDefaultUrlTypes().get(0).getClass().equals(JrtUrlType.class)) {
+			Vfs.getDefaultUrlTypes().remove(0);
+		}
+		reflections.getStore().clear();
+		measure("cleanup");
 	}
 
 	@Test
-	public void checkSubTypesAndSuperTypes() {
+	public void checkSubTypes() {
 		Map<String, Set<String>> diff = reflect(
 			Scanners.SubTypes,
 			ReflectionUtils.SuperTypes,
@@ -60,7 +78,7 @@ public class JdkTests {
 	}
 
 	@Test
-	public void checkTypesAnnotatedAndAnnotationTypes() {
+	public void checkTypesAnnotated() {
 		Map<String, Set<String>> diff = reflect(
 			Scanners.TypesAnnotated,
 			ReflectionUtils.AnnotationTypes,
@@ -73,7 +91,7 @@ public class JdkTests {
 	}
 
 	@Test
-	public void checkMethodsAnnotatedAndAnnotationTypes() {
+	public void checkMethodsAnnotated() {
 		Map<String, Set<String>> diff = reflect(
 			Scanners.MethodsAnnotated,
 			ReflectionUtils.AnnotationTypes,
@@ -91,7 +109,7 @@ public class JdkTests {
 	}
 
 	@Test
-	public void checkConstructorsAnnotatedAndAnnotationTypes() {
+	public void checkConstructorsAnnotated() {
 		Map<String, Set<String>> diff = reflect(
 			Scanners.ConstructorsAnnotated,
 			ReflectionUtils.AnnotationTypes,
@@ -101,7 +119,7 @@ public class JdkTests {
 	}
 
 	@Test
-	public void checkFieldsAnnotatedAndAnnotationTypes() {
+	public void checkFieldsAnnotated() {
 		Map<String, Set<String>> diff = reflect(
 			Scanners.FieldsAnnotated,
 			ReflectionUtils.AnnotationTypes,
@@ -117,21 +135,18 @@ public class JdkTests {
 
 	@Test
 	public void checkResources() {
-		Reflections reflections = new Reflections(
-			new ConfigurationBuilder()
-				.addUrls(urls)
-				.addScanners(Scanners.Resources));
-
 		Set<String> diff = new HashSet<>();
-		reflections.getStore().get(Scanners.Resources.index())
-			.values().forEach(resources ->
-				resources.forEach(resource -> {
-					Set<URL> urls = get(ReflectionUtils.Resources.get(resource));
-					for (URL url : urls) {
-						try { if (!Files.exists(JrtUrlType.getJrtRealPath(url))) diff.add(resource); }
-						catch (Exception e) { diff.add(resource); }
-					}
-				}));
+		Map<String, Set<String>> mmap = reflections.getStore().get(Scanners.Resources.index());
+		mmap.values().forEach(resources ->
+			resources.forEach(resource -> {
+				Set<URL> urls = get(ReflectionUtils.Resources.get(resource));
+//				if (urls == null || urls.isEmpty()) diff.add(resource);
+				for (URL url : urls) {
+					try { if (!Files.exists(JrtUrlType.getJrtRealPath(url))) diff.add(resource); }
+					catch (Exception e) { diff.add(resource); }
+				}
+			}));
+		System.out.println(Scanners.Resources.index() + ": " + mmap.values().stream().mapToInt(Set::size).sum() + ", missing: " + diff.size());
 
 		Arrays.asList("META-INF/MANIFEST.MF") // jdk 8
 			.forEach(diff::remove);
@@ -147,63 +162,42 @@ public class JdkTests {
 
 	private <F extends AnnotatedElement, E extends AnnotatedElement> Map<String, Set<String>> reflect(
 		Scanner scanner, UtilQueryBuilder<F, E> utilQueryBuilder, Class<? extends AnnotatedElement> resultType) {
-		System.out.print(scanner.index());
-		measure("before");
-
-		Reflections reflections = new Reflections(
-			new ConfigurationBuilder()
-				.addUrls(urls)
-				.addScanners(scanner));
-		measure("scan");
-
-		Map<String, Set<String>> diffMap = findDiff(reflections, scanner, utilQueryBuilder, resultType);
-		measure("query");
-
-		reflections.getStore().clear();
-		measure("clear");
-		System.out.println();
-
-		return diffMap;
-	}
-
-	private <F extends AnnotatedElement, E extends AnnotatedElement> Map<String, Set<String>> findDiff(
-		Reflections reflections, Scanner scanner, UtilQueryBuilder<F, E> reflectionUtilsFunction, Class<? extends AnnotatedElement> resultType) {
-		Map<String, Set<String>> missing = new HashMap<>();
 		Map<String, Set<String>> mmap = reflections.getStore().get(scanner.index());
-		assertFalse(mmap.isEmpty());
+		Map<String, Set<String>> missing = new HashMap<>();
 		mmap.forEach((key, strings) ->
 			strings.forEach(string -> {
 				//noinspection unchecked
 				F element = (F) reflections.forName(string, resultType);
-				if (element == null || !reflections.toNames(get(reflectionUtilsFunction.get(element))).contains(key)) {
+				if (element == null || !reflections.toNames(get(utilQueryBuilder.get(element))).contains(key)) {
 					missing.computeIfAbsent(key, k -> new HashSet<>()).add(string);
 				}
 			}));
+		System.out.println(scanner.index() + ": " + mmap.values().stream().mapToInt(Set::size).sum() + ", missing: " + missing.values().stream().mapToInt(Set::size).sum());
 		return missing;
 	}
 
-	private void measure(String s) {
-		System.out.printf(" -> %s %s", s, kb(mem()));
+	private static void measure(String s) {
+		System.out.printf("-> %s %s ", s, mb(mem()));
 		gc();
-		System.out.printf(" (gc -> %s)", kb(mem()));
+		System.out.printf("(gc -> %s)%n", mb(mem()));
 	}
 
-	private void gc() {
+	private static void gc() {
 		for (int i = 0; i < 3; i++) {
 			Runtime.getRuntime().gc();
 			System.runFinalization();
 			try {
-				Thread.sleep(250);
+				Thread.sleep(100);
 			} catch (InterruptedException e) { /*java sucks*/ }
 		}
 	}
 
-	private long mem() {
+	private static long mem() {
 		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 	}
 
-	private String kb(long mem2) {
-		return (mem2 / 1024) + "kb";
+	private static String mb(long mem2) {
+		return (mem2 / 1024 / 1024) + "mb";
 	}
 
 	public static class JrtUrlType implements Vfs.UrlType {
