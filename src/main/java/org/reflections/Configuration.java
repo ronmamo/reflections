@@ -28,6 +28,6 @@ public interface Configuration {
     ClassLoader[] getClassLoaders();
 
     /** if true (default), expand super types after scanning, for super types that were not scanned.
-     * <p>see {@link org.reflections.Reflections#expandSuperTypes(Map)}*/
+     * <p>see {@link Reflections#expandSuperTypes(Map, Map)}*/
     boolean shouldExpandSuperTypes();
 }

@@ -40,50 +40,61 @@ Set<Class<?>> subTypes =
   reflections.get(SubTypes.of(SomeType.class).asClass());
 
 Set<Class<?>> annotated = 
-  reflections.get(TypesAnnotated.with(SomeAnnotation.class).asClass());
+  reflections.get(SubTypes.of(TypesAnnotated.with(SomeAnnotation.class)).asClass());
 ```
 
-*Note that there are some breaking changes with Reflections 0.10+, along with performance improvements and more functional API. Migration is encouraged and should be easy though.*
-
-### Scan
-Creating Reflections instance requires providing scanning configuration:
+Or using previous 0.9.x APIs, for example:
 
 ```java
-// scan for:
-//   urls in classpath that contain 'com.my.project' package
-//   filter types starting with 'com.my.project'
-//   use the default scanners SubTypes and TypesAnnotated
+Set<Class<? extends SomeType>> subTypes =
+  reflections.getSubTypesOf(SomeType.class);
+
+Set<Class<?>> annotated = 
+  reflections.getTypesAnnotatedWith(SomeAnnotation.class);
+```
+
+*Note that there are some breaking changes with Reflections 0.10+, along with performance improvements and more functional API, see below.*
+
+### Scan
+Creating Reflections instance requires [ConfigurationBuilder](https://ronmamo.github.io/reflections/org/reflections/util/ConfigurationBuilder.html), typically configured with packages and [Scanners](https://ronmamo.github.io/reflections/org/reflections/scanners/Scanners.html) to use: 
+
+```java
+// typical usage: scan package with the default scanners SubTypes, TypesAnnotated
 Reflections reflections = new Reflections(
   new ConfigurationBuilder()
     .forPackage("com.my.project")
     .filterInputsBy(new FilterBuilder().includePackage("com.my.project")));
 
-// or similarly
+// or similarly using the convenient constructor
 Reflections reflections = new Reflections("com.my.project");
-
-// another example
-Reflections reflections = new Reflections(
-  new ConfigurationBuilder()
-    .addUrls(ClasspathHelper.forPackage("com.my.project")) // same as forPackage
-    .setScanners(Scanners.values())     // all standard scanners
-    .filterInputsBy(new FilterBuilder() // optionally include/exclude packages 
-      .includePackage("com.my.project")
-      .excludePackage("com.my.project.exclude")));
 ```
 
-*See more in [ConfigurationBuilder](https://ronmamo.github.io/reflections/org/reflections/util/ConfigurationBuilder.html).*
+Other examples:
+```java
+import static org.reflections.scanners.Scanners.*;
+
+// scan package with specific scanners
+Reflections reflections = new Reflections(
+  new ConfigurationBuilder()
+    .forPackage("com.my.project")
+    .filterInputsBy(new FilterBuilder().includePackage("com.my.project").excludePackage("com.my.project.exclude"))
+    .setScanners(TypesAnnotated, MethodsAnnotated, MethodsReturn));
+
+// scan package with all standard scanners
+Reflections reflections = new Reflections("com.my.project", Scanners.values());
+```
 
 Note that:
-* **Scanners must be configured in order to be queried, otherwise an empty result is returned.**  
-If not specified, default scanners are `SubTypes` and `TypesAnnotated`. For all standard [Scanners](https://ronmamo.github.io/reflections/org/reflections/scanners/Scanners.html) use `Scanners.values()` [(src)](src/main/java/org/reflections/scanners/Scanners.java).
-* **All relevant URLs should be configured.**   
+* **Scanner must be configured in order to be queried, otherwise an empty result is returned**  
+If not specified, default scanners will be used SubTypes, TypesAnnotated.  
+For all standard scanners use `Scanners.values()`. See more scanners in the source [package](https://ronmamo.github.io/reflections/org/reflections/scanners).
+* **All relevant URLs should be configured**   
+Consider `.filterInputsBy()` in case too many classes are scanned.  
 If required, Reflections will [expand super types](https://ronmamo.github.io/reflections/org/reflections/Reflections.html#expandSuperTypes(java.util.Map)) in order to get the transitive closure metadata without scanning large 3rd party urls.  
-Consider adding inputs filter in case too many classes are scanned.  
 * Classloader can optionally be used for resolving runtime classes from names.
 
 ### Query
 Once Reflections was instantiated and scanning was successful, it can be used for querying the indexed metadata.  
-Standard [Scanners](https://ronmamo.github.io/reflections/org/reflections/scanners/Scanners.html) are provided for query using `reflections.get()`, for example:  
 
 ```java
 import static org.reflections.scanners.Scanners.*;
@@ -92,17 +103,13 @@ import static org.reflections.scanners.Scanners.*;
 Set<Class<?>> modules = 
   reflections.get(SubTypes.of(Module.class).asClass());
 
-// TypesAnnotated
+// TypesAnnotated (*1)
 Set<Class<?>> singletons = 
   reflections.get(TypesAnnotated.with(Singleton.class).asClass());
 
-// MethodAnnotated
+// MethodsAnnotated
 Set<Method> resources =
   reflections.get(MethodsAnnotated.with(GetMapping.class).as(Method.class));
-
-// ConstructorsAnnotated
-Set<Constructor> injectables = 
-  reflections.get(ConstructorsAnnotated.with(Inject.class).as(Constructor.class));
 
 // FieldsAnnotated
 Set<Field> ids = 
@@ -113,7 +120,7 @@ Set<String> properties =
   reflections.get(Resources.with(".*\\.properties"));
 ```
 
-Member scanners:
+More scanners:
 
 ```java
 // MethodsReturn
@@ -128,51 +135,52 @@ Set<Method> someMethods =
 Set<Method> pathParam = 
   reflections.get(MethodsParameter.of(PathParam.class).as(Method.class));
 
+// ConstructorsAnnotated
+Set<Constructor> injectables =
+  reflections.get(ConstructorsAnnotated.with(Inject.class).as(Constructor.class));
+
 // ConstructorsSignature
 Set<Constructor> someConstructors = 
   reflections.get(ConstructorsSignature.of(String.class).as(Constructor.class));
 
-// ConstructorsParameter
-Set<Constructor> pathParam = 
-  reflections.get(ConstructorsParameter.of(PathParam.class).as(Constructor.class));
+// MethodParameterNamesScanner
+List<String> parameterNames =
+  reflections.getMemberParameterNames(member);
+
+// MemberUsageScanner
+Set<Member> usages =
+  reflections.getMemberUsages(member)
 ```
 
 *See more examples in [ReflectionsQueryTest](src/test/java/org/reflections/ReflectionsQueryTest.java).*
 
-Scanner queries return `Set<String>` by default, if not using `as() / asClass()` mappers:
-```java
-Set<String> moduleNames = 
-  reflections.get(SubTypes.of(Module.class));
+*Note that previous 0.9.x APIs are still supported*
 
-Set<String> singleNames = 
-  reflections.get(TypesAnnotated.with(Singleton.class));
-```
-Note that previous 0.9.x API is still supported, for example:
-```java
-Set<Class<?>> modules = 
-  reflections.getSubTypesOf(Module.class);
-
-Set<Class<?>> singletons = 
-  reflections.getTypesAnnotatedWith(Singleton.class);
-```
 <details>
-  <summary>Compare Scanners and previous 0.9.x API</summary>
+  <summary><i>Compare Scanners and previous 0.9.x API (*)</i></summary>
 
-| Scanners | previous 0.9.x API |
-| -------- | ------------------ |
-| `get(SubType.of(T))` | getSubTypesOf(T) |
-| `get(TypesAnnotated.with(A))` | getTypesAnnotatedWith(A) |
-| `get(MethodsAnnotated.with(A))` | getMethodsAnnotatedWith(A) |
-| `get(ConstructorsAnnotated.with(A))` | getConstructorsAnnotatedWith(A) |
-| `get(FieldsAnnotated.with(A))` | getFieldsAnnotatedWith(A) |
-| `get(Resources.with(regex))` | getResources(regex) |
-| `get(MethodsParameter.with(P))` | getMethodsWithParameter(P) |
-| `get(MethodsSignature.of(P, ...))` | getMethodsWithSignature(P, ...) |
-| `get(MethodsReturn.of(T))` | getMethodsReturn(T) |
-| `get(ConstructorsParameter.with(P))` | getConstructorsWithParameter(P) |
-| `get(ConstructorsSignature.of(P, ...))` | getConstructorsWithSignature(P, ...) |
+| Scanners | previous 0.9.x API | previous Scanner |
+| -------- | ------------------ | ------ |
+| `get(SubType.of(T))` | getSubTypesOf(T) | ~~SubTypesScanner~~ |
+| `get(SubTypes.of(`<br>&nbsp;&nbsp;&nbsp;&nbsp;`TypesAnnotated.with(A)))` | getTypesAnnotatedWith(A) *(1)*| ~~TypeAnnotationsScanner~~ | 
+| `get(MethodsAnnotated.with(A))` | getMethodsAnnotatedWith(A) | ~~MethodAnnotationsScanner~~ | 
+| `get(ConstructorsAnnotated.with(A))` | getConstructorsAnnotatedWith(A) *(2)*| ~~MethodAnnotationsScanner~~ | 
+| `get(FieldsAnnotated.with(A))` | getFieldsAnnotatedWith(A) | ~~FieldAnnotationsScanner~~ | 
+| `get(Resources.with(regex))` | getResources(regex) | ~~ResourcesScanner~~ | 
+| `get(MethodsParameter.with(P))` | getMethodsWithParameter(P) *(3)*<br>~~getMethodsWithAnyParamAnnotated(P)~~| ~~MethodParameterScanner~~<br>*obsolete* | 
+| `get(MethodsSignature.of(P, ...))` | getMethodsWithSignature(P, ...) *(3)<br>~~getMethodsMatchParams(P, ...)~~*| " | 
+| `get(MethodsReturn.of(T))` | getMethodsReturn(T) *(3)*| " | 
+| `get(ConstructorsParameter.with(P))` | getConstructorsWithParameter(P) *(3)<br>~~getConstructorsWithAnyParamAnnotated(P)~~*| " | 
+| `get(ConstructorsSignature.of(P, ...))` | getConstructorsWithSignature(P, ...) *(3)<br>~~getConstructorsMatchParams(P, ...)~~*| " | 
 
 *Note: `asClass()` and `as()` mappings were omitted*
+
+*(1): The equivalent of `getTypesAnnotatedWith(A)` is `get(SubTypes.of(TypesAnnotated.with(A)))`, including SubTypes*  
+
+*(2): MethodsAnnotatedScanner does not include constructor annotation scanning, use instead Scanners.ConstructorsAnnotated*  
+
+*(3): MethodParameterScanner is obsolete, use instead as required:  
+Scanners.MethodsParameter, Scanners.MethodsSignature, Scanners.MethodsReturn, Scanners.ConstructorsParameter, Scanners.ConstructorsSignature*
 </details>
 
 ## ReflectionUtils
@@ -187,13 +195,15 @@ Set<Class<?>>    superTypes   = get(SuperTypes.of(T));
 Set<Field>       fields       = get(Fields.of(T));
 Set<Constructor> constructors = get(Constructors.of(T));
 Set<Methods>     methods      = get(Methods.of(T));
+Set<URL>         resources    = get(Resources.with(T));
+
 Set<Annotation>  annotations  = get(Annotations.of(T));
-Set<Class<? extends Annotation>> annotationTypes = get(AnnotationTypess.of(T));
+Set<Class<? extends Annotation>> annotationTypes = get(AnnotationTypes.of(T));
 ```
 
 *Previous ReflectionUtils 0.9.x API is still supported though marked for removal, more info in the javadocs.*
 
-## QueryBuilder and QueryFunction
+## Query API
 Each Scanner and ReflectionUtils function implements [QueryBuilder](https://ronmamo.github.io/reflections/org/reflections/util/QueryBuilder.html), and supports:
 * `get()` - function returns direct values 
 * `with()` or `of()` - function returns all transitive values
@@ -206,21 +216,19 @@ Next, each function implements [QueryFunction](https://ronmamo.github.io/reflect
 and provides fluent functional interface for composing `filter()`, `map()`, `flatMap()`, `as()` and more, such that:
 
 ```java
+// filter, as/map
 QueryFunction<Store, Method> getters =
   Methods.of(C1.class)
     .filter(withModifier(Modifier.PUBLIC))
     .filter(withPrefix("get").and(withParametersCount(0)))
     .as(Method.class);
-```
 
-Query functions can be composed, for example:
-```java
-// compose Scanner and ReflectionUtils functions 
+// compose Scanners and ReflectionUtils functions 
 QueryFunction<Store, Method> methods = 
   SubTypes.of(type).asClass()  // <-- classpath scanned metadata
     .flatMap(Methods::of);     // <-- java reflection api
 
-// compose function of function
+// function of function
 QueryFunction<Store, Class<? extends Annotation>> queryAnnotations = 
   Annotations.of(Methods.of(C4.class))
     .map(Annotation::annotationType);
@@ -256,11 +264,11 @@ Check the [tests](src/test/java/org/reflections) folder for more examples and AP
 
 ### What else?
 - **Integrating with build lifecycle**  
-It is sometime useful to save the scanned metadata into xml/json as part of the build lifecycle for generating resources, 
+It is sometime useful to `Reflections.save()` the scanned metadata into xml/json as part of the build lifecycle for generating resources, 
 and then collect it on bootstrap with `Reflections.collect()` and avoid scanning. *See [reflections-maven](https://github.com/ronmamo/reflections-maven/) for example*.
 - [JavaCodeSerializer](https://ronmamo.github.io/reflections/org/reflections/serializers/JavaCodeSerializer.html) - scanned metadata can be persisted into a generated Java source code. 
 Although less common, it can be useful for accessing types and members in a strongly typed manner. *(see [example](src/test/java/org/reflections/MyTestModelStore.java))*
-- [AnnotationMergeCollector](https://ronmamo.github.io/reflections/org/reflections/util/AnnotationMergeCollector.html) - can be used to merge similar annotations, for example for finding effective REST controller endpoints. *(see [test](src/test/java/org/reflections/ReflectionUtilsQueryTest.java#L216))*
+- [AnnotationMergeCollector](https://ronmamo.github.io/reflections/org/reflections/util/AnnotationMergeCollector.html) - can be used to merge similar annotations. *(see [test](src/test/java/org/reflections/ReflectionUtilsQueryTest.java#L216))*
 - `MemberUsageScanner` - experimental scanner allow querying for member usages `getMemberUsages()` of packages/types/elements in the classpath.
 Can be used for finding usages between packages, layers, modules, types etc.  
 
