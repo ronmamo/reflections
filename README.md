@@ -1,4 +1,4 @@
-*Released `org.reflections:reflections:0.10.1`*
+*Released `org.reflections:reflections:0.10.2`*
 
 *Reflections library has ~4 million downloads per month from Maven Central, and is being used by thousands of [projects](https://github.com/ronmamo/reflections/network/dependents) and [libraries](https://mvnrepository.com/artifact/org.reflections/reflections/usages).  
 Thank you for your continuous support! And apologize for the issues. We're looking for community collaborators to assist in reviewing pull requests and issues, please reach out.*
@@ -25,11 +25,11 @@ Add Reflections dependency to your project:
 <dependency>
     <groupId>org.reflections</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.10.1</version>
+    <version>0.10.2</version>
 </dependency>
 
 # Gradle
-implementation 'org.reflections:reflections:0.10.1'
+implementation 'org.reflections:reflections:0.10.2'
 ```
 
 Create Reflections instance and use the query functions: 
