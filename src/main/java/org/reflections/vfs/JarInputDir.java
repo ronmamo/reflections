@@ -44,27 +44,28 @@ public class JarInputDir implements Vfs.Dir {
                 entry = null;
                 return next;
             }
-
-            private Vfs.File computeNext() {
-                while (true) {
-                    try {
-                        ZipEntry entry = jarInputStream.getNextJarEntry();
-                        if (entry == null) {
-                            return null;
-                        }
-
-                        long size = entry.getSize();
-                        if (size < 0) size = 0xffffffffl + size; //JDK-6916399
-                        nextCursor += size;
-                        if (!entry.isDirectory()) {
-                            return new JarInputFile(entry, JarInputDir.this, cursor, nextCursor);
-                        }
-                    } catch (IOException e) {
-                        throw new ReflectionsException("could not get next zip entry", e);
-                    }
-                }
-            }
         };
+    }
+
+    /** Moved this method out to reduce the method length */
+    private Vfs.File computeNext() {
+        while (true) {
+            try {
+                ZipEntry entry = jarInputStream.getNextJarEntry();
+                if (entry == null) {
+                    return null;
+                }
+
+                long size = entry.getSize();
+                if (size < 0) size = 0xffffffffl + size; //JDK-6916399
+                nextCursor += size;
+                if (!entry.isDirectory()) {
+                    return new JarInputFile(entry, JarInputDir.this, cursor, nextCursor);
+                }
+            } catch (IOException e) {
+                throw new ReflectionsException("could not get next zip entry", e);
+            }
+        }
     }
 
     public void close() {
