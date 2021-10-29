@@ -24,11 +24,11 @@ public class VfsTest {
         assertTrue(url.toString().startsWith("file:"));
         assertTrue(url.toString().contains(".jar"));
 
-        assertTrue(Vfs.DefaultUrlTypes.jarFile.matches(url));
-        assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(url));
-        assertFalse(Vfs.DefaultUrlTypes.directory.matches(url));
+        assertTrue(Vfs.DefaultUrlTypes.JAR_FILE.matches(url));
+        assertFalse(Vfs.DefaultUrlTypes.JAR_URL.matches(url));
+        assertFalse(Vfs.DefaultUrlTypes.DIRECTORY.matches(url));
 
-        Vfs.Dir dir = Vfs.DefaultUrlTypes.jarFile.createDir(url);
+        Vfs.Dir dir = Vfs.DefaultUrlTypes.JAR_FILE.createDir(url);
         testVfsDir(dir);
     }
 
@@ -38,11 +38,11 @@ public class VfsTest {
         assertTrue(url.toString().startsWith("jar:file:"));
         assertTrue(url.toString().contains(".jar!"));
 
-        assertFalse(Vfs.DefaultUrlTypes.jarFile.matches(url));
-        assertTrue(Vfs.DefaultUrlTypes.jarUrl.matches(url));
-        assertFalse(Vfs.DefaultUrlTypes.directory.matches(url));
+        assertFalse(Vfs.DefaultUrlTypes.JAR_FILE.matches(url));
+        assertTrue(Vfs.DefaultUrlTypes.JAR_URL.matches(url));
+        assertFalse(Vfs.DefaultUrlTypes.DIRECTORY.matches(url));
 
-        Vfs.Dir dir = Vfs.DefaultUrlTypes.jarUrl.createDir(url);
+        Vfs.Dir dir = Vfs.DefaultUrlTypes.JAR_URL.createDir(url);
         testVfsDir(dir);
     }
 
@@ -52,33 +52,33 @@ public class VfsTest {
         assertTrue(url.toString().startsWith("file:"));
         assertFalse(url.toString().contains(".jar"));
 
-        assertFalse(Vfs.DefaultUrlTypes.jarFile.matches(url));
-        assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(url));
-        assertTrue(Vfs.DefaultUrlTypes.directory.matches(url));
+        assertFalse(Vfs.DefaultUrlTypes.JAR_FILE.matches(url));
+        assertFalse(Vfs.DefaultUrlTypes.JAR_URL.matches(url));
+        assertTrue(Vfs.DefaultUrlTypes.DIRECTORY.matches(url));
 
-        Vfs.Dir dir = Vfs.DefaultUrlTypes.directory.createDir(url);
+        Vfs.Dir dir = Vfs.DefaultUrlTypes.DIRECTORY.createDir(url);
         testVfsDir(dir);
     }
 
     @Test
     public void testJarInputStream() throws Exception {
         URL url = ClasspathHelper.forClass(Logger.class);
-        assertTrue(Vfs.DefaultUrlTypes.jarInputStream.matches(url));
+        assertTrue(Vfs.DefaultUrlTypes.JAR_INPUT_STREAM.matches(url));
         try {
-            testVfsDir(Vfs.DefaultUrlTypes.jarInputStream.createDir(url));
+            testVfsDir(Vfs.DefaultUrlTypes.JAR_INPUT_STREAM.createDir(url));
             fail();
         } catch (ReflectionsException e) {
             // expected
         }
 
         url = new URL(ClasspathHelper.forClass(Logger.class).toExternalForm().replace("jar:", "").replace(".jar!", ".jar"));
-        assertTrue(Vfs.DefaultUrlTypes.jarInputStream.matches(url));
-        testVfsDir(Vfs.DefaultUrlTypes.jarInputStream.createDir(url));
+        assertTrue(Vfs.DefaultUrlTypes.JAR_INPUT_STREAM.matches(url));
+        testVfsDir(Vfs.DefaultUrlTypes.JAR_INPUT_STREAM.createDir(url));
 
         url = ClasspathHelper.forClass(getClass());
-        assertFalse(Vfs.DefaultUrlTypes.jarInputStream.matches(url));
+        assertFalse(Vfs.DefaultUrlTypes.JAR_INPUT_STREAM.matches(url));
         try {
-            testVfsDir(Vfs.DefaultUrlTypes.jarInputStream.createDir(url));
+            testVfsDir(Vfs.DefaultUrlTypes.JAR_INPUT_STREAM.createDir(url));
             fail();
         } catch (AssertionError e) {
             // expected

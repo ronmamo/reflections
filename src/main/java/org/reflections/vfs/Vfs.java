@@ -203,7 +203,7 @@ public abstract class Vfs {
      * <p>jarInputStream - creates a {@link JarInputDir} over jar files, using Java's JarInputStream
      * */
     public enum DefaultUrlTypes implements UrlType {
-        jarFile {
+        JAR_FILE {
             public boolean matches(URL url) {
                 return url.getProtocol().equals("file") && hasJarFileInPath(url);
             }
@@ -213,7 +213,7 @@ public abstract class Vfs {
             }
         },
 
-        jarUrl {
+        JAR_URL {
             public boolean matches(URL url) {
                 return "jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol());
             }
@@ -234,7 +234,7 @@ public abstract class Vfs {
             }
         },
 
-        directory {
+        DIRECTORY {
             public boolean matches(URL url) {
                 if (url.getProtocol().equals("file") && !hasJarFileInPath(url)) {
                     java.io.File file = getFile(url);
@@ -247,7 +247,7 @@ public abstract class Vfs {
             }
         },
 
-        jboss_vfs {
+        JBOSS_VFS {
             public boolean matches(URL url) {
                 return url.getProtocol().equals("vfs");
             }
@@ -257,7 +257,7 @@ public abstract class Vfs {
             }
         },
 
-        jboss_vfsfile {
+        JBOSS_VFSFILE {
             public boolean matches(URL url) throws Exception {
                 return "vfszip".equals(url.getProtocol()) || "vfsfile".equals(url.getProtocol());
             }
@@ -267,7 +267,7 @@ public abstract class Vfs {
             }
         },
 
-        bundle {
+        BUNDLE {
             public boolean matches(URL url) throws Exception {
                 return url.getProtocol().startsWith("bundle");
             }
@@ -278,7 +278,7 @@ public abstract class Vfs {
             }
         },
 
-        jarInputStream {
+        JAR_INPUT_STREAM {
             public boolean matches(URL url) throws Exception {
                 return url.toExternalForm().contains(".jar");
             }
