@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 
@@ -40,6 +41,9 @@ public class JarInputDir implements Vfs.Dir {
 
             @Override
             public Vfs.File next() {
+                if(!hasNext()){
+                    throw new NoSuchElementException();
+                }
                 Vfs.File next = entry;
                 entry = null;
                 return next;
