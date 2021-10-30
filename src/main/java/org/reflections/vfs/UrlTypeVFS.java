@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
 public class UrlTypeVFS implements UrlType {
     public final static String[] REPLACE_EXTENSION = new String[]{".ear/", ".jar/", ".war/", ".sar/", ".har/", ".par/"};
 
-    final String VFSZIP = "vfszip";
-    final String VFSFILE = "vfsfile";
+    final static String VFSZIP = "vfszip";
+    final static String VFSFILE = "vfsfile";
 
     public boolean matches(URL url) {
         return VFSZIP.equals(url.getProtocol()) || VFSFILE.equals(url.getProtocol());
@@ -96,10 +96,11 @@ public class UrlTypeVFS implements UrlType {
             }
         }
 
-        String prefix = "";
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < numSubs; i++) {
-            prefix += "zip:";
+            builder.append("zip:");
         }
+        String prefix = builder.toString();
 
         if (zipPath.trim().length() == 0) {
             return new URL(prefix + "/" + zipFile);
