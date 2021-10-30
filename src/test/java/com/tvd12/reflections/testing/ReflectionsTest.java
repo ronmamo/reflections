@@ -2,9 +2,9 @@ package com.tvd12.reflections.testing;
 
 import static com.tvd12.reflections.util.Utils.index;
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.File;
