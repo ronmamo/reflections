@@ -24,6 +24,7 @@ public class ZipDir implements Vfs.Dir {
                 .iterator();
     }
 
+    @Override
     public void close() {
         try { jarFile.close(); } catch (IOException e) {
             if (Reflections.log != null) {

@@ -72,6 +72,7 @@ public class JarInputDir implements Vfs.Dir {
         }
     }
 
+    @Override
     public void close() {
         try { if (jarInputStream != null) ((InputStream) jarInputStream).close(); }
         catch (IOException e) {
