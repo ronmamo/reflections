@@ -158,7 +158,8 @@ public abstract class Vfs {
 
         try {
             path = url.toURI().getSchemeSpecificPart();
-            if ((file = new java.io.File(path)).exists()) return file;
+            file = new java.io.File(path);
+            if (file.exists()) return file;
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
         }
@@ -166,7 +167,8 @@ public abstract class Vfs {
         try {
             path = URLDecoder.decode(url.getPath(), "UTF-8");
             if (path.contains(JAR_EXTENSION)) path = path.substring(0, path.lastIndexOf(JAR_EXTENSION) + ".jar".length());
-            if ((file = new java.io.File(path)).exists()) return file;
+            file = new java.io.File(path);
+            if (file.exists()) return file;
 
         } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
@@ -179,10 +181,13 @@ public abstract class Vfs {
             if (path.startsWith("file:")) path = path.substring("file:".length());
             if (path.contains(JAR_EXTENSION)) path = path.substring(0, path.indexOf(JAR_EXTENSION) + ".jar".length());
             if (path.contains(".war!")) path = path.substring(0, path.indexOf(".war!") + ".war".length());
-            if ((file = new java.io.File(path)).exists()) return file;
+
+            file = new java.io.File(path);
+            if (file.exists()) return file;
 
             path = path.replace("%20", " ");
-            if ((file = new java.io.File(path)).exists()) return file;
+            file = new java.io.File(path);
+            if (file.exists()) return file;
 
         } catch (Exception ex) {
             ex.printStackTrace();
