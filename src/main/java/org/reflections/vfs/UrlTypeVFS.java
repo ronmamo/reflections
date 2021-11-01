@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  *
  */
 public class UrlTypeVFS implements UrlType {
-    public final static String[] REPLACE_EXTENSION = new String[]{".ear/", ".jar/", ".war/", ".sar/", ".har/", ".par/"};
+    protected final static String[] REPLACE_EXTENSION = new String[]{".ear/", ".jar/", ".war/", ".sar/", ".har/", ".par/"};
 
     final static String VFSZIP = "vfszip";
     final static String VFSFILE = "vfsfile";

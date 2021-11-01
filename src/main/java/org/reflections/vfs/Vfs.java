@@ -103,7 +103,7 @@ public abstract class Vfs {
                     Dir dir = type.createDir(url);
                     if (dir != null) return dir;
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 if (Reflections.log != null) {
                     Reflections.log.warn("could not create Dir using " + type + " from url " + url.toExternalForm() + ". skipping.", e);
                 }
@@ -141,7 +141,7 @@ public abstract class Vfs {
                 .flatMap(url -> {
                     try {
                         return StreamSupport.stream(fromURL(url).getFiles().spliterator(), false);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         if (Reflections.log != null) {
                             Reflections.log.error("could not findFiles for url. continuing. [" + url + "]", e);
                         }
@@ -233,7 +233,7 @@ public abstract class Vfs {
                         urlConnection.setUseCaches(false);
                         return new ZipDir(((JarURLConnection) urlConnection).getJarFile());
                     }
-                } catch (Throwable e) { /*fallback*/ }
+                } catch (Exception e) { /*fallback*/ }
                 java.io.File file = getFile(url);
                 if (file != null) {
                     return new ZipDir(new JarFile(file));
