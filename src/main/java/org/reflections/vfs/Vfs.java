@@ -101,7 +101,9 @@ public abstract class Vfs {
             try {
                 if (type.matches(url)) {
                     Dir dir = type.createDir(url);
-                    if (dir != null) return dir;
+                    if (dir != null){
+                        return dir;
+                    }
                 }
             } catch (Exception e) {
                 if (Reflections.log != null) {
@@ -159,35 +161,54 @@ public abstract class Vfs {
         try {
             path = url.toURI().getSchemeSpecificPart();
             file = new java.io.File(path);
-            if (file.exists()) return file;
+            if (file.exists()){
+                return file;
+            }
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
         }
 
         try {
             path = URLDecoder.decode(url.getPath(), "UTF-8");
-            if (path.contains(JAR_EXTENSION)) path = path.substring(0, path.lastIndexOf(JAR_EXTENSION) + ".jar".length());
+            if (path.contains(JAR_EXTENSION)){
+                path = path.substring(0, path.lastIndexOf(JAR_EXTENSION) + ".jar".length());
+            }
             file = new java.io.File(path);
-            if (file.exists()) return file;
-
+            if (file.exists()){
+                return file;
+            }
         } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
 
         try {
             path = url.toExternalForm();
-            if (path.startsWith("jar:")) path = path.substring("jar:".length());
-            if (path.startsWith("wsjar:")) path = path.substring("wsjar:".length());
-            if (path.startsWith("file:")) path = path.substring("file:".length());
-            if (path.contains(JAR_EXTENSION)) path = path.substring(0, path.indexOf(JAR_EXTENSION) + ".jar".length());
-            if (path.contains(".war!")) path = path.substring(0, path.indexOf(".war!") + ".war".length());
+            if (path.startsWith("jar:")){
+                path = path.substring("jar:".length());
+            }
+            if (path.startsWith("wsjar:")){
+                path = path.substring("wsjar:".length());
+            }
+            if (path.startsWith("file:")){
+                path = path.substring("file:".length());
+            }
+            if (path.contains(JAR_EXTENSION)){
+                path = path.substring(0, path.indexOf(JAR_EXTENSION) + ".jar".length());
+            }
+            if (path.contains(".war!")){
+                path = path.substring(0, path.indexOf(".war!") + ".war".length());
+            }
 
             file = new java.io.File(path);
-            if (file.exists()) return file;
+            if (file.exists()){
+                return file;
+            }
 
             path = path.replace("%20", " ");
             file = new java.io.File(path);
-            if (file.exists()) return file;
+            if (file.exists()){
+                return file;
+            }
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -247,7 +268,9 @@ public abstract class Vfs {
                 if (url.getProtocol().equals("file") && !hasJarFileInPath(url)) {
                     java.io.File file = getFile(url);
                     return file != null && file.isDirectory();
-                } else return false;
+                } else{
+                    return false;
+                }
             }
 
             public Dir createDir(final URL url) throws Exception {

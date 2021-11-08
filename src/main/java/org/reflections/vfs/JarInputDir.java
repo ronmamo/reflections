@@ -61,7 +61,9 @@ public class JarInputDir implements Vfs.Dir {
                 }
 
                 long size = entry.getSize();
-                if (size < 0) size = 0xffffffffl + size; //JDK-6916399
+                if (size < 0){
+                    size = 0xffffffffl + size; //JDK-6916399
+                }
                 nextCursor += size;
                 if (!entry.isDirectory()) {
                     return new JarInputFile(entry, JarInputDir.this, cursor, nextCursor);
@@ -74,7 +76,11 @@ public class JarInputDir implements Vfs.Dir {
 
     @Override
     public void close() {
-        try { if (jarInputStream != null) ((InputStream) jarInputStream).close(); }
+        try {
+            if (jarInputStream != null){
+                ((InputStream) jarInputStream).close();
+            }
+        }
         catch (IOException e) {
             if (Reflections.log != null) {
                 Reflections.log.warn("Could not close InputStream", e);

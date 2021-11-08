@@ -25,7 +25,9 @@ public class SystemDir implements Vfs.Dir {
     }
 
     public Iterable<Vfs.File> getFiles() {
-        if (file == null || !file.exists()) return Collections.emptyList();
+        if (file == null || !file.exists()){
+            return Collections.emptyList();
+        }
         return () -> {
             try {
                 return Files.walk(file.toPath())
