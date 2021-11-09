@@ -5,6 +5,7 @@ import org.reflections.ReflectionsException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.util.Collections;
 
 /*
@@ -13,9 +14,9 @@ import java.util.Collections;
 public class SystemDir implements Vfs.Dir {
     private final File file;
 
-    public SystemDir(File file) {
+    public SystemDir(File file) throws NotDirectoryException {
         if (file != null && (!file.isDirectory() || !file.canRead())) {
-            throw new RuntimeException("cannot use dir " + file);
+            throw new NotDirectoryException("cannot use dir " + file);
         }
         this.file = file;
     }

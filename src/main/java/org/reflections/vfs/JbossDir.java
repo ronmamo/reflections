@@ -2,6 +2,7 @@ package org.reflections.vfs;
 
 import org.jboss.vfs.VirtualFile;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -16,7 +17,7 @@ public class JbossDir implements Vfs.Dir {
         this.virtualFile = virtualFile;
     }
 
-    public static Vfs.Dir createDir(URL url) throws Exception {
+    public static Vfs.Dir createDir(URL url) throws IOException {
         VirtualFile virtualFile = (VirtualFile) url.openConnection().getContent();
         if(virtualFile.isFile()) {
             return new ZipDir(new JarFile(virtualFile.getPhysicalFile()));

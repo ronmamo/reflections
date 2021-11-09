@@ -7,11 +7,13 @@ import org.reflections.util.ClasspathHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.file.NotDirectoryException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,8 +73,8 @@ public abstract class Vfs {
 
     /** a matcher and factory for a url */
     public interface UrlType {
-        boolean matches(URL url) throws Exception;
-        Dir createDir(URL url) throws Exception;
+        boolean matches(URL url);
+        Dir createDir(URL url) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException;
     }
 
     /** the default url types that will be used when issuing {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)} */
@@ -165,7 +167,7 @@ public abstract class Vfs {
                 return file;
             }
         } catch (URISyntaxException ex) {
-            ex.printStackTrace();
+            Reflections.log.trace(ex.getMessage());
         }
 
         try {
@@ -178,7 +180,7 @@ public abstract class Vfs {
                 return file;
             }
         } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace();
+            Reflections.log.trace(ex.getMessage());
         }
 
         try {
@@ -211,7 +213,7 @@ public abstract class Vfs {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Reflections.log.trace(ex.getMessage());
         }
 
         return null;
@@ -237,7 +239,7 @@ public abstract class Vfs {
                 return url.getProtocol().equals("file") && hasJarFileInPath(url);
             }
 
-            public Dir createDir(final URL url) throws Exception {
+            public Dir createDir(final URL url) throws IOException {
                 return new ZipDir(new JarFile(getFile(url)));
             }
         },
@@ -247,7 +249,7 @@ public abstract class Vfs {
                 return "jar".equals(url.getProtocol()) || "zip".equals(url.getProtocol()) || "wsjar".equals(url.getProtocol());
             }
 
-            public Dir createDir(URL url) throws Exception {
+            public Dir createDir(URL url) throws IOException {
                 try {
                     URLConnection urlConnection = url.openConnection();
                     if (urlConnection instanceof JarURLConnection) {
@@ -273,7 +275,7 @@ public abstract class Vfs {
                 }
             }
 
-            public Dir createDir(final URL url) throws Exception {
+            public Dir createDir(final URL url) throws NotDirectoryException {
                 return new SystemDir(getFile(url));
             }
         },
@@ -283,38 +285,38 @@ public abstract class Vfs {
                 return url.getProtocol().equals("vfs");
             }
 
-            public Vfs.Dir createDir(URL url) throws Exception {
+            public Vfs.Dir createDir(URL url) throws IOException {
 		return JbossDir.createDir(url);
             }
         },
 
         JBOSS_VFSFILE {
-            public boolean matches(URL url) throws Exception {
+            public boolean matches(URL url) {
                 return "vfszip".equals(url.getProtocol()) || "vfsfile".equals(url.getProtocol());
             }
 
-            public Dir createDir(URL url) throws Exception {
+            public Dir createDir(URL url) {
                 return new UrlTypeVFS().createDir(url);
             }
         },
 
         BUNDLE {
-            public boolean matches(URL url) throws Exception {
+            public boolean matches(URL url) {
                 return url.getProtocol().startsWith("bundle");
             }
 
-            public Dir createDir(URL url) throws Exception {
+            public Dir createDir(URL url) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
                 return fromURL((URL) ClasspathHelper.contextClassLoader().
                         loadClass("org.eclipse.core.runtime.FileLocator").getMethod("resolve", URL.class).invoke(null, url));
             }
         },
 
         JAR_INPUT_STREAM {
-            public boolean matches(URL url) throws Exception {
+            public boolean matches(URL url) {
                 return url.toExternalForm().contains(".jar");
             }
 
-            public Dir createDir(final URL url) throws Exception {
+            public Dir createDir(final URL url) {
                 return new JarInputDir(url);
             }
         }

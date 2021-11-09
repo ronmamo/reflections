@@ -23,10 +23,10 @@ import java.util.regex.Pattern;
  *
  */
 public class UrlTypeVFS implements UrlType {
-    protected final static String[] REPLACE_EXTENSION = new String[]{".ear/", ".jar/", ".war/", ".sar/", ".har/", ".par/"};
+    protected static final String[] REPLACE_EXTENSION = new String[]{".ear/", ".jar/", ".war/", ".sar/", ".har/", ".par/"};
 
-    final static String VFSZIP = "vfszip";
-    final static String VFSFILE = "vfsfile";
+    static final String VFSZIP = "vfszip";
+    static final String VFSFILE = "vfsfile";
 
     public boolean matches(URL url) {
         return VFSZIP.equals(url.getProtocol()) || VFSFILE.equals(url.getProtocol());
