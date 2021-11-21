@@ -27,11 +27,11 @@ public class SystemFile implements Vfs.File {
         return null; //should not get here
     }
 
-    public InputStream openInputStream() {
+    public InputStream openInputStream() throws FileNotFoundException {
         try {
             return new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
