@@ -6,11 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 @Deprecated
-public class AbstractScanner implements Scanner {
+class AbstractScanner implements Scanner {
 	protected final Scanner scanner;
 
-	public AbstractScanner(Scanner scanner) {
+	AbstractScanner(Scanner scanner) {
 		this.scanner = scanner;
+	}
+
+	@Override
+	public String index() {
+		return scanner.index();
 	}
 
 	@Override

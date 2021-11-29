@@ -1,5 +1,6 @@
 package org.reflections;
 
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.QueryFunction;
 import org.reflections.util.ReflectionUtilsPredicates;
 import org.reflections.util.UtilQueryBuilder;
@@ -10,8 +11,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +140,7 @@ public abstract class ReflectionUtils extends ReflectionUtilsPredicates {
 
     /** query methods <pre>{@code get(Methods.of(type)) -> Set<Method>}</pre> */
     public static final UtilQueryBuilder<Class<?>, Method> Methods =
-        element -> ctx -> Arrays.stream(element.getMethods()).filter(notObjectMethod).collect(Collectors.toCollection(LinkedHashSet::new));
+        element -> ctx -> Arrays.stream(element.getDeclaredMethods()).filter(notObjectMethod).collect(Collectors.toCollection(LinkedHashSet::new));
 
     /** query constructors <pre>{@code get(Constructors.of(type)) -> Set<Constructor> }</pre> */
     public static final UtilQueryBuilder<Class<?>, Constructor> Constructors =
@@ -146,6 +149,10 @@ public abstract class ReflectionUtils extends ReflectionUtilsPredicates {
     /** query fields <pre>{@code get(Fields.of(type)) -> Set<Field> }</pre> */
     public static final UtilQueryBuilder<Class<?>, Field> Fields =
         element -> ctx -> Arrays.stream(element.getDeclaredFields()).collect(Collectors.toCollection(LinkedHashSet::new));
+
+    /** query url resources using {@link ClassLoader#getResources(java.lang.String)} <pre>{@code get(Resources.with(name)) -> Set<URL> }</pre> */
+    public static final UtilQueryBuilder<String, URL> Resources =
+        element -> ctx -> new HashSet<>(ClasspathHelper.forResource(element));
 
     public static <T extends AnnotatedElement> UtilQueryBuilder<AnnotatedElement, T> extendType() {
         return element -> {
