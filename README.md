@@ -12,6 +12,6 @@ Thanks to [ronmamo/reflections](https://github.com/ronmamo/reflections)
 <dependency>
     <groupId>com.tvd12</groupId>
     <artifactId>reflections</artifactId>
-    <version>0.9.15</version>
+    <version>1.0.1</version>
 </dependency>
 ```
