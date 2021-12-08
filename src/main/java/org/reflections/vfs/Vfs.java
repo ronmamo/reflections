@@ -154,6 +154,7 @@ public abstract class Vfs {
                 }).filter(filePredicate).iterator();
     }
 
+    /** CS427 Issue link: https://github.com/ronmamo/reflections/issues/338 */
     /**try to get {@link java.io.File} from url*/
     public static java.io.File getFile(URL url) {
         java.io.File file;
@@ -233,6 +234,8 @@ public abstract class Vfs {
      * <p>bundle - for bundle protocol, using eclipse FileLocator (should be provided in classpath)
      * <p>jarInputStream - creates a {@link JarInputDir} over jar files, using Java's JarInputStream
      * */
+
+    /** CS427 Issue link: https://github.com/ronmamo/reflections/issues/338 */
     public enum DefaultUrlTypes implements UrlType {
         JAR_FILE {
             public boolean matches(URL url) {

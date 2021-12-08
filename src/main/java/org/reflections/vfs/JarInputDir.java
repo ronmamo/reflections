@@ -34,11 +34,13 @@ public class JarInputDir implements Vfs.Dir {
 
             Vfs.File entry = null;
 
+            /** CS427 Issue link: https://github.com/ronmamo/reflections/issues/338 */
             @Override
             public boolean hasNext() {
                 return entry != null || (entry = computeNext()) != null;
             }
 
+            /** CS427 Issue link: https://github.com/ronmamo/reflections/issues/338 */
             @Override
             public Vfs.File next() {
                 if(!hasNext()){

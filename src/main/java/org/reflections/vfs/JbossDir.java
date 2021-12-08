@@ -46,6 +46,7 @@ public class JbossDir implements Vfs.Dir {
                 return entry != null || (entry = computeNext()) != null;
             }
 
+            /** CS427 Issue link: https://github.com/ronmamo/reflections/issues/338 */
             @Override
             public Vfs.File next() {
                 if(!hasNext()){
