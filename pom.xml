@@ -104,7 +104,7 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-vfs</artifactId>
-            <version>3.2.15.Final</version>
+            <version>3.2.16.Final</version>
             <scope>provided</scope>
             <optional>true</optional><!-- case: when using jboss-vfs -->
         </dependency>
