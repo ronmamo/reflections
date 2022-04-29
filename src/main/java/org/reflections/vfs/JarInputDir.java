@@ -27,8 +27,16 @@ public class JarInputDir implements Vfs.Dir {
     public Iterable<Vfs.File> getFiles() {
         return () -> new Iterator<Vfs.File>() {
             {
-                try { jarInputStream = new JarInputStream(url.openConnection().getInputStream()); }
-                catch (Exception e) { throw new ReflectionsException("Could not open url connection", e); }
+                try {
+                    InputStream stream = url.openConnection().getInputStream();
+                    if (stream instanceof JarInputStream) {
+                        jarInputStream = (JarInputStream) stream;
+                    } else {
+                        jarInputStream = new JarInputStream(stream);
+                    }
+                } catch (Exception e) {
+                    throw new ReflectionsException("Could not open url connection", e);
+                }
             }
 
             Vfs.File entry = null;

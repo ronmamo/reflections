@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 
 public class JbossDir implements Vfs.Dir {
 
@@ -16,8 +17,12 @@ public class JbossDir implements Vfs.Dir {
     }
 
     public static Vfs.Dir createDir(URL url) throws Exception {
-        VirtualFile virtualFile = (VirtualFile) url.openConnection().getContent();
-        if(virtualFile.isFile()) {
+        Object content = url.openConnection().getContent();
+        if (content instanceof JarInputStream) {
+            return new JarInputDir(url);
+        }
+        VirtualFile virtualFile = (VirtualFile) content;
+        if (virtualFile.isFile()) {
             return new ZipDir(new JarFile(virtualFile.getPhysicalFile()));
         }
         return new JbossDir(virtualFile);
