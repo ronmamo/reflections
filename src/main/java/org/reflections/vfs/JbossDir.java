@@ -1,12 +1,13 @@
 package org.reflections.vfs;
 
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualJarInputStream;
 
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
 
 public class JbossDir implements Vfs.Dir {
 
@@ -18,8 +19,10 @@ public class JbossDir implements Vfs.Dir {
 
     public static Vfs.Dir createDir(URL url) throws Exception {
         Object content = url.openConnection().getContent();
-        if (content instanceof JarInputStream) {
-            return new JarInputDir(url);
+        if (content instanceof VirtualJarInputStream) {
+            Field root = content.getClass().getDeclaredField("root");
+            root.setAccessible(true);
+            content = root.get(content);
         }
         VirtualFile virtualFile = (VirtualFile) content;
         if (virtualFile.isFile()) {
