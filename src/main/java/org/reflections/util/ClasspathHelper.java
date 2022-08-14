@@ -108,7 +108,13 @@ public abstract class ClasspathHelper {
                 final Enumeration<URL> urls = classLoader.getResources(resourceName);
                 while (urls.hasMoreElements()) {
                     final URL url = urls.nextElement();
-                    result.add(url);
+                    int index = url.toExternalForm().lastIndexOf(resourceName);
+                    if (index != -1) {
+                        // Add old url as contextUrl to support exotic url handlers
+                        result.add(new URL(url, url.toExternalForm().substring(0, index)));
+                    } else {
+                        result.add(url);
+                    }
                 }
             } catch (IOException e) {
                 if (Reflections.log != null) {
@@ -180,6 +186,7 @@ public abstract class ClasspathHelper {
         final ClassLoader[] loaders = classLoaders(classLoaders);
         for (ClassLoader classLoader : loaders) {
             while (classLoader != null) {
+
                 if (classLoader instanceof URLClassLoader) {
                     URL[] urls = ((URLClassLoader) classLoader).getURLs();
                     if (urls != null) {
