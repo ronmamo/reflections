@@ -14,10 +14,7 @@ public class ZipDir implements Vfs.Dir {
     }
 
     public String getPath() {
-        if (jarFile == null) {
-            return "/NO-SUCH-DIRECTORY/";
-        }
-        return jarFile.getName().replace("\\", "/");
+        return jarFile != null ? jarFile.getName().replace("\\", "/") : "/NO-SUCH-DIRECTORY/";
     }
 
     public Iterable<Vfs.File> getFiles() {

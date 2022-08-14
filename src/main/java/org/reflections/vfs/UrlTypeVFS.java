@@ -50,7 +50,7 @@ public class UrlTypeVFS implements UrlType {
 
     public URL adaptURL(URL url) throws MalformedURLException {
         if (VFSZIP.equals(url.getProtocol())) {
-            return replaceZipSeparators(url.getPath(), realFile);
+            return replaceZipSeparators(url.getPath(), file -> file.exists() && file.isFile());
         } else if (VFSFILE.equals(url.getProtocol())) {
             return new URL(url.toString().replace(VFSFILE, "file"));
         } else {
@@ -82,8 +82,6 @@ public class UrlTypeVFS implements UrlType {
             return -1;
         }
     }
-
-    Predicate<File> realFile = file -> file.exists() && file.isFile();
 
     URL replaceZipSeparatorStartingFrom(String path, int pos)
             throws MalformedURLException {

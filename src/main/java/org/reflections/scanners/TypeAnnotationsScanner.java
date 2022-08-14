@@ -1,23 +1,13 @@
 package org.reflections.scanners;
 
-import org.reflections.Store;
-
-import java.lang.annotation.Inherited;
-import java.util.List;
-
-/** scans for class's annotations, where @Retention(RetentionPolicy.RUNTIME) */
-@SuppressWarnings({"unchecked"})
+/** scan class annotations, where @Retention(RetentionPolicy.RUNTIME).
+ * <i>{@code Deprecated}, use {@link Scanners#TypesAnnotated} instead</i> */
+@Deprecated
 public class TypeAnnotationsScanner extends AbstractScanner {
-    public void scan(final Object cls, Store store) {
-		final String className = getMetadataAdapter().getClassName(cls);
 
-        for (String annotationType : (List<String>) getMetadataAdapter().getClassAnnotationNames(cls)) {
-
-            if (acceptResult(annotationType) ||
-                annotationType.equals(Inherited.class.getName())) { //as an exception, accept Inherited as well
-                put(store, annotationType, className);
-            }
-        }
+    /** <i>{@code Deprecated}, use {@link Scanners#TypesAnnotated} instead</i> */
+    @Deprecated
+     public TypeAnnotationsScanner() {
+        super(Scanners.TypesAnnotated);
     }
-
 }

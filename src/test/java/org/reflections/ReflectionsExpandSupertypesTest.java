@@ -1,54 +1,97 @@
 package org.reflections;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.reflections.util.ClasspathHelper;
+import org.junit.jupiter.api.Test;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
-import java.util.Set;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.reflections.ReflectionsExpandSupertypesTest.ExpandTestModel.NotScanned;
+import static org.reflections.ReflectionsExpandSupertypesTest.ExpandTestModel.Scanned;
+import static org.reflections.ReflectionsQueryTest.equalTo;
+import static org.reflections.scanners.Scanners.SubTypes;
 
 public class ReflectionsExpandSupertypesTest {
 
-    private final static String packagePrefix =
-            "org.reflections.ReflectionsExpandSupertypesTest\\$TestModel\\$ScannedScope\\$.*";
-    private FilterBuilder inputsFilter = new FilterBuilder().include(packagePrefix);
+    private final FilterBuilder inputsFilter = new FilterBuilder()
+        .includePattern("org\\.reflections\\.ReflectionsExpandSupertypesTest\\$ExpandTestModel\\$Scanned\\$.*");
 
-    public interface TestModel {
-        interface A {
-        } // outside of scanned scope
+    @SuppressWarnings("unused")
+    public interface ExpandTestModel {
+        interface NotScanned {
+            @Retention(RetentionPolicy.RUNTIME)
+            @interface MetaAnnotation { } // outside of scanned scope
 
-        interface B extends A {
-        } // outside of scanned scope, but immediate supertype
+            @Retention(RetentionPolicy.RUNTIME)
+            @Inherited
+            @MetaAnnotation
+            @interface TestAnnotation { } // outside of scanned scope, but immediate annotation
 
-        interface ScannedScope {
-            interface C extends B {
-            }
+            interface BaseInterface { } // outside of scanned scope
 
-            interface D extends B {
-            }
+            @TestAnnotation
+            class BaseClass implements BaseInterface { } // outside of scanned scope, but immediate supertype
+        }
+
+        interface Scanned {
+            class ChildrenClass extends NotScanned.BaseClass { }
         }
     }
 
     @Test
-    public void testExpandSupertypes() throws Exception {
-        Reflections refExpand = new Reflections(new ConfigurationBuilder().
-                setUrls(ClasspathHelper.forClass(TestModel.ScannedScope.C.class)).
-                filterInputsBy(inputsFilter));
-        Assert.assertTrue(refExpand.getConfiguration().shouldExpandSuperTypes());
-        Set<Class<? extends TestModel.A>> subTypesOf = refExpand.getSubTypesOf(TestModel.A.class);
-        Assert.assertTrue("expanded", subTypesOf.contains(TestModel.B.class));
-        Assert.assertTrue("transitivity", subTypesOf.containsAll(refExpand.getSubTypesOf(TestModel.B.class)));
+    public void testExpandSupertypes() {
+        ConfigurationBuilder configuration = new ConfigurationBuilder()
+            .forPackage("org.reflections")
+            .filterInputsBy(inputsFilter);
+
+        Reflections reflections = new Reflections(configuration);
+        assertThat(reflections.get(SubTypes.of(NotScanned.BaseInterface.class).asClass()),
+            equalTo(
+                NotScanned.BaseClass.class,
+                Scanned.ChildrenClass.class));
+
+        Reflections refNoExpand = new Reflections(configuration.setExpandSuperTypes(false));
+        assertThat(refNoExpand.get(SubTypes.of(NotScanned.BaseInterface.class).asClass()),
+            equalTo());
     }
 
     @Test
-    public void testNotExpandSupertypes() throws Exception {
-        Reflections refDontExpand = new Reflections(new ConfigurationBuilder().
-                setUrls(ClasspathHelper.forClass(TestModel.ScannedScope.C.class)).
-                filterInputsBy(inputsFilter).
-                setExpandSuperTypes(false));
-        Assert.assertFalse(refDontExpand.getConfiguration().shouldExpandSuperTypes());
-        Set<Class<? extends TestModel.A>> subTypesOf1 = refDontExpand.getSubTypesOf(TestModel.A.class);
-        Assert.assertFalse(subTypesOf1.contains(TestModel.B.class));
+    void testDetectInheritedAnnotations() {
+        ConfigurationBuilder configuration = new ConfigurationBuilder()
+            .forPackage("org.reflections")
+            .filterInputsBy(inputsFilter);
+
+        Reflections reflections = new Reflections(configuration);
+        assertThat(reflections.getTypesAnnotatedWith(NotScanned.TestAnnotation.class),
+            equalTo(
+                NotScanned.BaseClass.class,
+                Scanned.ChildrenClass.class));
+
+        Reflections refNoExpand = new Reflections(configuration.setExpandSuperTypes(false));
+        assertThat(refNoExpand.getTypesAnnotatedWith(NotScanned.TestAnnotation.class),
+            equalTo());
+    }
+
+    @Test
+    void testExpandMetaAnnotations() {
+        ConfigurationBuilder configuration = new ConfigurationBuilder()
+            .forPackage("org.reflections")
+            .filterInputsBy(inputsFilter);
+
+        Reflections reflections = new Reflections(configuration);
+        assertThat(reflections.getTypesAnnotatedWith(NotScanned.MetaAnnotation.class),
+            equalTo());
+//         todo fix, support expansion of meta annotations outside of scanned scope
+//            equalTo(
+//                NotScanned.TestAnnotation.class,
+//                NotScanned.BaseClass.class,
+//                Scanned.ChildrenClass.class));
+
+        Reflections refNoExpand = new Reflections(configuration.setExpandSuperTypes(false));
+        assertThat(refNoExpand.getTypesAnnotatedWith(NotScanned.MetaAnnotation.class),
+            equalTo());
     }
 }

@@ -1,24 +1,26 @@
 package org.reflections;
 
 import javassist.bytecode.ClassFile;
-import org.junit.Test;
-import org.reflections.adapters.JavassistAdapter;
+import org.junit.jupiter.api.Test;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
 import org.slf4j.Logger;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.text.MessageFormat.format;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- *
- */
 public class VfsTest {
 
     @Test
@@ -83,7 +85,7 @@ public class VfsTest {
         try {
             testVfsDir(Vfs.DefaultUrlTypes.jarInputStream.createDir(url));
             fail();
-        } catch (NullPointerException e) {
+        } catch (AssertionError e) {
             // expected
         }
     }
@@ -110,25 +112,47 @@ public class VfsTest {
         try {
             Vfs.Dir dir = Vfs.fromURL(new URL(format("file:{0}", dirWithJarInName)));
 
-            assertEquals(dirWithJarInName, dir.getPath());
+            assertEquals(dirWithJarInName.replace("\\", "/"), dir.getPath());
             assertEquals(SystemDir.class, dir.getClass());
         } finally {
             newDir.delete();
         }
     }
 
-    private void testVfsDir(Vfs.Dir dir) {
-        JavassistAdapter mdAdapter = new JavassistAdapter();
-        Vfs.File file = null;
-        for (Vfs.File f : dir.getFiles()) {
-            if (f.getRelativePath().endsWith(".class")) {
-                file = f;
-                break;
+    @Test
+    public void vfsFromDirWithJarInJar() throws Exception {
+        URL resource = ClasspathHelper.contextClassLoader().getResource("jarWithBootLibJar.jar");
+        URL innerJarUrl = new URL("jar:" + resource.toExternalForm() + "!/BOOT-INF/lib/jarWithManifest.jar");
+
+        assertFalse(Vfs.DefaultUrlTypes.jarUrl.matches(innerJarUrl));
+        Vfs.Dir jarUrlDir = Vfs.DefaultUrlTypes.jarUrl.createDir(innerJarUrl);
+        assertNotEquals(innerJarUrl.getPath(), jarUrlDir.getPath());
+
+        assertTrue(Vfs.DefaultUrlTypes.jarInputStream.matches(innerJarUrl));
+        Vfs.Dir jarInputStreamDir = Vfs.DefaultUrlTypes.jarInputStream.createDir(innerJarUrl);
+        assertEquals(innerJarUrl.getPath(), jarInputStreamDir.getPath());
+
+        List<Vfs.File> files = StreamSupport.stream(jarInputStreamDir.getFiles().spliterator(), false).collect(Collectors.toList());
+        assertEquals(1, files.size());
+        Vfs.File file1 = files.get(0);
+        assertEquals("empty.class", file1.getName());
+        assertEquals("pack/empty.class", file1.getRelativePath());
+
+        for (Vfs.File file : jarInputStreamDir.getFiles()) {
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(file.openInputStream()))) {
+                ClassFile classFile = new ClassFile(dis);
+                assertEquals("org.reflections.empty", classFile.getName());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
+    }
 
-        ClassFile stringCF = mdAdapter.getOrCreateClassObject(file);
-        String className = mdAdapter.getClassName(stringCF);
-        assertFalse(className.isEmpty());
+    private void testVfsDir(Vfs.Dir dir) {
+        List<Vfs.File> files = new ArrayList<>();
+        for (Vfs.File file : dir.getFiles()) {
+            files.add(file);
+        }
+        assertFalse(files.isEmpty());
     }
 }

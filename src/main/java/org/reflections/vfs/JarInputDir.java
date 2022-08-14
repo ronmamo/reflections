@@ -1,17 +1,15 @@
 package org.reflections.vfs;
 
+import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
-import org.reflections.util.Utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 
-/**
- *
- */
 public class JarInputDir implements Vfs.Dir {
     private final URL url;
     JarInputStream jarInputStream;
@@ -28,7 +26,6 @@ public class JarInputDir implements Vfs.Dir {
 
     public Iterable<Vfs.File> getFiles() {
         return () -> new Iterator<Vfs.File>() {
-
             {
                 try { jarInputStream = new JarInputStream(url.openConnection().getInputStream()); }
                 catch (Exception e) { throw new ReflectionsException("Could not open url connection", e); }
@@ -71,6 +68,11 @@ public class JarInputDir implements Vfs.Dir {
     }
 
     public void close() {
-        Utils.close(jarInputStream);
+        try { if (jarInputStream != null) ((InputStream) jarInputStream).close(); }
+        catch (IOException e) {
+            if (Reflections.log != null) {
+                Reflections.log.warn("Could not close InputStream", e);
+            }
+        }
     }
 }

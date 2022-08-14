@@ -1,19 +1,14 @@
 package org.reflections.scanners;
 
-import org.reflections.Store;
-
-import java.util.List;
-
-@SuppressWarnings({"unchecked"})
-/** scans for method's annotations */
+/** scan method annotations.
+ * <p></p><i>breaking change: does not include constructor annotations, use {@link Scanners#ConstructorsAnnotated} instead </i>
+ * <p></p><i>{@code Deprecated}, use {@link Scanners#MethodsAnnotated} and {@link Scanners#ConstructorsAnnotated} instead</i> */
+@Deprecated
 public class MethodAnnotationsScanner extends AbstractScanner {
-    public void scan(final Object cls, Store store) {
-        for (Object method : getMetadataAdapter().getMethods(cls)) {
-            for (String methodAnnotation : (List<String>) getMetadataAdapter().getMethodAnnotationNames(method)) {
-                if (acceptResult(methodAnnotation)) {
-                    put(store, methodAnnotation, getMetadataAdapter().getMethodFullKey(cls, method));
-                }
-            }
-        }
+
+    /** <i>{@code Deprecated}, use {@link Scanners#MethodsAnnotated} and {@link Scanners#ConstructorsAnnotated} instead</i> */
+    @Deprecated
+    public MethodAnnotationsScanner() {
+        super(Scanners.MethodsAnnotated);
     }
 }

@@ -1,39 +1,30 @@
 package org.reflections.scanners;
 
-import org.reflections.Store;
-import org.reflections.util.FilterBuilder;
+import javassist.bytecode.ClassFile;
 
 import java.util.List;
+import java.util.Map;
 
-/** scans for superclass and interfaces of a class, allowing a reverse lookup for subtypes */
+/** scan superclass and interfaces of a class, allowing a reverse lookup for subtypes.
+ * <i>{@code Deprecated}, use {@link Scanners#SubTypes} instead</i> */
+@Deprecated
 public class SubTypesScanner extends AbstractScanner {
 
-    /** created new SubTypesScanner. will exclude direct Object subtypes */
+    /** create new SubTypesScanner. will exclude direct Object subtypes
+     * <i>{@code Deprecated}, use {@link Scanners#SubTypes} instead</i> */
+    @Deprecated
     public SubTypesScanner() {
-        this(true); //exclude direct Object subtypes by default
+        super(Scanners.SubTypes);
     }
 
-    /** created new SubTypesScanner.
-     * @param excludeObjectClass if false, include direct {@link Object} subtypes in results.  */
+    /** create new SubTypesScanner. include direct {@link Object} subtypes in results.
+     * <i>{@code Deprecated}, use {@link Scanners#SubTypes} instead</i> */
+    @Deprecated
     public SubTypesScanner(boolean excludeObjectClass) {
-        if (excludeObjectClass) {
-            filterResultsBy(new FilterBuilder().exclude(Object.class.getName())); //exclude direct Object subtypes
-        }
+        super(excludeObjectClass ? Scanners.SubTypes : Scanners.SubTypes.filterResultsBy(s -> true));
     }
 
-    @SuppressWarnings({"unchecked"})
-    public void scan(final Object cls, Store store) {
-		String className = getMetadataAdapter().getClassName(cls);
-		String superclass = getMetadataAdapter().getSuperclassName(cls);
-
-        if (acceptResult(superclass)) {
-            put(store, superclass, className);
-        }
-
-		for (String anInterface : (List<String>) getMetadataAdapter().getInterfacesNames(cls)) {
-			if (acceptResult(anInterface)) {
-                put(store, anInterface, className);
-            }
-        }
+    public List<Map.Entry<String, String>> scan(final ClassFile cls) {
+        return scanner.scan(cls);
     }
 }

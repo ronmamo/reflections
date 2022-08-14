@@ -1,0 +1,200 @@
+{
+  "store": {
+    "TypesAnnotated": {
+      "org.reflections.TestModel$AC3": [
+        "org.reflections.TestModel$C7"
+      ],
+      "org.reflections.TestModel$MAI1": [
+        "org.reflections.TestModel$AI1"
+      ],
+      "org.reflections.TestModel$AC2": [
+        "org.reflections.TestModel$C3",
+        "org.reflections.TestModel$C2",
+        "org.reflections.TestModel$AC3",
+        "org.reflections.TestModel$I3"
+      ],
+      "org.reflections.TestModel$AC1n": [
+        "org.reflections.TestModel$C1"
+      ],
+      "org.reflections.TestModel$AC1": [
+        "org.reflections.TestModel$C1"
+      ],
+      "org.reflections.TestModel$AI2": [
+        "org.reflections.TestModel$I2"
+      ],
+      "java.lang.annotation.Inherited": [
+        "org.reflections.TestModel$MAI1",
+        "org.reflections.TestModel$AC1",
+        "org.reflections.TestModel$AI2"
+      ],
+      "org.reflections.TestModel$AI1": [
+        "org.reflections.TestModel$I1"
+      ],
+      "java.lang.annotation.Retention": [
+        "org.reflections.TestModel$AC3",
+        "org.reflections.TestModel$MAI1",
+        "org.reflections.TestModel$AC1n",
+        "org.reflections.TestModel$AC2",
+        "org.reflections.TestModel$AC1",
+        "org.reflections.TestModel$AI2",
+        "org.reflections.TestModel$AI1",
+        "org.reflections.TestModel$AF1",
+        "org.reflections.TestModel$AM1"
+      ]
+    },
+    "MethodsSignature": {
+      "[org.reflections.TestModel$C2]": [
+        "org.reflections.TestModel$C4.c2toC3(org.reflections.TestModel$C2)"
+      ],
+      "[]": [
+        "org.reflections.TestModel$C7.\u003cinit\u003e()",
+        "org.reflections.TestModel$AF1.value()",
+        "org.reflections.TestModel$C4.m1()",
+        "org.reflections.TestModel$C4.\u003cinit\u003e()",
+        "org.reflections.TestModel$C2.\u003cinit\u003e()",
+        "org.reflections.TestModel$C4.m3()",
+        "org.reflections.TestModel$C3.\u003cinit\u003e()",
+        "org.reflections.TestModel$C6.\u003cinit\u003e()",
+        "org.reflections.TestModel$C5.\u003cinit\u003e()",
+        "org.reflections.TestModel$AM1.value()",
+        "org.reflections.TestModel$AC2.value()",
+        "org.reflections.TestModel$C1.\u003cinit\u003e()"
+      ],
+      "[int, java.lang.String[]]": [
+        "org.reflections.TestModel$C4.m1(int, java.lang.String[])"
+      ],
+      "[int, int]": [
+        "org.reflections.TestModel$C4.add(int, int)"
+      ],
+      "[java.lang.String]": [
+        "org.reflections.TestModel$C4.m4(java.lang.String)",
+        "org.reflections.TestModel$C4.\u003cinit\u003e(java.lang.String)"
+      ],
+      "[int[][], java.lang.String[][]]": [
+        "org.reflections.TestModel$C4.m1(int[][], java.lang.String[][])"
+      ]
+    },
+    "MethodsParameter": {
+      "org.reflections.TestModel$C2": [
+        "org.reflections.TestModel$C4.c2toC3(org.reflections.TestModel$C2)"
+      ],
+      "int[][]": [
+        "org.reflections.TestModel$C4.m1(int[][], java.lang.String[][])"
+      ],
+      "java.lang.String[][]": [
+        "org.reflections.TestModel$C4.m1(int[][], java.lang.String[][])"
+      ],
+      "java.lang.String": [
+        "org.reflections.TestModel$C4.m4(java.lang.String)",
+        "org.reflections.TestModel$C4.\u003cinit\u003e(java.lang.String)"
+      ],
+      "java.lang.String[]": [
+        "org.reflections.TestModel$C4.m1(int, java.lang.String[])"
+      ],
+      "org.reflections.TestModel$AM1": [
+        "org.reflections.TestModel$C4.m4(java.lang.String)",
+        "org.reflections.TestModel$C4.\u003cinit\u003e(java.lang.String)"
+      ],
+      "int": [
+        "org.reflections.TestModel$C4.m1(int, java.lang.String[])",
+        "org.reflections.TestModel$C4.add(int, int)"
+      ]
+    },
+    "SubTypes": {
+      "org.reflections.TestModel$C3": [
+        "org.reflections.TestModel$C5"
+      ],
+      "org.reflections.TestModel$C1": [
+        "org.reflections.TestModel$C3",
+        "org.reflections.TestModel$C2"
+      ],
+      "java.lang.annotation.Annotation": [
+        "org.reflections.TestModel$AC3",
+        "org.reflections.TestModel$MAI1",
+        "org.reflections.TestModel$AC2",
+        "org.reflections.TestModel$AC1n",
+        "org.reflections.TestModel$AC1",
+        "org.reflections.TestModel$AI2",
+        "org.reflections.TestModel$AI1",
+        "org.reflections.TestModel$AF1",
+        "org.reflections.TestModel$AM1"
+      ],
+      "org.reflections.TestModel$I1": [
+        "org.reflections.TestModel$I2"
+      ],
+      "org.reflections.TestModel$I3": [
+        "org.reflections.TestModel$C6"
+      ],
+      "java.lang.Object": [
+        "org.reflections.TestModel$AI2",
+        "org.reflections.TestModel$AI1",
+        "org.reflections.TestModel$AF1",
+        "org.reflections.TestModel$C7",
+        "org.reflections.TestModel$AM1",
+        "org.reflections.TestModel$C6",
+        "org.reflections.TestModel$AC3",
+        "org.reflections.TestModel$C4",
+        "org.reflections.TestModel$MAI1",
+        "org.reflections.TestModel$AC2",
+        "org.reflections.TestModel$C1",
+        "org.reflections.TestModel$AC1n",
+        "org.reflections.TestModel$AC1",
+        "org.reflections.TestModel$I1",
+        "org.reflections.TestModel$I3",
+        "org.reflections.TestModel$I2"
+      ],
+      "org.reflections.TestModel$I2": [
+        "org.reflections.TestModel$C1"
+      ]
+    },
+    "MethodsReturn": {
+      "org.reflections.TestModel$C3": [
+        "org.reflections.TestModel$C4.c2toC3(org.reflections.TestModel$C2)"
+      ],
+      "void": [
+        "org.reflections.TestModel$C4.m1(int, java.lang.String[])",
+        "org.reflections.TestModel$C4.m1()",
+        "org.reflections.TestModel$C4.m1(int[][], java.lang.String[][])"
+      ],
+      "java.lang.String": [
+        "org.reflections.TestModel$AF1.value()",
+        "org.reflections.TestModel$C4.m4(java.lang.String)",
+        "org.reflections.TestModel$C4.m3()",
+        "org.reflections.TestModel$AM1.value()",
+        "org.reflections.TestModel$AC2.value()"
+      ],
+      "int": [
+        "org.reflections.TestModel$C4.add(int, int)"
+      ]
+    },
+    "MethodsAnnotated": {
+      "org.reflections.TestModel$AM1": [
+        "org.reflections.TestModel$C4.m1(int, java.lang.String[])",
+        "org.reflections.TestModel$C4.m1()",
+        "org.reflections.TestModel$C4.m3()",
+        "org.reflections.TestModel$C4.m1(int[][], java.lang.String[][])",
+        "org.reflections.TestModel$C4.\u003cinit\u003e(java.lang.String)"
+      ]
+    },
+    "FieldsAnnotated": {
+      "org.reflections.TestModel$AF1": [
+        "org.reflections.TestModel$C4.f1",
+        "org.reflections.TestModel$C4.f2"
+      ]
+    },
+    "Resources": {
+      "resource1-reflections.xml": [
+        "META-INF/reflections/resource1-reflections.xml"
+      ],
+      "saved-testModel-reflections.xml": [
+        "META-INF/reflections/saved-testModel-reflections.xml"
+      ],
+      "resource2-reflections.xml": [
+        "META-INF/reflections/inner/resource2-reflections.xml"
+      ],
+      "testModel-reflections.xml": [
+        "META-INF/reflections/testModel-reflections.xml"
+      ]
+    }
+  }
+}
