@@ -10,8 +10,9 @@ import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedHashSet;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -138,7 +139,7 @@ public class MoreTests {
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(url)
-                .setScanners(new SubTypesScanner(false))
+                .setScanners(SubTypes.filterResultsBy(c -> true))
                 .addClassLoaders(classLoader));
         Set<Class<?>> allClass = reflections.getSubTypesOf(Object.class);
         assertEquals(34, allClass.size());
