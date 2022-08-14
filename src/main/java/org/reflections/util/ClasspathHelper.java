@@ -110,7 +110,7 @@ public abstract class ClasspathHelper {
                     final URL url = urls.nextElement();
                     int index = url.toExternalForm().lastIndexOf(resourceName);
                     if (index != -1) {
-                    	// Add old url as contextUrl to support exotic url handlers
+                        // Add old url as contextUrl to support exotic url handlers
                         result.add(new URL(url, url.toExternalForm().substring(0, index)));
                     } else {
                         result.add(url);
@@ -186,6 +186,7 @@ public abstract class ClasspathHelper {
         final ClassLoader[] loaders = classLoaders(classLoaders);
         for (ClassLoader classLoader : loaders) {
             while (classLoader != null) {
+
                 if (classLoader instanceof URLClassLoader) {
                     URL[] urls = ((URLClassLoader) classLoader).getURLs();
                     if (urls != null) {
