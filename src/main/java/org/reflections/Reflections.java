@@ -171,9 +171,7 @@ public class Reflections implements NameHelper {
         Set<URL> urls = configuration.getUrls();
 
         (configuration.isParallel() ? urls.stream().parallel() : urls.stream()).forEach(url -> {
-            Vfs.Dir dir = null;
-            try {
-                dir = Vfs.fromURL(url);
+            try (Vfs.Dir dir = Vfs.fromURL(url)) {
                 for (Vfs.File file : dir.getFiles()) {
                     if (doFilter(file, configuration.getInputsFilter())) {
                         ClassFile classFile = null;
@@ -188,15 +186,13 @@ public class Reflections implements NameHelper {
                                     if (entries != null) collect.get(scanner.index()).addAll(entries);
                                 }
                             } catch (Exception e) {
-                                if (log != null) log.trace("could not scan file {} with scanner {}", file.getRelativePath(), scanner.getClass().getSimpleName(), e);
+                                if (log != null) log.debug("could not scan file {} with scanner {}", file.getRelativePath(), scanner.getClass().getSimpleName(), e);
                             }
                         }
                     }
                 }
             } catch (Exception e) {
                 if (log != null) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
-            } finally {
-                if (dir != null) dir.close();
             }
         });
 

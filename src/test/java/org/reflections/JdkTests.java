@@ -98,12 +98,14 @@ public class JdkTests {
 			Method.class);
 
 		// todo fix differences @A2 such as - @A1 public @A2 result method(...)
-		Arrays.asList("com.sun.istack.internal.NotNull", // jdk 8
+		Arrays.asList("com.sun.istack.internal.NotNull", 		// jdk 8
 				"com.sun.istack.internal.Nullable",
 				"sun.reflect.CallerSensitive",
 				"java.lang.invoke.LambdaForm$Hidden",
-				"jdk.internal.reflect.CallerSensitive",  // jdk 11, 13, 15
-				"jdk.internal.PreviewFeature")           // jdk 15
+				"jdk.internal.reflect.CallerSensitive",  		// jdk 11, 13, 15
+				"jdk.internal.PreviewFeature",           		// jdk 15
+				"jdk.internal.reflect.CallerSensitiveAdapter",	// jdk 18
+				"jdk.internal.javac.PreviewFeature")			// jdk 20
 			.forEach(diff::remove);
 		assertEquals(diff, Collections.emptyMap());
 	}

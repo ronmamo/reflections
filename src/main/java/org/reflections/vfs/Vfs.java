@@ -56,7 +56,7 @@ public abstract class Vfs {
     private static List<UrlType> defaultUrlTypes = new ArrayList<>(Arrays.asList(DefaultUrlTypes.values()));
 
     /** an abstract vfs dir */
-    public interface Dir {
+    public interface Dir extends AutoCloseable {
         String getPath();
         Iterable<File> getFiles();
         default void close() {}
