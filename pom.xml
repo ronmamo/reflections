@@ -46,7 +46,7 @@
     </distributionManagement>
 
     <properties>
-        <javassist.version>3.28.0-GA</javassist.version>
+        <javassist.version>3.29.1-GA</javassist.version>
         <jdk.version>1.8</jdk.version>
         <doclint>none</doclint>
     </properties>
