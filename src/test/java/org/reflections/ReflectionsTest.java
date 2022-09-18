@@ -154,8 +154,8 @@ public class ReflectionsTest implements NameHelper {
             assertThat(reflections.getMethodsWithSignature(),
                     are(C4.class.getDeclaredMethod("m1"), C4.class.getDeclaredMethod("m3"),
                             AC2.class.getMethod("value"), AF1.class.getMethod("value"), AM1.class.getMethod("value"),
-                            UsageTestModel.C1.class.getDeclaredMethod("method"), UsageTestModel.C2.class.getDeclaredMethod("method")));
-
+                            UsageTestModel.C1.class.getDeclaredMethod("method"), UsageTestModel.C2.class.getDeclaredMethod("method"),
+                            UsageTestModel.C2.class.getDeclaredMethod("zero")));
             assertThat(reflections.getMethodsWithSignature(int[][].class, String[][].class),
                     are(C4.class.getDeclaredMethod("m1", int[][].class, String[][].class)));
 
@@ -246,6 +246,11 @@ public class ReflectionsTest implements NameHelper {
 
         assertThat(reflections.getMemberUsage(UsageTestModel.C1.class.getDeclaredConstructor(UsageTestModel.C2.class)),
                 are(UsageTestModel.C2.class.getDeclaredMethod("method")));
+
+        // synthetic method for lambda expression
+        assertThat(reflections.getMemberUsage(UsageTestModel.C2.class.getDeclaredMethod("zero")),
+                are(reflections.forMember("org.reflections.UsageTestModel$C2.lambda$useLambda$0(org.reflections.UsageTestModel$C2)"),
+                        reflections.forMember("org.reflections.UsageTestModel$C2$1.applyAsDouble(org.reflections.UsageTestModel$C2)")));
     }
 
     @Test
