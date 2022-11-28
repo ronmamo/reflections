@@ -97,7 +97,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.32</version>
+            <version>2.0.5</version>
             <optional>true</optional> <!-- case: when other logging implementation used or logging is not needed -->
         </dependency>
 
