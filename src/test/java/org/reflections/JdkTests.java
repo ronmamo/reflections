@@ -105,8 +105,7 @@ public class JdkTests {
 				"jdk.internal.reflect.CallerSensitive", // jdk 11, 13, 15
 				"jdk.internal.PreviewFeature", // jdk 15
 				"jdk.internal.reflect.CallerSensitiveAdapter" // jdk 17
-				)
-			.forEach(diff::remove);
+		).forEach(diff::remove);
 		assertEquals(diff, Collections.emptyMap());
 	}
 
