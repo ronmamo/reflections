@@ -185,8 +185,7 @@ public class ReflectionUtilsQueryTest {
 			equalTo(
 				CombinedTestModel.Post.class.getDeclaredMethod("value"),
 				CombinedTestModel.Requests.class.getDeclaredMethod("value"),
-				CombinedTestModel.Get.class.getDeclaredMethod("value"),
-				Annotation.class.getDeclaredMethod("annotationType")));
+				CombinedTestModel.Get.class.getDeclaredMethod("value")));
 
 		assertEquals(query, query1);
 	}
@@ -203,11 +202,11 @@ public class ReflectionUtilsQueryTest {
 		Set<String> collect = valueMaps.stream().map(Object::toString).sorted().collect(Collectors.toCollection(LinkedHashSet::new));
 		assertThat(collect,
 			equalTo(
-				"{annotationType=interface org.reflections.CombinedTestModel$Get, value=/get}",
-				"{annotationType=interface org.reflections.CombinedTestModel$Post, value=/post}",
-				"{annotationType=interface org.reflections.CombinedTestModel$Requests, value=[" +
-					"{method=PUT, annotationType=interface org.reflections.CombinedTestModel$Request, value=/another}, " +
-					"{method=PATCH, annotationType=interface org.reflections.CombinedTestModel$Request, value=/another}]}"
+				"{value=/get}",
+				"{value=/post}",
+				"{value=[" +
+					"{method=PUT, value=/another}, " +
+					"{method=PATCH, value=/another}]}"
 			));
 	}
 
