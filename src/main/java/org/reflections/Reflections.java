@@ -389,7 +389,7 @@ public class Reflections implements NameHelper {
     /**
      * get types annotated with the given {@code annotation}, both classes and annotations
      * <p>{@link java.lang.annotation.Inherited} is honored according to the given {@code honorInherited}.
-     * <p>when honoring @Inherited, meta-annotation should only effect annotated super classes and subtypes
+     * <p>when honoring @Inherited, meta-annotation should only affect annotated super classes and subtypes
      * <p>when not honoring @Inherited, meta annotation effects all subtypes, including annotations interfaces and classes
      * <p><i>Note that this (@Inherited) meta-annotation type has no effect if the annotated type is used for anything other then a class.
      * Also, this meta-annotation causes annotations to be inherited only from superclasses; annotations on implemented interfaces have no effect.</i>
