@@ -70,9 +70,12 @@ public class ConfigurationBuilder implements Configuration {
         // flatten
         List<Object> parameters = new ArrayList<>();
         for (Object param : params) {
-            if (param.getClass().isArray()) { for (Object p : (Object[]) param) parameters.add(p); }
-            else if (param instanceof Iterable) { for (Object p : (Iterable) param) parameters.add(p); }
-            else parameters.add(param);
+            if (param != null) {
+                if (param.getClass().isArray()) { for (Object p : (Object[]) param) parameters.add(p); }
+                else if (param instanceof Iterable) { for (Object p : (Iterable) param) parameters.add(p); }
+                else parameters.add(param);
+            }
+
         }
 
         ClassLoader[] loaders = Stream.of(params).filter(p -> p instanceof ClassLoader).distinct().toArray(ClassLoader[]::new);
@@ -97,7 +100,8 @@ public class ConfigurationBuilder implements Configuration {
                 catch (Exception e) { throw new RuntimeException(e); }
             } else if (param instanceof Predicate) {
                 builder.filterInputsBy((Predicate<String>) param);
-            } else throw new ReflectionsException("could not use param '" + param + "'");
+            } else if (param instanceof ClassLoader) { /* already taken care */ }
+            else throw new ReflectionsException("could not use param '" + param + "'");
         }
 
         if (builder.getUrls().isEmpty()) {
