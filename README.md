@@ -1,7 +1,11 @@
-*Released `org.reflections:reflections:0.10.2`*
+*❗ Please note: Reflections library is currently NOT under active development or maintainance ❗*
 
-*Reflections library has ~4 million downloads per month from Maven Central, and is being used by thousands of [projects](https://github.com/ronmamo/reflections/network/dependents) and [libraries](https://mvnrepository.com/artifact/org.reflections/reflections/usages).  
-Thank you for your continuous support! And apologize for the issues. We're looking for community collaborators to assist in reviewing pull requests and issues, please reach out.*
+*Thank you for your continuous support!
+<br>There are open issues and also workarounds. Release version will be considered incase contributing PR fixing the main issues.*
+
+*Last released `org.reflections:reflections:0.10.2` (Oct 2021)*
+
+----
 
 # Java runtime metadata analysis
 
@@ -64,9 +68,6 @@ Reflections reflections = new Reflections(
   new ConfigurationBuilder()
     .forPackage("com.my.project")
     .filterInputsBy(new FilterBuilder().includePackage("com.my.project")));
-
-// or similarly using the convenient constructor
-Reflections reflections = new Reflections("com.my.project");
 ```
 
 Other examples:
@@ -79,9 +80,6 @@ Reflections reflections = new Reflections(
     .forPackage("com.my.project")
     .filterInputsBy(new FilterBuilder().includePackage("com.my.project").excludePackage("com.my.project.exclude"))
     .setScanners(TypesAnnotated, MethodsAnnotated, MethodsReturn));
-
-// scan package with all standard scanners
-Reflections reflections = new Reflections("com.my.project", Scanners.values());
 ```
 
 Note that:
@@ -272,16 +270,6 @@ Although less common, it can be useful for accessing types and members in a stro
 - `MemberUsageScanner` - experimental scanner allow querying for member usages `getMemberUsages()` of packages/types/elements in the classpath.
 Can be used for finding usages between packages, layers, modules, types etc.  
 
-### Contribute
-Pull requests are welcomed!!  
-Here are some issues labeled with [please contribute :heart:](https://github.com/ronmamo/reflections/issues?q=is%3Aissue+is%3Aopen+label%3A%22please+contribute+%E2%9D%A4%EF%B8%8F%22+label%3A%22good+first+issue%22)  
-*We're looking for community collaborators to assist in reviewing pull requests and issues, please reach out.*
+----
 
-Dual licenced with Apache 2 and [WTFPL](http://www.wtfpl.net/), just do what the fuck you want to.  
-
-*This library is published as an act of giving and generosity, from developers to developers,
-to promote knowledge sharing and a--hole free working environments.  
-Please feel free to use it, and to contribute to the developers' community in the same manner.*  
-[PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WLN75KYSR6HAY) / [Patreon](https://www.patreon.com/ronma)  
-
-_Cheers_
+*Spread the spirit of open-source and collaboration, clean code and simplicity*
