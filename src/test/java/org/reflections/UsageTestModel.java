@@ -1,5 +1,8 @@
 package org.reflections;
 
+import java.util.function.ToDoubleFunction;
+import java.util.stream.Stream;
+
 public interface UsageTestModel {
 	class C1 {
 		C2 c2 = new C2();
@@ -17,5 +20,27 @@ public interface UsageTestModel {
 			c1.method();
 			c1.method("");
 		}
+
+		public double useAnonymousClass(C2... objects) {
+			return Stream.of(objects)
+					.mapToDouble(new ToDoubleFunction<C2>() {
+						@Override
+						public double applyAsDouble(C2 c1) {
+							return c1.zero();
+						}
+					})
+					.sum();
+		}
+		public double useLambda(C2... objects) {
+			return Stream.of(objects)
+					.mapToDouble(it -> it.zero())
+					.sum();
+		}
+		public double useMethodReference(C2... objects) {
+			return Stream.of(objects)
+					.mapToDouble(C2::zero)
+					.sum();
+		}
+		double zero() { return 0; }
 	}
 }

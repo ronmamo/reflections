@@ -70,9 +70,11 @@ public class ConfigurationBuilder implements Configuration {
         // flatten
         List<Object> parameters = new ArrayList<>();
         for (Object param : params) {
-            if (param.getClass().isArray()) { for (Object p : (Object[]) param) parameters.add(p); }
-            else if (param instanceof Iterable) { for (Object p : (Iterable) param) parameters.add(p); }
-            else parameters.add(param);
+            if (param != null) {
+                if (param.getClass().isArray()) { for (Object p : (Object[]) param) parameters.add(p); }
+                else if (param instanceof Iterable) { for (Object p : (Iterable) param) parameters.add(p); }
+                else parameters.add(param);
+            }
         }
 
         ClassLoader[] loaders = Stream.of(params).filter(p -> p instanceof ClassLoader).distinct().toArray(ClassLoader[]::new);

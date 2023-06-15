@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings({"unchecked"})
 public class NameHelperTest implements NameHelper {
@@ -61,6 +61,21 @@ public class NameHelperTest implements NameHelper {
 		assertEquals(set(METHOD), forNames(names, Method.class));
 		assertEquals(set(FIELD), forNames(names, Field.class));
 		assertEquals(set(CONST, METHOD, FIELD), forNames(names, Member.class));
+	}
+
+	@Test
+	// cherry-picked from PR #290 by @ziqin
+	public void testMethodExt() throws NoSuchMethodException {
+		// synthetic method for lambda expression
+		Member lambda = forMember("org.reflections.UsageTestModel$C2.lambda$useLambda$0(org.reflections.UsageTestModel$C2)");
+		assertEquals(lambda.getName(), "lambda$useLambda$0");
+		assertEquals(lambda.getDeclaringClass(), UsageTestModel.C2.class);
+		assertTrue(lambda.isSynthetic());
+
+		// method of anonymous inner class
+		Member anonymous = forMember("org.reflections.UsageTestModel$C2$1.applyAsDouble(org.reflections.UsageTestModel$C2)");
+		assertEquals(anonymous.getName(), "applyAsDouble");
+		assertEquals(anonymous.getDeclaringClass(), forClass(UsageTestModel.C2.class.getName() + "$1"));
 	}
 
 	<T> void assertToFor(T type, Function<T, String> toName, Function<String, T> forName) {
