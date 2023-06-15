@@ -1,4 +1,4 @@
-*❗ Please note: Reflections library is currently NOT under active development or maintainance ❗*
+*❗ Please note: Reflections library is currently NOT under active development or maintenance ❗*
 
 *Thank you for your continuous support!
 <br>There are open issues and also workarounds. Release version will be considered incase contributing PR fixing the main issues.*
