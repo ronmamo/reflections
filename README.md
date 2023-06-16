@@ -20,7 +20,7 @@ Using Reflections you can query for example:
   * Resources found in classpath  
 And more...
 
-*Reflections was written in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/) library*
+*Reflections were written in the spirit of [Scannotations](http://bill.burkecentral.com/2008/01/14/scanning-java-annotations-at-runtime/) library*
 
 ## Usage
 Add Reflections dependency to your project:

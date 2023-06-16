@@ -23,17 +23,17 @@ public class ReflectionsExpandSupertypesTest {
     public interface ExpandTestModel {
         interface NotScanned {
             @Retention(RetentionPolicy.RUNTIME)
-            @interface MetaAnnotation { } // outside of scanned scope
+            @interface MetaAnnotation { } // outside scanned scope
 
             @Retention(RetentionPolicy.RUNTIME)
             @Inherited
             @MetaAnnotation
-            @interface TestAnnotation { } // outside of scanned scope, but immediate annotation
+            @interface TestAnnotation { } // outside scanned scope, but immediate annotation
 
-            interface BaseInterface { } // outside of scanned scope
+            interface BaseInterface { } // outside scanned scope
 
             @TestAnnotation
-            class BaseClass implements BaseInterface { } // outside of scanned scope, but immediate supertype
+            class BaseClass implements BaseInterface { } // outside scanned scope, but immediate supertype
         }
 
         interface Scanned {

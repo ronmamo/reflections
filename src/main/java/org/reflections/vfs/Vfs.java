@@ -69,7 +69,7 @@ public abstract class Vfs {
         InputStream openInputStream() throws IOException;
     }
 
-    /** a matcher and factory for a url */
+    /** a matcher and factory for an url */
     public interface UrlType {
         boolean matches(URL url) throws Exception;
         Dir createDir(URL url) throws Exception;
