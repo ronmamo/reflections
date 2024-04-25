@@ -2,7 +2,7 @@ package org.reflections.util;
 
 import org.reflections.ReflectionsException;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

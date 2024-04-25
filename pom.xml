@@ -87,11 +87,17 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version>
             <scope>provided</scope>
             <optional>true</optional> <!-- case: when no servlet environment -->
+        </dependency>
+        
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>2.1.1</version>
         </dependency>
 
         <dependency>
@@ -209,10 +215,10 @@
                 </executions>
                 <configuration>
                     <instructions>
-                        <!-- Do not import javax.annotation as we only need these at compile time -->
+                        <!-- Do not import jakarta.annotation as we only need these at compile time -->
                         <Import-Package>
                             org.jboss.vfs.*;resolution:=optional,
-                            !javax.annotation,
+                            !jakarta.annotation,
                             *
                         </Import-Package>
                         <Bundle-SymbolicName>org.reflections</Bundle-SymbolicName>

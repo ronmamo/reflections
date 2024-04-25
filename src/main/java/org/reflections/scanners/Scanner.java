@@ -3,7 +3,7 @@ package org.reflections.scanners;
 import javassist.bytecode.ClassFile;
 import org.reflections.vfs.Vfs;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
