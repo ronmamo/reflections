@@ -30,4 +30,9 @@ public interface Configuration {
     /** if true (default), expand super types after scanning, for super types that were not scanned.
      * <p>see {@link Reflections#expandSuperTypes(Map, Map)}*/
     boolean shouldExpandSuperTypes();
+
+    /** if true (default), log the scanning process.
+     * @return true if logging is enabled, false otherwise
+     */
+    boolean shouldLog();
 }

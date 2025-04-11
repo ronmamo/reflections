@@ -186,13 +186,13 @@ public class Reflections implements NameHelper {
                                     if (entries != null) collect.get(scanner.index()).addAll(entries);
                                 }
                             } catch (Exception e) {
-                                if (log != null) log.debug("could not scan file {} with scanner {}", file.getRelativePath(), scanner.getClass().getSimpleName(), e);
+                                if (log != null && configuration.shouldLog()) log.debug("could not scan file {} with scanner {}", file.getRelativePath(), scanner.getClass().getSimpleName(), e);
                             }
                         }
                     }
                 }
             } catch (Exception e) {
-                if (log != null) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
+                if (log != null && configuration.shouldLog()) log.warn("could not create Vfs.Dir from url. ignoring the exception and continuing", e);
             }
         });
 
@@ -206,7 +206,7 @@ public class Reflections implements NameHelper {
                             Map.Entry::getKey,
                             HashMap::new,
                             Collectors.mapping(Map.Entry::getValue, Collectors.toSet())))));
-        if (log != null) {
+        if (log != null && configuration.shouldLog()) {
             int keys = 0, values = 0;
             for (Map<String, Set<String>> map : storeMap.values()) {
                 keys += map.size();

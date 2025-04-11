@@ -43,6 +43,7 @@ public class ConfigurationBuilder implements Configuration {
     private boolean isParallel = true;
     private ClassLoader[] classLoaders;
     private boolean expandSuperTypes = true;
+    private boolean shouldLog = true;
 
     public ConfigurationBuilder() {
         urls = new HashSet<>();
@@ -232,10 +233,20 @@ public class ConfigurationBuilder implements Configuration {
         return expandSuperTypes;
     }
 
+    @Override
+    public boolean shouldLog() {
+        return shouldLog;
+    }
+
     /** if set to true, Reflections will expand super types after scanning.
      * <p>see {@link org.reflections.Reflections#expandSuperTypes(Map, Map)} */
     public ConfigurationBuilder setExpandSuperTypes(boolean expandSuperTypes) {
         this.expandSuperTypes = expandSuperTypes;
+        return this;
+    }
+
+    public ConfigurationBuilder disableLogging() {
+        this.shouldLog = false;
         return this;
     }
 }
