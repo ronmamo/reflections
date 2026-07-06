@@ -70,7 +70,11 @@ public class JavaCodeSerializer implements Serializer {
         }
 
         //prepare file
-        String filename = name.replace('.', '/').concat(".java");
+        // Only replace dots in the class name part (after the last '/'), not in any directory path components.
+        int lastSlash = name.lastIndexOf('/');
+        String dirPart = lastSlash == -1 ? "" : name.substring(0, lastSlash + 1);
+        String classPart = name.substring(lastSlash + 1);
+        String filename = dirPart + classPart.replace('.', '/') + ".java";
         File file = Serializer.prepareFile(filename);
 
         //get package and class names
