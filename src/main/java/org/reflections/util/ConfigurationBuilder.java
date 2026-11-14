@@ -77,7 +77,7 @@ public class ConfigurationBuilder implements Configuration {
             }
         }
 
-        ClassLoader[] loaders = Stream.of(params).filter(p -> p instanceof ClassLoader).distinct().toArray(ClassLoader[]::new);
+        ClassLoader[] loaders = parameters.stream().filter(p -> p instanceof ClassLoader).distinct().toArray(ClassLoader[]::new);
         if (loaders.length != 0) { builder.addClassLoaders(loaders); }
 
         FilterBuilder inputsFilter = new FilterBuilder();
@@ -99,6 +99,8 @@ public class ConfigurationBuilder implements Configuration {
                 catch (Exception e) { throw new RuntimeException(e); }
             } else if (param instanceof Predicate) {
                 builder.filterInputsBy((Predicate<String>) param);
+            } else if (param instanceof ClassLoader) {
+                /* already taken care */
             } else throw new ReflectionsException("could not use param '" + param + "'");
         }
 
@@ -112,7 +114,8 @@ public class ConfigurationBuilder implements Configuration {
 
     /** {@link #addUrls(URL...)} by applying {@link ClasspathHelper#forPackage(String, ClassLoader...)} for the given {@code pkg}*/
     public ConfigurationBuilder forPackage(String pkg, ClassLoader... classLoaders) {
-        return addUrls(ClasspathHelper.forPackage(pkg, classLoaders));
+        Collection<URL> urls = ClasspathHelper.forPackage(pkg, classLoaders);
+        return addUrls(urls.isEmpty() ? ClasspathHelper.forClassLoader(classLoaders) : urls);
     }
 
     /** {@link #addUrls(URL...)} by applying {@link ClasspathHelper#forPackage(String, ClassLoader...)} for the given {@code packages}*/

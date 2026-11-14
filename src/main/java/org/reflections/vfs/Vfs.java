@@ -15,11 +15,11 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 import java.util.jar.JarFile;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * a simple virtual file system bridge
@@ -123,11 +123,17 @@ public abstract class Vfs {
 
     /** return an iterable of all {@link org.reflections.vfs.Vfs.File} in given urls, starting with given packagePrefix and matching nameFilter */
     public static Iterable<File> findFiles(final Collection<URL> inUrls, final String packagePrefix, final Predicate<String> nameFilter) {
+        String normalizedPrefix = packagePrefix.replace('\\', '/');
+        String prefix = normalizedPrefix.startsWith("/") ? normalizedPrefix.substring(1) : normalizedPrefix;
         Predicate<File> fileNamePredicate = file -> {
-            String path = file.toString().replace('\\','/');
-            if (path.contains(packagePrefix)) {
-                String filename = path.substring(path.indexOf(packagePrefix) + packagePrefix.length());
-                return !filename.isEmpty() && nameFilter.test(filename.substring(1));
+            String relativePath = file.getRelativePath();
+            String path = (relativePath != null ? relativePath : file.toString()).replace('\\', '/');
+            if (path.contains(prefix)) {
+                String filename = path.substring(path.indexOf(prefix) + prefix.length());
+                if (filename.startsWith("/")) {
+                    filename = filename.substring(1);
+                }
+                return (!filename.isEmpty() && nameFilter.test(filename)) || (filename.isEmpty() && nameFilter.test(file.getName()));
             } else {
                 return false;
             }
@@ -137,17 +143,73 @@ public abstract class Vfs {
 
     /** return an iterable of all {@link org.reflections.vfs.Vfs.File} in given urls, matching filePredicate */
     public static Iterable<File> findFiles(final Collection<URL> urls, final Predicate<File> filePredicate) {
-        return () -> urls.stream()
-                .flatMap(url -> {
-                    try {
-                        return StreamSupport.stream(fromURL(url).getFiles().spliterator(), false);
-                    } catch (Throwable e) {
-                        if (Reflections.log != null) {
-                            Reflections.log.error("could not findFiles for url. continuing. [" + url + "]", e);
-                        }
-                        return Stream.of();
+        return () -> new FileIterator(urls.iterator(), filePredicate);
+    }
+
+    /** Iterates matching files across URLs and closes each {@link Dir} once exhausted or closed. */
+    private static final class FileIterator implements Iterator<File>, AutoCloseable {
+        private final Iterator<URL> urlIterator;
+        private final Predicate<File> filePredicate;
+        private Dir currentDir;
+        private Iterator<File> fileIterator;
+        private File nextFile;
+
+        private FileIterator(Iterator<URL> urlIterator, Predicate<File> filePredicate) {
+            this.urlIterator = urlIterator;
+            this.filePredicate = filePredicate;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (nextFile != null) {
+                return true;
+            }
+            while (true) {
+                while (fileIterator != null && fileIterator.hasNext()) {
+                    File candidate = fileIterator.next();
+                    if (filePredicate.test(candidate)) {
+                        nextFile = candidate;
+                        return true;
                     }
-                }).filter(filePredicate).iterator();
+                }
+                close();
+                if (!urlIterator.hasNext()) {
+                    return false;
+                }
+                URL url = urlIterator.next();
+                try {
+                    currentDir = fromURL(url);
+                    fileIterator = currentDir.getFiles().iterator();
+                } catch (Throwable e) {
+                    close();
+                    if (Reflections.log != null) {
+                        Reflections.log.error("could not findFiles for url. continuing. [" + url + "]", e);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public File next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            File result = nextFile;
+            nextFile = null;
+            return result;
+        }
+
+        @Override
+        public void close() {
+            fileIterator = null;
+            if (currentDir != null) {
+                try {
+                    currentDir.close();
+                } catch (Exception ignored) {
+                }
+                currentDir = null;
+            }
+        }
     }
 
     /**try to get {@link java.io.File} from url*/
@@ -164,6 +226,7 @@ public abstract class Vfs {
         try {
             path = URLDecoder.decode(url.getPath(), "UTF-8");
             if (path.contains(".jar!")) path = path.substring(0, path.lastIndexOf(".jar!") + ".jar".length());
+            else if (path.contains("!") && !hasInnerJarFileInPath(url)) path = path.substring(0, path.lastIndexOf("!"));
             if ((file = new java.io.File(path)).exists()) return file;
 
         } catch (UnsupportedEncodingException ignored) {
@@ -175,7 +238,9 @@ public abstract class Vfs {
             if (path.startsWith("wsjar:")) path = path.substring("wsjar:".length());
             if (path.startsWith("file:")) path = path.substring("file:".length());
             if (path.contains(".jar!")) path = path.substring(0, path.indexOf(".jar!") + ".jar".length());
-            if (path.contains(".war!")) path = path.substring(0, path.indexOf(".war!") + ".war".length());
+            else if (path.contains(".war!")) path = path.substring(0, path.indexOf(".war!") + ".war".length());
+            else if (path.contains("!/")) path = path.substring(0, path.indexOf("!/"));
+            else if (path.endsWith("!")) path = path.substring(0, path.length() - 1);
             if ((file = new java.io.File(path)).exists()) return file;
 
             path = path.replace("%20", " ");
@@ -188,11 +253,11 @@ public abstract class Vfs {
     }
 
     private static boolean hasJarFileInPath(URL url) {
-        return url.toExternalForm().matches(".*\\.jar(!.*|$)");
+        return url.toExternalForm().matches(".*\\.(jar|apk|zip|war|ear|aar)(!.*|$)");
     }
 
     private static boolean hasInnerJarFileInPath(URL url) {
-        return url.toExternalForm().matches(".+\\.jar!/.+");
+        return url.toExternalForm().matches(".+\\.(jar|apk|zip|war|ear|aar)!/.+");
     }
 
     /** default url types used by {@link org.reflections.vfs.Vfs#fromURL(java.net.URL)}
@@ -283,7 +348,7 @@ public abstract class Vfs {
 
         jarInputStream {
             public boolean matches(URL url) throws Exception {
-                return url.toExternalForm().contains(".jar");
+                return hasJarFileInPath(url) || url.toExternalForm().contains(".jar");
             }
 
             public Dir createDir(final URL url) throws Exception {
