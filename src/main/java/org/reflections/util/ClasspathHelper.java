@@ -184,6 +184,8 @@ public abstract class ClasspathHelper {
     public static Collection<URL> forClassLoader(ClassLoader... classLoaders) {
         final Collection<URL> result = new ArrayList<>();
         final ClassLoader[] loaders = classLoaders(classLoaders);
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        boolean visitedSystemClassLoader = false;
         for (ClassLoader classLoader : loaders) {
             while (classLoader != null) {
 
@@ -192,9 +194,14 @@ public abstract class ClasspathHelper {
                     if (urls != null) {
                         result.addAll(Arrays.asList(urls));
                     }
+                } else if (classLoader == systemClassLoader) {
+                    visitedSystemClassLoader = true;
                 }
                 classLoader = classLoader.getParent();
             }
+        }
+        if (result.isEmpty() && visitedSystemClassLoader) {
+            result.addAll(forJavaClassPath());
         }
         return distinctUrls(result);
     }

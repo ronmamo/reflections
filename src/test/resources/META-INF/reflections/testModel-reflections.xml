@@ -18,8 +18,8 @@
       <key>org.reflections.TestModel$AC2</key>
       <values>
         <value>org.reflections.TestModel$C3</value>
-        <value>org.reflections.TestModel$C2</value>
         <value>org.reflections.TestModel$AC3</value>
+        <value>org.reflections.TestModel$C2</value>
         <value>org.reflections.TestModel$I3</value>
       </values>
     </entry>
@@ -58,10 +58,9 @@
     <entry>
       <key>java.lang.annotation.Retention</key>
       <values>
-        <value>org.reflections.TestModel$AC3</value>
-        <value>org.reflections.TestModel$MAI1</value>
         <value>org.reflections.TestModel$AC1n</value>
         <value>org.reflections.TestModel$AC2</value>
+        <value>org.reflections.TestModel$MAI1</value>
         <value>org.reflections.TestModel$AC1</value>
         <value>org.reflections.TestModel$AI2</value>
         <value>org.reflections.TestModel$AI1</value>
@@ -80,18 +79,11 @@
     <entry>
       <key>[]</key>
       <values>
-        <value>org.reflections.TestModel$C7.&lt;init&gt;()</value>
         <value>org.reflections.TestModel$AF1.value()</value>
         <value>org.reflections.TestModel$C4.m1()</value>
-        <value>org.reflections.TestModel$C4.&lt;init&gt;()</value>
-        <value>org.reflections.TestModel$C2.&lt;init&gt;()</value>
         <value>org.reflections.TestModel$C4.m3()</value>
-        <value>org.reflections.TestModel$C3.&lt;init&gt;()</value>
-        <value>org.reflections.TestModel$C6.&lt;init&gt;()</value>
-        <value>org.reflections.TestModel$C5.&lt;init&gt;()</value>
         <value>org.reflections.TestModel$AM1.value()</value>
         <value>org.reflections.TestModel$AC2.value()</value>
-        <value>org.reflections.TestModel$C1.&lt;init&gt;()</value>
       </values>
     </entry>
     <entry>
@@ -110,7 +102,6 @@
       <key>[java.lang.String]</key>
       <values>
         <value>org.reflections.TestModel$C4.m4(java.lang.String)</value>
-        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
       </values>
     </entry>
     <entry>
@@ -143,20 +134,25 @@
       <key>java.lang.String</key>
       <values>
         <value>org.reflections.TestModel$C4.m4(java.lang.String)</value>
-        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
       </values>
     </entry>
     <entry>
-      <key>java.lang.String[]</key>
+      <key>org.reflections.TestModel$AM2</key>
       <values>
         <value>org.reflections.TestModel$C4.m1(int, java.lang.String[])</value>
+        <value>org.reflections.TestModel$C4.m4(java.lang.String)</value>
       </values>
     </entry>
     <entry>
       <key>org.reflections.TestModel$AM1</key>
       <values>
         <value>org.reflections.TestModel$C4.m4(java.lang.String)</value>
-        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
+      </values>
+    </entry>
+    <entry>
+      <key>java.lang.String[]</key>
+      <values>
+        <value>org.reflections.TestModel$C4.m1(int, java.lang.String[])</value>
       </values>
     </entry>
     <entry>
@@ -185,13 +181,14 @@
       <key>java.lang.annotation.Annotation</key>
       <values>
         <value>org.reflections.TestModel$AC3</value>
-        <value>org.reflections.TestModel$MAI1</value>
         <value>org.reflections.TestModel$AC2</value>
+        <value>org.reflections.TestModel$MAI1</value>
         <value>org.reflections.TestModel$AC1n</value>
         <value>org.reflections.TestModel$AC1</value>
         <value>org.reflections.TestModel$AI2</value>
         <value>org.reflections.TestModel$AI1</value>
         <value>org.reflections.TestModel$AF1</value>
+        <value>org.reflections.TestModel$AM2</value>
         <value>org.reflections.TestModel$AM1</value>
       </values>
     </entry>
@@ -213,15 +210,16 @@
         <value>org.reflections.TestModel$AI2</value>
         <value>org.reflections.TestModel$AI1</value>
         <value>org.reflections.TestModel$AF1</value>
+        <value>org.reflections.TestModel$AM2</value>
         <value>org.reflections.TestModel$C7</value>
         <value>org.reflections.TestModel$AM1</value>
         <value>org.reflections.TestModel$C6</value>
         <value>org.reflections.TestModel$AC3</value>
         <value>org.reflections.TestModel$C4</value>
-        <value>org.reflections.TestModel$MAI1</value>
         <value>org.reflections.TestModel$AC2</value>
-        <value>org.reflections.TestModel$C1</value>
+        <value>org.reflections.TestModel$MAI1</value>
         <value>org.reflections.TestModel$AC1n</value>
+        <value>org.reflections.TestModel$C1</value>
         <value>org.reflections.TestModel$AC1</value>
         <value>org.reflections.TestModel$I1</value>
         <value>org.reflections.TestModel$I3</value>
@@ -267,6 +265,26 @@
       </values>
     </entry>
   </MethodsReturn>
+  <ConstructorsSignature>
+    <entry>
+      <key>[]</key>
+      <values>
+        <value>org.reflections.TestModel$C7.&lt;init&gt;()</value>
+        <value>org.reflections.TestModel$C4.&lt;init&gt;()</value>
+        <value>org.reflections.TestModel$C2.&lt;init&gt;()</value>
+        <value>org.reflections.TestModel$C3.&lt;init&gt;()</value>
+        <value>org.reflections.TestModel$C6.&lt;init&gt;()</value>
+        <value>org.reflections.TestModel$C5.&lt;init&gt;()</value>
+        <value>org.reflections.TestModel$C1.&lt;init&gt;()</value>
+      </values>
+    </entry>
+    <entry>
+      <key>[java.lang.String]</key>
+      <values>
+        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
+      </values>
+    </entry>
+  </ConstructorsSignature>
   <MethodsAnnotated>
     <entry>
       <key>org.reflections.TestModel$AM1</key>
@@ -275,10 +293,23 @@
         <value>org.reflections.TestModel$C4.m1()</value>
         <value>org.reflections.TestModel$C4.m3()</value>
         <value>org.reflections.TestModel$C4.m1(int[][], java.lang.String[][])</value>
-        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
       </values>
     </entry>
   </MethodsAnnotated>
+  <ConstructorsParameter>
+    <entry>
+      <key>java.lang.String</key>
+      <values>
+        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
+      </values>
+    </entry>
+    <entry>
+      <key>org.reflections.TestModel$AM1</key>
+      <values>
+        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
+      </values>
+    </entry>
+  </ConstructorsParameter>
   <FieldsAnnotated>
     <entry>
       <key>org.reflections.TestModel$AF1</key>
@@ -314,4 +345,12 @@
       </values>
     </entry>
   </Resources>
+  <ConstructorsAnnotated>
+    <entry>
+      <key>org.reflections.TestModel$AM1</key>
+      <values>
+        <value>org.reflections.TestModel$C4.&lt;init&gt;(java.lang.String)</value>
+      </values>
+    </entry>
+  </ConstructorsAnnotated>
 </Reflections>

@@ -5,6 +5,7 @@ import org.reflections.scanners.MemberUsageScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.scanners.Scanner;
 import org.reflections.scanners.Scanners;
+import org.reflections.serializers.JsonSerializer;
 import org.reflections.serializers.Serializer;
 import org.reflections.serializers.XmlSerializer;
 import org.reflections.util.ClasspathHelper;
@@ -35,6 +36,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +46,6 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.lang.String.format;
 import static org.reflections.ReflectionUtils.withAnnotation;
@@ -247,7 +249,8 @@ public class Reflections implements NameHelper {
      * <i>prefer using a designated directory (for example META-INF/reflections but not just META-INF), so that collect can work much faster</i>
      */
     public static Reflections collect(String packagePrefix, Predicate<String> resourceNameFilter) {
-        return collect(packagePrefix, resourceNameFilter, new XmlSerializer());
+        return collect(packagePrefix, resourceNameFilter,
+            packagePrefix != null && packagePrefix.endsWith(".json") ? new JsonSerializer() : new XmlSerializer());
     }
 
     /**
@@ -260,18 +263,63 @@ public class Reflections implements NameHelper {
      * <i>prefer using a designated directory (for example META-INF/reflections but not just META-INF), so that collect can work much faster</i>
      */
     public static Reflections collect(String packagePrefix, Predicate<String> resourceNameFilter, Serializer serializer) {
-        Collection<URL> urls = ClasspathHelper.forPackage(packagePrefix);
-        Iterable<Vfs.File> files = Vfs.findFiles(urls, packagePrefix, resourceNameFilter);
+        return collect(packagePrefix, resourceNameFilter, serializer, ClasspathHelper.classLoaders());
+    }
+
+    /**
+     * collect saved Reflections metadata from all urls that contains the given {@code packagePrefix} and matches the given {@code resourceNameFilter},
+     * using the given {@code serializer} and {@code classLoaders}
+     * <pre>{@code Reflections reflections = Reflections.collect(
+     *   "META-INF/reflections/",
+     *   new FilterBuilder().includePattern(".*-reflections\\.xml"),
+     *   new XmlSerializer(),
+     *   classLoader)}</pre>
+     * <i>prefer using a designated directory (for example META-INF/reflections but not just META-INF), so that collect can work much faster</i>
+     */
+    public static Reflections collect(String packagePrefix, Predicate<String> resourceNameFilter, Serializer serializer, ClassLoader... classLoaders) {
+        String prefix = packagePrefix.startsWith("/") ? packagePrefix.substring(1) : packagePrefix;
+        Map<String, URL> distinct = new LinkedHashMap<>();
+        addDistinctUrls(distinct, ClasspathHelper.forResource(prefix, classLoaders));
+        if (distinct.isEmpty()) {
+            addDistinctUrls(distinct, ClasspathHelper.forPackage(packagePrefix, classLoaders));
+        }
+        if (distinct.isEmpty()) {
+            addDistinctUrls(distinct, ClasspathHelper.forClassLoader(classLoaders));
+            addDistinctUrls(distinct, ClasspathHelper.forResource("META-INF/MANIFEST.MF", classLoaders));
+        }
+        if (distinct.isEmpty() || prefix.endsWith("/")) {
+            addDistinctUrls(distinct, ClasspathHelper.forResource("AndroidManifest.xml", classLoaders));
+        }
+        Iterable<Vfs.File> files = Vfs.findFiles(distinct.values(), prefix, resourceNameFilter);
         Reflections reflections = new Reflections();
-        StreamSupport.stream(files.spliterator(), false)
-            .forEach(file -> {
+        if (classLoaders != null && classLoaders.length != 0) {
+            ((ConfigurationBuilder) reflections.configuration).addClassLoaders(classLoaders);
+        }
+        Iterator<Vfs.File> iterator = files.iterator();
+        try {
+            while (iterator.hasNext()) {
+                Vfs.File file = iterator.next();
                 try (InputStream inputStream = file.openInputStream()) {
                     reflections.collect(inputStream, serializer);
                 } catch (IOException e) {
                     throw new ReflectionsException("could not merge " + file, e);
                 }
-            });
+            }
+        } finally {
+            if (iterator instanceof AutoCloseable) {
+                try {
+                    ((AutoCloseable) iterator).close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
         return reflections;
+    }
+
+    private static void addDistinctUrls(Map<String, URL> distinct, Collection<URL> urls) {
+        for (URL url : urls) {
+            distinct.put(url.toExternalForm(), url);
+        }
     }
 
     /**
